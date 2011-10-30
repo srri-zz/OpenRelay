@@ -5,9 +5,8 @@ from django.conf import settings
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'openrelay.views.home', name='home'),
-    # url(r'^openrelay/', include('openrelay.foo.urls')),
+    url(r'^', include('core.urls')),
+    #url(r'^common/', include('common.urls')),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin.site.urls)),
 )
