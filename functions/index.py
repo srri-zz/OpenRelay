@@ -13,7 +13,7 @@ def output_index(hash_data, file_name):
 		index_output.write(index_data)
 		index_output.close()
 	elif new_index == 'n':
-		index_output = open('index.txt', "w") #will add key $
+		index_output = open('index.txt', "w") #will add key key verification
                 index_data = file_name + '\t' + hash_data + '\n'
                 index_output.write(index_data)
                 index_output.close() 
