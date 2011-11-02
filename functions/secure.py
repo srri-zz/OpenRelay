@@ -8,7 +8,7 @@ def new_key():
 	key_input = { #Key Parameters
 		'Key-Type': 'RSA',
 		'Key-Length': 2048,
-		'Passphrase': raw_input('\nEnter a key: '),
+		'Passphrase': raw_input('\nEnter a passphrase: '),
 		'Expire-data': 0,
 		'Name-Real': raw_input('\nEnter your name: '),
 		'Name-Email': raw_input('\nEnter your email: ')    
