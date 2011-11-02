@@ -1,7 +1,7 @@
 #Copyright 2011 Steven Richards <sbrichards@mit.edu>, Roberto Rosario
 #File encryption and decryption - GPG
 import gnupg
-
+from cStringIO import StringIO
 gpg = gnupg.GPG()
 
 def new_key():
@@ -28,7 +28,19 @@ def new_key():
 	print 'Your public key is pub-openrelay.gpg'
 	#print 'Your private key is priv-openrelay.gpg'
 
-# needs to be added def encrypt(key, other)
+def encrypt():
+	keys_file = str(raw_input('Enter path to key data:\n'))
+	keys_open = open(keys_file, 'r+')
+	key = gpg.import_keys(keys_open.read())
+	print key.count
+	file_unenc = open(str(raw_input('Enter path to file to be encrypted:\n')), 'r+')
+	file_unenc_data = file_unenc.read()
+        fingerprint = key.fingerprints
+	file_enc = gpg.encrypt_file(StringIO(file_unenc_data), fingerprint,  output='encrypted.txt')
+	#no error, but no encrypted.txt
+	#Call indexing function somewhere here... Index/Hash the encrypted file and unencrypted file
 # needs to be added def decrypt(key, other)
-new_key()
+
 #Private key is not being generated...	
+#new_key()
+encrypt()
