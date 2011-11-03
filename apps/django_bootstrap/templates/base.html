@@ -1,0 +1,83 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block html_title %}{% endblock %}</title>
+
+    <meta name="description" content="OpenRelay is a p2p (peer to peer) based web hosting solution. It takes advantage of Bittorrent to send files between the hosts as well as Dynamic DNS for updating nodes.">
+    <meta name="author" content="Steven Richards">
+    <meta name="author" content="Roberto Rosario">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="{{ STATIC_URL }}bootstrap/bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+      }
+    </style>
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+
+    <script src="{{ STATIC_URL }}packages/jquery-1.6.4.min.js"></script>
+    <script src="{{ STATIC_URL }}bootstrap/js/bootstrap-alerts.js"></script>
+  </head>
+
+  <body>
+
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="container-fluid">
+          <a class="brand" href="{% url home_view %}">OpenRelay</a>
+
+          <ul class="nav">
+            <li class="active"><a href="{% url home_view %}">Home</a></li>
+            <li><a href="{% url about_view %}">About</a></li>
+          </ul>
+          <p class="pull-right">Logged in as <a href="#">
+            {% if user.is_anonymous %}
+                {% trans "Anonymous" %}
+            {% else %}
+                {{ user.get_full_name|default:user }}
+            {% endif %}
+            </a></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="span16">
+                {% for message in messages %}
+                    <div class="alert-message {{ message.tags }} fade in"  data-alert="alert" >
+                        <a href="#" class="close">×</a>
+                        <p>{{ message }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+      <div class="content">
+        <!-- Main hero unit for a primary marketing message or call to action -->
+        <div class="hero-unit">
+            <body>
+                {% block content %}{% endblock %}
+            </body>
+
+        <footer>
+            {% block footer %}{% endblock %}            
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>
