@@ -5,28 +5,28 @@ from cStringIO import StringIO
 gpg = gnupg.GPG()
 
 def new_key():
-	key_input = { #Key Parameters
-		'Key-Type': 'RSA',
-		'Key-Length': 2048,
-		'Passphrase': raw_input('\nEnter a passphrase: '),
-		'Expire-data': 0,
-		'Name-Real': raw_input('\nEnter your name: '),
-		'Name-Email': raw_input('\nEnter your email: ')    
-		    }
-	key = gpg.gen_key_input(**key_input) #Define input parameters
-	key = gpg.gen_key(key) #Generate key
+	#key_input = { #Key Parameters
+	#	'Key-Type': 'RSA',
+	#	'Key-Length': 2048,
+	#	'Passphrase': raw_input('\nEnter a passphrase: '),
+	#	'Expire-data': 0,
+	#	'Name-Real': raw_input('\nEnter your name: '),
+	#	'Name-Email': raw_input('\nEnter your email: ')    
+	#	    }
+	key_params = gpg.gen_key_input(passphrase = raw_input('\nEnter a passphrase: ')) #Define input parameters
+	key = gpg.gen_key(key_params) #Generate key
 	print '\nGenerating key...\n'
-	pub = gpg.export_keys(key)
-	#priv = gpg.export_keys(key, True)
-	#print pub + '\n' + priv 
+	pub = gpg.export_keys(key.fingerprint)
+	priv = gpg.export_keys(key.fingerprint, True)
+	print pub + '\n' + priv 
 	pub_out = open('pub-openrelay.gpg', 'w') #Output key
-	#priv_out = open('priv-openrelay.gpg', 'w')
+	priv_out = open('priv-openrelay.gpg', 'w')
 	pub_out.write(pub)
-	#priv_out.write(priv)
+	priv_out.write(priv)
 	pub_out.close()
-	#priv_out.close()	
+	priv_out.close()	
 	print 'Your public key is pub-openrelay.gpg'
-	#print 'Your private key is priv-openrelay.gpg'
+	print 'Your private key is priv-openrelay.gpg'
 
 def encrypt():
 	keys_file = str(raw_input('Enter path to key data:\n'))
@@ -42,5 +42,5 @@ def encrypt():
 # needs to be added def decrypt(key, other)
 
 #Private key is not being generated...	
-#new_key()
+new_key()
 encrypt()
