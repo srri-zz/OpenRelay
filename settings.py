@@ -134,6 +134,8 @@ INSTALLED_APPS = (
     'common',
     'django_bootstrap',
     'bittorrent',
+    'gpg',
+    'content',
     'core',
 )
 
