@@ -1,0 +1,2 @@
+class GPGVerificationError(Exception):
+    pass
