@@ -1,7 +1,7 @@
 #import sendfile
 
 from django.utils.translation import ugettext_lazy as _
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.contrib import messages
@@ -12,18 +12,18 @@ from content.forms import ResourceForm
 from content.models import Resource
 
 
-def serve_resource(request, resource_id):
-    return "S"
-    #resource_descriptor = content_cache.retrieve(resource_id) 
-    
-    #return sendfile.sendfile(request, resource_descriptor)
+def resource_serve(request, uuid):
+    resource = get_object_or_404(Resource, uuid=uuid)
+    response = HttpResponse(resource.extract(), mimetype=u';charset='.join(resource.mimetype))
+    return response
 
 
 def resource_upload(request):
     if request.method == 'POST':
         form = ResourceForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            resource = form.save(commit=False)
+            resource.save(key=form.cleaned_data['key'], name=form.cleaned_data['name'])
             messages.success(request, _(u'Resource created successfully.'))
             return HttpResponseRedirect(reverse('resource_upload'))
     else:

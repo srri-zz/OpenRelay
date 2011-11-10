@@ -1,23 +1,60 @@
 import hashlib
 import uuid
 from datetime import datetime
+from StringIO import StringIO
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.core.files.storage import FileSystemStorage
 from django.core.files.base import ContentFile
+from django.utils.simplejson import dumps, loads
 
 import magic
 
 #from core.runtime import gpg
-from gpg import GPG
-from gpg.exceptions import GPGVerificationError
+from django_gpg import GPG, GPGVerificationError, GPGDecryptionError
 
 from content.conf.settings import STORAGE_BACKEND
 
 gpg = GPG()
 
 HASH_FUNCTION = lambda x: hashlib.sha256(x).hexdigest()
+
+BINARY_DELIMITER = 0x00
+RESOURCE_SEPARATOR = u'-'
+
+
+def encode_metadata(dictionary):
+    json_data = dumps(dictionary)
+    return str('%d%c%s' % (len(json_data), BINARY_DELIMITER, json_data))
+    
+    
+def decode_metadata(data):
+    '''
+    #section = SECTION_LENGTH
+    size = ''
+    #metadata = ''
+    
+    while True:
+        char = descriptor.read(1)
+        #if section == SECTION_LENGTH:
+        if char == '%c' % 0x00:
+            #section = SECTION_METADATA
+            size = int(size)
+            print 'size', size
+            descriptor.read(1)
+            metadata = read(size)
+            break
+        else:
+            size =+ char
+    return loads(metadata)
+    ''' 
+
+    
+    delimiter_pos = data.find('%c' % BINARY_DELIMITER)
+    json_size = int(data[:delimiter_pos])
+    return loads(data[delimiter_pos + 1:delimiter_pos + 1 + json_size]), delimiter_pos + 1 + json_size
+
 
 def get_fake_upload_to(return_value):
     return lambda instance, filename: unicode(return_value)
@@ -30,71 +67,84 @@ class Resource(models.Model):
     def __unicode__(self):
         return self.uuid
 
-    def save(self, *args, **kwargs):
-        signature = gpg.sign_file(self.file.file)
-        self.file.file = ContentFile(signature)
-        hash_value = HASH_FUNCTION(signature)
+    def save(self, key, *args, **kwargs):
+        name = kwargs.pop('name', None)
+        if not name:
+            name = self.file.name
+
+        uuid = RESOURCE_SEPARATOR.join([key, name])
         
-        self.file.field.generate_filename = get_fake_upload_to(hash_value)
-        #self.file.field.upload_to = fake_upload_to
-        self.uuid = hash_value
+        metadata = {
+            'uuid': uuid,
+        }
         
-        super(Resource, self).save(*args, **kwargs)
+        container = StringIO()
+        container.write(encode_metadata(metadata))
+        container.write(self.file.file.read())
+        container.seek(0)
         
-        '''
-        #if not self.pk:
-        #    self.uuid = unicode(uuid.uuid4())
-        #print self.file.name
-        
-            
-        #descriptor = self.file.file
-        #descriptor.seek(0)
-        ##self.file = ContentFile(content=gpg.sign_file(descriptor=descriptor))
-        #self.file.name='sd'
-        super(Resource, self).save(*args, **kwargs)
-        
-        self.uuid = self.file.name
-        #descriptor = self.file.file
-        
-    
-        #descriptor.seek(0)
-        descriptor = self.file.storage.open(name=self.file.name)
-        #print gpg.sign_file(descriptor=descriptor)
-        signature = gpg.sign_file(descriptor=descriptor)
-        descriptor.close()
-        print self.uuid
-        self.file.storage.save(self.uuid, ContentFile(signature))
-        #self.file.content = ContentFile(gpg.sign_file(descriptor=descriptor))
+        signature = gpg.sign_file(container, key=kwargs.get('key', None))
+        self.file.file = ContentFile(signature.data)
+
+        self.file.field.generate_filename = get_fake_upload_to('%s_%s' % (uuid, signature.timestamp))
+        self.uuid = uuid
         
         super(Resource, self).save(*args, **kwargs)
-        
-        #self.save()
-        '''
+
     def exists(self):
         return self.file.storage.exists(self.uuid)
+
+    def delete(self, *args, **kwargs):
+        self.file.storage.delete(self.uuid)
+        super(Resource, self).delete(*args, **kwargs)        
+        
+    def decode_resource(self):
+        try:
+            descriptor = self.open()
+            result = gpg.decrypt_file(descriptor)
+            metadata, metadata_size = decode_metadata(result.data)
+            content = result.data[metadata_size:]
+            return metadata, content
+        except GPGDecryptionError:
+            return None, None
+        except IOError:
+            return None, None
+       
+    @property
+    def metadata(self):
+        return self.decode_resource()[0]
         
     def _verify(self):
         if not self.file.name:
             return False
-            
-        descriptor = self.file.storage.open(name=self.file.name)
-        return gpg.verify_file(descriptor)
+
+        try:
+            descriptor = self.open()
+            return gpg.verify_file(descriptor)
+        except IOError:
+            return None
 
     @property
     def is_valid(self):
         try:
-            self._verify()
-            return True
+            if self._verify():
+                return True
+            else:
+                return None
         except GPGVerificationError:
             return False
+
+    @property
+    def raw_timestamp(self):
+        try:
+            verify = self._verify()
+            return int(verify.sig_timestamp)
+        except GPGVerificationError:
+            return None
             
     @property
     def timestamp(self):
-        try:
-            verify = self._verify()
-            return datetime.fromtimestamp(int(verify.sig_timestamp))
-        except GPGVerificationError:
-            return None
+        return datetime.fromtimestamp(self.raw_timestamp)
         
     def open(self):
         """
@@ -102,18 +152,21 @@ class Resource(models.Model):
         """
         return self.file.storage.open(self.file.name)
         
+    def extract(self):
+        return self.decode_resource()[1]
+        
     @property
     def mimetype(self):
         magic_mime = magic.Magic(mime=True)
         magic_encoding = magic.Magic(mime_encoding=True)
-        
-        descriptor = self.open()
-        
-        result = gpg.decrypt_file(descriptor)
 
-        mimetype = magic_mime.from_buffer(result.data)
-        encoding = magic_encoding.from_buffer(result.data)
-        return mimetype, encoding
+        content = self.decode_resource()[1]
+        if content:
+            mimetype = magic_mime.from_buffer(content)
+            encoding = magic_encoding.from_buffer(content)
+            return mimetype, encoding
+        else:
+            return u'', u''
        
     @property
     def fingerprint(self):
@@ -153,13 +206,4 @@ class Resource(models.Model):
             verify = self._verify()
             return verify.status
         except GPGVerificationError:
-            return None      
-
-    #def store(self, content_cache):
-    #    """
-    #    Store the resource in the provided instance of a ContentCache
-    #    Class
-    #    """
-    #    resource_content = self.open()
-    #    content_cache.save(self.id, resource_content)
-    #    resource_content.close()
+            return None

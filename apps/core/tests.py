@@ -1,7 +1,6 @@
 from django.test import TestCase
 
-from core.runtime import gpg
-from content import Resource, ContentCache
+#from content import Resource, ContentCache
 
 
 class SimpleTest(TestCase):
