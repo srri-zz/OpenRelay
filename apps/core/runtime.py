@@ -1,7 +1,7 @@
-from gpg import GPG
-from content import ContentCache, ContentStorage
+"""
+Hold project wide instances
+"""
 
-# Initialize a project wide instance of GPG
-gpg = GPG()
-content_cache = ContentCache('/tmp')
-content_storage = ContentStorage('/tmp', content_cache)
+gpg = None
+content_cache = None
+content_storage = None
