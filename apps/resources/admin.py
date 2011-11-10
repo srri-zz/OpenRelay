@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from content.models import Resource
+from resources.models import Resource
 
 
 class ResourceAdmin(admin.ModelAdmin):

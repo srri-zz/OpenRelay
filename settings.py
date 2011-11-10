@@ -136,7 +136,7 @@ INSTALLED_APPS = (
     'bootstrapform',
     'bittorrent',
     'django_gpg',
-    'content',
+    'resources',
     'core',
 )
 

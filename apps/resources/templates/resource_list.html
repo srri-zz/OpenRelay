@@ -11,7 +11,7 @@
                 <th>{% trans 'Metadata' %}</th>
                 <th>{% trans 'Exists in storage' %}</th>
                 <th>{% trans 'Is valid?' %}</th>
-                <th>{% trans 'Status' %}</th>
+                <th>{% trans 'Signature status' %}</th>
                 <th>{% trans 'Timestamp' %}</th>
                 <th>{% trans 'Timestamp (raw)' %}</th>
                 <th>{% trans 'MIME type' %}</th>
@@ -35,7 +35,7 @@
                     <td>{{ object.mimetype.1 }}</td>
                     <td>{{ object.username }}</td>
                     <td>{{ object.key_id }}</td>
-                    <td><a href="{% url resource_serve object.uuid %}">[{% trans 'View' %}]</a></td>
+                    <td><a href="{{ object.get_absolute_url }}">[{% trans 'View' %}]</a></td>
                 </tr>
             {% endfor %}
         </tbody>
