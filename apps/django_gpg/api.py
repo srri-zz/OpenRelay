@@ -1,12 +1,14 @@
 import os
 import types
+from StringIO import StringIO
 
 import gnupg
 
 from django.core.files.base import File
 from django.utils.translation import ugettext_lazy as _
 
-from django_gpg.exceptions import GPGVerificationError, GPGSigningError
+from django_gpg.exceptions import GPGVerificationError, GPGSigningError, \
+    GPGDecryptionError
 
 
 KEY_TYPES = {
@@ -16,7 +18,7 @@ KEY_TYPES = {
 
 class Key(object):
     @staticmethod
-    def key_id(fingerprint):
+    def get_key_id(fingerprint):
         return fingerprint[-16:]
     
     @classmethod
@@ -43,10 +45,13 @@ class Key(object):
         self.fingerprint = fingerprint
         self.uids = uids
         self.type = type
-        self.key_id = Key.key_id(fingerprint)
+    
+    @property
+    def key_id(self):
+        return Key.get_key_id(self.fingerprint)
         
     def __str__(self):
-        return '%s "%s" (%s)' % (Key.key_id(self.fingerprint), self.uids[0], KEY_TYPES.get(self.type, _(u'unknown')))        
+        return '%s "%s" (%s)' % (self.key_id, self.uids[0], KEY_TYPES.get(self.type, _(u'unknown')))        
         
     def __unicode__(self):
         return unicode(self.__str__())
@@ -97,7 +102,7 @@ class GPG(object):
             raise GPGVerificationError('Signature could not be verified!')            
                 
 
-    def sign_file(self, file_input, destination=None, key_id=None, passphrase=None, clearsign=False):
+    def sign_file(self, file_input, key=None, destination=None, key_id=None, passphrase=None, clearsign=False):
         """
         Signs a filename, storing the signature and the original file 
         in the destination filename provided (the destination file is
@@ -109,6 +114,9 @@ class GPG(object):
         
         if key_id:
             kwargs['keyid'] = key_id
+
+        if key:
+            kwargs['keyid'] = key.key_id
             
         if passphrase:
             kwargs['passphrase'] = passphrase
@@ -116,6 +124,8 @@ class GPG(object):
         if isinstance(file_input, types.StringTypes):
             input_descriptor = open(file_input, 'rb')
         elif isinstance(file_input, types.FileType) or isinstance(file_input, File):
+            input_descriptor = file_input
+        elif issubclass(file_input.__class__, StringIO):
             input_descriptor = file_input
         else:
             raise ValueError('Invalid file_input argument type')
@@ -136,7 +146,7 @@ class GPG(object):
             output_descriptor.close()
 
         if not destination:
-            return signed_data.data
+            return signed_data
         
             
     def decrypt_file(self, file_input):
@@ -148,8 +158,9 @@ class GPG(object):
             raise ValueError('Invalid file_input argument type')        
         
         result = self.gpg.decrypt_file(input_descriptor)
-        
         input_descriptor.close()
+        if not result.status:
+            raise GPGDecryptionError('Unable to decrypt file')
         
         return result
         
