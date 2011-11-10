@@ -1,4 +1,5 @@
 import urlparse
+import types
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -11,6 +12,8 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.utils.translation import ugettext_lazy as _
 from django.contrib import messages
+from django.core.exceptions import ImproperlyConfigured
+from django.utils.importlib import import_module
 
 # Avoid shadowing the login() and logout() views below.
 from django.contrib.auth import REDIRECT_FIELD_NAME, login as auth_login, logout as auth_logout
@@ -20,17 +23,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import get_current_site
 
-
-'''
-from django.contrib.auth.views import login
-
-
-def login_view(request):
-    kwargs = {'template_name': 'login.html'}
-    return login(request, **kwargs)
-'''
-
-
+SETTINGS_LIST = (
+    ('resources', 'STORAGE_BACKEND', 'RESOURCE_STORAGE_BACKEND'),
+    ('resources', 'FILESTORAGE_LOCATION', 'RESOURCES_FILESTORAGE_LOCATION'),
+)
+    
 @csrf_protect
 @never_cache
 def login_view(request, template_name='login.html',
@@ -83,3 +80,34 @@ def login_view(request, template_name='login.html',
     return HttpResponseRedirect(reverse('home_view'))
     #return render_to_response(template_name, context,
     #                          context_instance=RequestContext(request, current_app=current_app))
+
+ 
+def return_type(value):
+    if isinstance(value, types.FunctionType):
+        return value.__doc__ if value.__doc__ else _(u'function found')
+    elif isinstance(value, types.ClassType):
+        return _(u'class found: %s') % unicode(value).split("'")[1].split('.')[-1]
+    elif isinstance(value, types.TypeType):
+        return _(u'class found: %s') % unicode(value).split("'")[1].split('.')[-1]
+    elif isinstance(value, types.DictType) or isinstance(value, types.DictionaryType):
+        return ','.join(list(value))
+    else:
+        return value
+
+        
+def settings_list(request):
+    object_list = []
+    for setting in SETTINGS_LIST:
+        module = import_module('.settings', '%s.conf' % setting[0])
+
+        print module
+        object_list.append(
+            {
+                'app': setting[0],
+                'global_name': setting[2],
+                'value': return_type(getattr(module, setting[1], None))
+            }
+        )
+
+    return render_to_response('settings_list.html', {'object_list': object_list},
+        context_instance=RequestContext(request))
