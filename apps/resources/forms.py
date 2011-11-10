@@ -4,7 +4,7 @@ from django.utils.translation import ugettext
 
 from django_gpg import GPG, Key
 
-from content.models import Resource
+from resources.models import Resource
 
 #TODO: import this from a project wide place
 gpg = GPG()
@@ -13,6 +13,7 @@ gpg = GPG()
 class ResourceForm(forms.ModelForm):
     class Meta:
         model = Resource
+        exclude = ('time_stamp',)
 
     name = forms.CharField(
         label=_(u'Name'), 

@@ -1,19 +1,28 @@
 #import sendfile
 
 from django.utils.translation import ugettext_lazy as _
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.contrib import messages
 from django.views.generic.list_detail import object_list
 from django.core.urlresolvers import reverse
 
-from content.forms import ResourceForm
-from content.models import Resource
+from resources.forms import ResourceForm
+from resources.models import Resource
 
 
-def resource_serve(request, uuid):
-    resource = get_object_or_404(Resource, uuid=uuid)
+def resource_serve(request, uuid, time_stamp=None):
+    print uuid
+    if time_stamp:
+        resource = get_object_or_404(Resource, uuid=uuid, time_stamp=time_stamp)
+    else:
+        qs = Resource.objects.filter(uuid=uuid)
+        if not qs:
+            raise Http404('No Resource matches the given query.')
+        else:
+            resource = qs[0]
+        
     response = HttpResponse(resource.extract(), mimetype=u';charset='.join(resource.mimetype))
     return response
 
