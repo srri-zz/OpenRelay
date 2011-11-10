@@ -6,3 +6,6 @@ class GPGVerificationError(GPGException):
 
 class GPGSigningError(GPGException):
     pass
+
+class GPGDecryptionError(GPGException):
+    pass
