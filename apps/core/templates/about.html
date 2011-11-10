@@ -1,11 +1,11 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load i18n %}
-{% block title %} :: {% trans "About this program" %}{% endblock %}
+{% block title %}{% trans 'About this program' %}{% endblock %}
 {% block content %}
     <div class="content tc">
         <h1>OpenRelay</h1>
-        <p>OpenRelay is a p2p (peer to peer) based web hosting solution. It takes advantage of Bittorrent to send files between the hosts as well as Dynamic DNS for updating nodes.</p>
-        <p>OpenRelay is licensed under the GNU GPL v3</p>
+        <p>{% trans 'OpenRelay is a p2p (peer to peer) based web hosting solution. It takes advantage of Bittorrent to send files between the hosts as well as Dynamic DNS for updating nodes.' %}</p>
+        <p>{% trans 'OpenRelay is licensed under the GNU GPL v3' %}</p>
     </div>
 {% endblock %}
 {% block footer %}
