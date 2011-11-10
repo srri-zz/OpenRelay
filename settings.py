@@ -133,6 +133,7 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'common',
     'django_bootstrap',
+    'bootstrapform',
     'bittorrent',
     'gpg',
     'content',
