@@ -4,8 +4,55 @@ import types
 import gnupg
 
 from django.core.files.base import File
+from django.utils.translation import ugettext_lazy as _
 
-from gpg.exceptions import GPGVerificationError
+from django_gpg.exceptions import GPGVerificationError, GPGSigningError
+
+
+KEY_TYPES = {
+    'pub': _(u'Public'),
+    'sec': _(u'Secret'),
+}
+
+class Key(object):
+    @staticmethod
+    def key_id(fingerprint):
+        return fingerprint[-16:]
+    
+    @classmethod
+    def get_all(cls, gpg, secret=False):
+        result = []
+        keys = gpg.gpg.list_keys(secret=secret)
+        for key in keys:
+            key_instance = Key(fingerprint=key['fingerprint'], uids=key['uids'], type=key['type'])
+            key_instance.data = gpg.gpg.export_keys([key['keyid']], secret=secret) 
+            result.append(key_instance)
+
+        return result
+                
+    @classmethod
+    def get(cls, gpg, key_id, secret=False):
+        keys = gpg.gpg.list_keys(secret=secret)
+        key = next((key for key in keys if key['keyid'] == key_id), None)
+        key_instance = Key(fingerprint=key['fingerprint'], uids=key['uids'], type=key['type'])
+        key_instance.data = gpg.gpg.export_keys([key['keyid']], secret=secret)
+        
+        return key_instance    
+        
+    def __init__(self, fingerprint, uids, type):
+        self.fingerprint = fingerprint
+        self.uids = uids
+        self.type = type
+        self.key_id = Key.key_id(fingerprint)
+        
+    def __str__(self):
+        return '%s "%s" (%s)' % (Key.key_id(self.fingerprint), self.uids[0], KEY_TYPES.get(self.type, _(u'unknown')))        
+        
+    def __unicode__(self):
+        return unicode(self.__str__())
+        
+    def __repr__(self):
+        return self.__unicode__()
 
 
 class GPG(object):
@@ -77,7 +124,9 @@ class GPG(object):
             output_descriptor = open(destination, 'wb')
         
         signed_data = self.gpg.sign_file(input_descriptor, **kwargs)
-        
+        if not signed_data.fingerprint:
+            raise GPGSigningError('Unable to sign file')
+       
         if destination:
             output_descriptor.write(signed_data.data)
         
@@ -103,4 +152,8 @@ class GPG(object):
         input_descriptor.close()
         
         return result
+        
+      
+
+
         
