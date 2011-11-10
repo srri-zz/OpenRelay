@@ -1,6 +1,9 @@
 import os
+import types
 
 import gnupg
+
+from django.core.files.base import File
 
 from gpg.exceptions import GPGVerificationError
 
@@ -19,28 +22,35 @@ class GPG(object):
             
         self.gpg = gnupg.GPG(**kwargs)
 
-    def verify_file(self, filename):
+    def verify_file(self, file_input):
         """
         Verify the signature of a file.
         """
-        descriptor = open(filename, 'rb')
+        if isinstance(file_input, types.StringTypes):
+            descriptor = open(file_input, 'rb')
+        elif isinstance(file_input, types.FileType) or isinstance(file_input, File):
+            descriptor = file_input
+        else:
+            raise ValueError('Invalid file_input argument type')
+            
         verify = self.gpg.verify_file(descriptor)
         descriptor.close()
-        if not verify:
-            raise GPGVerificationError
-            
-        return True
+        if verify:
+            return verify
+        else:
+            raise GPGVerificationError('Signature could not be verified!')
         
     def verify(self, data):
         # TODO: try to merge with verify_file
         verify = self.gpg.verify(data)
-        if not verify:
-            raise GPGVerificationError
-            
-        return True
+
+        if verify:
+            return verify
+        else:
+            raise GPGVerificationError('Signature could not be verified!')            
                 
 
-    def sign_file(self, filename, destination=None, key_id=None, passphrase=None):
+    def sign_file(self, file_input, destination=None, key_id=None, passphrase=None, clearsign=False):
         """
         Signs a filename, storing the signature and the original file 
         in the destination filename provided (the destination file is
@@ -48,13 +58,20 @@ class GPG(object):
         provided the signature is returned.
         """
         kwargs = {}
+        kwargs['clearsign'] = clearsign
+        
         if key_id:
             kwargs['keyid'] = key_id
             
         if passphrase:
             kwargs['passphrase'] = passphrase
-        
-        input_descriptor = open(filename, 'rb')
+
+        if isinstance(file_input, types.StringTypes):
+            input_descriptor = open(file_input, 'rb')
+        elif isinstance(file_input, types.FileType) or isinstance(file_input, File):
+            input_descriptor = file_input
+        else:
+            raise ValueError('Invalid file_input argument type')
         
         if destination:
             output_descriptor = open(destination, 'wb')
@@ -71,4 +88,19 @@ class GPG(object):
 
         if not destination:
             return signed_data.data
+        
+            
+    def decrypt_file(self, file_input):
+        if isinstance(file_input, types.StringTypes):
+            input_descriptor = open(file_input, 'rb')
+        elif isinstance(file_input, types.FileType) or isinstance(file_input, File):
+            input_descriptor = file_input
+        else:
+            raise ValueError('Invalid file_input argument type')        
+        
+        result = self.gpg.decrypt_file(input_descriptor)
+        
+        input_descriptor.close()
+        
+        return result
         
