@@ -7,3 +7,4 @@
 # request-resource: request a resource from another server
 # my_name_is: request server info (version, api version)
 # workaholic: requests the cpu load and resource serving stats of a server (could be merged with [ping])
+# report: blacklist a server that has repeatedly tampered with files
