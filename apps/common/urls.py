@@ -8,6 +8,7 @@ urlpatterns = patterns('common.views',
     #url(r'^user/edit/$', 'current_user_edit', (), 'current_user_edit'),
 
     url(r'^login/$', 'login_view', (), name='login_view'),
+    url(r'^settings/$', 'settings_list', (), name='settings_list'),
 )
 
 urlpatterns += patterns('',

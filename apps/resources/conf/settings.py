@@ -13,5 +13,5 @@ class FileBasedStorage(FileSystemStorage):
         self.location = FILESTORAGE_LOCATION
 
 
-FILESTORAGE_LOCATION = getattr(settings, 'CONTENT_FILESTORAGE_LOCATION', '/tmp')
-STORAGE_BACKEND = getattr(settings, 'CONTENT_STORAGE_BACKEND', FileBasedStorage)
+FILESTORAGE_LOCATION = getattr(settings, 'RESOURCES_FILESTORAGE_LOCATION', '/tmp')
+STORAGE_BACKEND = getattr(settings, 'RESOURCES_STORAGE_BACKEND', FileBasedStorage)
