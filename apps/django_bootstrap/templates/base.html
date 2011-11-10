@@ -28,7 +28,7 @@
         text-align: center; /* center align it with the container */
       }
       .container {
-        width: 97%; /* downsize our container to make the content feel a bit tighter and more cohesive. NOTE: this removes two full columns from the grid, meaning you only go to 14 columns and not 16. */
+        width: 95%; /* downsize our container to make the content feel a bit tighter and more cohesive. NOTE: this removes two full columns from the grid, meaning you only go to 14 columns and not 16. */
       }
 
       /* The white background content wrapper */
@@ -79,58 +79,6 @@
     <script src="{{ STATIC_URL }}bootstrap/js/bootstrap-alerts.js"></script>
     <script src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script>
   </head>
-{% comment %}
-  <body>
-
-    <div class="topbar">
-      <div class="topbar-inner">
-        <div class="container-fluid">
-          <a class="brand" href="{% url home_view %}">OpenRelay</a>
-
-          <ul class="nav">
-            <li class="active"><a href="{% url home_view %}">{% trans 'Home' %}</a></li>
-            <li><a href="{% url about_view %}">{% trans 'About' %}</a></li>
-            <li><a href="{% url resource_upload %}">{% trans 'Upload' %}</a></li>
-            <li><a href="{% url resource_list %}">{% trans 'List' %}</a></li>
-          </ul>
-          <p class="pull-right">Logged in as <a href="#">
-            {% if user.is_anonymous %}
-                {% trans "Anonymous" %}
-            {% else %}
-                {{ user.get_full_name|default:user }}
-            {% endif %}
-            </a></p>
-        </div>
-      </div>
-    </div>
-
-    <div class="container">
-        <div class="row">
-            <div class="span16">
-                {% for message in messages %}
-                    <div class="alert-message {{ message.tags }} fade in"  data-alert="alert" >
-                        <a href="#" class="close">×</a>
-                        <p>{{ message }}</p>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-
-      <div class="content">
-        <!-- Main hero unit for a primary marketing message or call to action -->
-        <div class="hero-unit">
-            <body>
-                {% block content %}{% endblock %}
-            </body>
-
-        <footer>
-            {% block footer %}{% endblock %}            
-        </footer>
-      </div>
-    </div>
-  </body>
-
- {% endcomment %}
     <body>
     <div class="topbar">
       <div class="fill">
