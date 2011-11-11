@@ -1,10 +1,8 @@
-import uuid
 from datetime import datetime
 from StringIO import StringIO
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from django.core.files.storage import FileSystemStorage
 from django.core.files.base import ContentFile
 from django.utils.simplejson import dumps, loads
 
@@ -17,6 +15,7 @@ from openrelay_resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
     MAGIC_NUMBER, TIME_STAMP_SEPARATOR
 
 gpg = GPG()
+
 
 class ResourceManager(models.Manager):
     def get(self, *args, **kwargs):
@@ -33,7 +32,7 @@ class ResourceBase(models.Model):
 
     def __unicode__(self):
         return self.uuid
-    
+
     @property
     def full_name(self):
         return u'%s%c%s' % (self.uuid, TIME_STAMP_SEPARATOR, self.time_stamp)
@@ -41,7 +40,7 @@ class ResourceBase(models.Model):
     class Meta:
         abstract = True
 
-        
+
 class Resource(ResourceBase):
     file = models.FileField(upload_to='resources', storage=STORAGE_BACKEND(), verbose_name=_(u'file'))
 
@@ -51,14 +50,14 @@ class Resource(ResourceBase):
     def encode_metadata(dictionary):
         json_data = dumps(dictionary)
         return r'%d%c%s' % (len(json_data), BINARY_DELIMITER, json_data)
-        
-    @staticmethod        
+
+    @staticmethod
     def decode_metadata(data):
         '''
         #section = SECTION_LENGTH
         size = ''
         #metadata = ''
-        
+
         while True:
             char = descriptor.read(1)
             #if section == SECTION_LENGTH:
@@ -72,7 +71,7 @@ class Resource(ResourceBase):
             else:
                 size =+ char
         return loads(metadata)
-        ''' 
+        '''
         delimiter_pos = data.find(r'%c' % BINARY_DELIMITER)
         json_size = int(data[len(MAGIC_NUMBER):delimiter_pos])
         return loads(data[delimiter_pos + 1:delimiter_pos + 1 + json_size]), delimiter_pos + 1 + json_size
@@ -87,24 +86,24 @@ class Resource(ResourceBase):
             name = self.file.name
 
         uuid = RESOURCE_SEPARATOR.join([key, name])
-        
+
         metadata = {
             'uuid': uuid,
         }
-        
+
         container = StringIO()
         container.write(MAGIC_NUMBER)
         container.write(Resource.encode_metadata(metadata))
         container.write(self.file.file.read())
         container.seek(0)
-        
+
         signature = gpg.sign_file(container, key=kwargs.get('key', None))
         self.file.file = ContentFile(signature.data)
 
         self.file.field.generate_filename = Resource.get_fake_upload_to('%s%c%s' % (uuid, TIME_STAMP_SEPARATOR, signature.timestamp))
         self.uuid = uuid
         self.time_stamp = int(signature.timestamp)
-        
+
         container.close()
         super(Resource, self).save(*args, **kwargs)
 
@@ -113,8 +112,8 @@ class Resource(ResourceBase):
 
     def delete(self, *args, **kwargs):
         self.file.storage.delete(self.uuid)
-        super(Resource, self).delete(*args, **kwargs)        
-        
+        super(Resource, self).delete(*args, **kwargs)
+
     def decode_resource(self):
         try:
             descriptor = self.open()
@@ -126,11 +125,11 @@ class Resource(ResourceBase):
             return None, None
         except IOError:
             return None, None
-       
+
     @property
     def metadata(self):
         return self.decode_resource()[0]
-        
+
     def _verify(self):
         if not self.file.name:
             return False
@@ -158,20 +157,20 @@ class Resource(ResourceBase):
             return int(verify.sig_timestamp)
         except GPGVerificationError:
             return None
-            
+
     @property
     def timestamp(self):
         return datetime.fromtimestamp(self.raw_timestamp)
-        
+
     def open(self):
         """
         Returns a file-like object to the resource data
         """
         return self.file.storage.open(self.file.name)
-        
+
     def extract(self):
         return self.decode_resource()[1]
-        
+
     @property
     def mimetype(self):
         magic_mime = magic.Magic(mime=True)
@@ -184,14 +183,14 @@ class Resource(ResourceBase):
             return mimetype, encoding
         else:
             return u'', u''
-       
+
     @property
     def fingerprint(self):
         try:
             verify = self._verify()
             return verify.fingerprint
         except GPGVerificationError:
-            return None       
+            return None
 
     @property
     def key_id(self):
@@ -199,23 +198,23 @@ class Resource(ResourceBase):
             verify = self._verify()
             return verify.key_id
         except GPGVerificationError:
-            return None     
-            
+            return None
+
     @property
     def signature_id(self):
         try:
             verify = self._verify()
             return verify.signature_id
         except GPGVerificationError:
-            return None                
-            
+            return None
+
     @property
     def username(self):
         try:
             verify = self._verify()
             return verify.username
         except GPGVerificationError:
-            return None                 
+            return None
 
     @property
     def signature_status(self):
@@ -224,14 +223,12 @@ class Resource(ResourceBase):
             return verify.status
         except GPGVerificationError:
             return None
-            
+
     @models.permalink
     def get_absolute_url(self):
         return ('resource_serve', [self.uuid, self.time_stamp])
-      
-            
+
     class Meta(ResourceBase.Meta):
         ordering = ('-time_stamp', )
         verbose_name = _(u'resource')
         verbose_name_plural = _(u'resources')
-

@@ -1,7 +1,5 @@
 from django.test import TestCase
 
-#from content import Resource, ContentCache
-
 
 class SimpleTest(TestCase):
     def test_basic_addition(self):

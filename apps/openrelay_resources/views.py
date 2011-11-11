@@ -1,5 +1,3 @@
-#import sendfile
-
 from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.shortcuts import render_to_response, get_object_or_404
@@ -28,7 +26,7 @@ def resource_serve(request, uuid, time_stamp=None):
         resource = _get_object_or_404(Resource, uuid=uuid, time_stamp=time_stamp)
     else:
         resource = _get_object_or_404(Resource, uuid=uuid)
-        
+
     response = HttpResponse(resource.extract(), mimetype=u';charset='.join(resource.mimetype))
     return response
 

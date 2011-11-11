@@ -58,13 +58,8 @@ def login_view(request, template_name='login.html',
 
             if request.session.test_cookie_worked():
                 request.session.delete_test_cookie()
-
-            #return HttpResponseRedirect(reverse('home_view'))
         else:
             messages.error(request, _(u'Incorrent username or password.'))
-    #else:
-    #    return HttpResponseRedirect(reverse('home_view'))
-        #form = authentication_form(request)
 
     request.session.set_test_cookie()
 
@@ -78,8 +73,6 @@ def login_view(request, template_name='login.html',
     }
     context.update(extra_context or {})
     return HttpResponseRedirect(reverse('home_view'))
-    #return render_to_response(template_name, context,
-    #                          context_instance=RequestContext(request, current_app=current_app))
 
  
 def return_type(value):
@@ -99,8 +92,6 @@ def settings_list(request):
     object_list = []
     for setting in SETTINGS_LIST:
         module = import_module('.settings', '%s.conf' % setting[0])
-
-        print module
         object_list.append(
             {
                 'app': setting[0],

@@ -1,9 +1,9 @@
 """The root view for OpenRelay API"""
 
 from django.core.urlresolvers import reverse
-from djangorestframework.views import View
-from djangorestframework.mixins import *
-from djangorestframework.views import ListOrCreateModelView, InstanceModelView, ListModelView, ModelView
+
+from djangorestframework.mixins import InstanceMixin, ReadModelMixin
+from djangorestframework.views import View, ModelView
 
 
 class OpenRelayAPI(View):
@@ -17,11 +17,9 @@ class OpenRelayAPI(View):
     """
 
     def get(self, request):
-        return [{'name': 'Resources', 'url': reverse('resource-root')},]
+        return [{'name': 'Resources', 'url': reverse('resource-root')}]
 
 
 class ReadOnlyInstanceModelView(InstanceMixin, ReadModelMixin, ModelView):
     """A view which provides default operations for read only against a model instance."""
     _suffix = 'Instance'
-
-

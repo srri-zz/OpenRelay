@@ -1,7 +1,6 @@
 from django.conf.urls.defaults import patterns, url
 
-from djangorestframework.resources import ModelResource
-from djangorestframework.views import ListOrCreateModelView, InstanceModelView, ListModelView, ModelView
+from djangorestframework.views import ListModelView
 
 from server_talk.resources import ResourceResource
 from server_talk.views import OpenRelayAPI, ReadOnlyInstanceModelView

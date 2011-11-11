@@ -1,6 +1,5 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-from django.utils.translation import ugettext
 
 from django_gpg import GPG, Key
 
@@ -16,7 +15,7 @@ class ResourceForm(forms.ModelForm):
         exclude = ('time_stamp',)
 
     name = forms.CharField(
-        label=_(u'Name'), 
+        label=_(u'Name'),
         help_text=_(u'A name that uniquely identifies this resource, if left blank the filename is used instead.'),
         required=False,
     )
