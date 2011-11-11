@@ -14,7 +14,7 @@ from django_gpg import GPG, GPGVerificationError, GPGDecryptionError
 
 from openrelay_resources.conf.settings import STORAGE_BACKEND
 from openrelay_resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
-    MAGIC_NUMBER
+    MAGIC_NUMBER, TIME_STAMP_SEPARATOR
 
 gpg = GPG()
 
@@ -34,8 +34,9 @@ class ResourceBase(models.Model):
     def __unicode__(self):
         return self.uuid
     
+    @property
     def full_name(self):
-        return u'%s%c%s' % (self.uuid, '/', self.time_stamp)
+        return u'%s%c%s' % (self.uuid, TIME_STAMP_SEPARATOR, self.time_stamp)
 
     class Meta:
         abstract = True
@@ -100,7 +101,7 @@ class Resource(ResourceBase):
         signature = gpg.sign_file(container, key=kwargs.get('key', None))
         self.file.file = ContentFile(signature.data)
 
-        self.file.field.generate_filename = Resource.get_fake_upload_to('%s_%s' % (uuid, signature.timestamp))
+        self.file.field.generate_filename = Resource.get_fake_upload_to('%s%c%s' % (uuid, TIME_STAMP_SEPARATOR, signature.timestamp))
         self.uuid = uuid
         self.time_stamp = int(signature.timestamp)
         
@@ -108,7 +109,7 @@ class Resource(ResourceBase):
         super(Resource, self).save(*args, **kwargs)
 
     def exists(self):
-        return self.file.storage.exists(self.uuid)
+        return self.file.storage.exists(self.full_name)
 
     def delete(self, *args, **kwargs):
         self.file.storage.delete(self.uuid)
