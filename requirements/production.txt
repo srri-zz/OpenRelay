@@ -3,3 +3,4 @@ Twisted==11.0.0
 python-gnupg==0.2.8
 -e git://github.com/tzangms/django-bootstrap-form.git@7214e04373fa65f1aaa57aac61e784c2fb94a8ca#egg=django_bootstrap_form-dev
 -e git://github.com/ahupp/python-magic.git@a75cf0a4a7790eb106155c947af9612f15693b6e#egg=python-magic
+djangorestframework==0.2.3

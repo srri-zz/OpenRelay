@@ -131,12 +131,14 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.admindocs',
+    'djangorestframework',
     'common',
     'django_bootstrap',
     'bootstrapform',
     'bittorrent',
     'django_gpg',
-    'resources',
+    'openrelay_resources',
+    'server_talk',
     'core',
 )
 
