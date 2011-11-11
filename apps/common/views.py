@@ -24,8 +24,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import get_current_site
 
 SETTINGS_LIST = (
-    ('resources', 'STORAGE_BACKEND', 'RESOURCE_STORAGE_BACKEND'),
-    ('resources', 'FILESTORAGE_LOCATION', 'RESOURCES_FILESTORAGE_LOCATION'),
+    ('openrelay_resources', 'STORAGE_BACKEND', 'RESOURCES_STORAGE_BACKEND'),
+    ('openrelay_resources', 'FILESTORAGE_LOCATION', 'RESOURCES_FILESTORAGE_LOCATION'),
 )
     
 @csrf_protect

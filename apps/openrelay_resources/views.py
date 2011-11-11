@@ -8,20 +8,26 @@ from django.contrib import messages
 from django.views.generic.list_detail import object_list
 from django.core.urlresolvers import reverse
 
-from resources.forms import ResourceForm
-from resources.models import Resource
+from openrelay_resources.forms import ResourceForm
+from openrelay_resources.models import Resource
+
+
+def _get_object_or_404(model, *args, **kwargs):
+    """
+    Custom get_object_or_404 as the Django one call .get() method on a
+    QuerySet thus ignoring a custom manager's .get() method
+    """
+    try:
+        return model.objects.get(*args, **kwargs)
+    except model.DoesNotExist:
+        raise Http404('No %s matches the given query.' % model._meta.object_name)
 
 
 def resource_serve(request, uuid, time_stamp=None):
-    print uuid
     if time_stamp:
-        resource = get_object_or_404(Resource, uuid=uuid, time_stamp=time_stamp)
+        resource = _get_object_or_404(Resource, uuid=uuid, time_stamp=time_stamp)
     else:
-        qs = Resource.objects.filter(uuid=uuid)
-        if not qs:
-            raise Http404('No Resource matches the given query.')
-        else:
-            resource = qs[0]
+        resource = _get_object_or_404(Resource, uuid=uuid)
         
     response = HttpResponse(resource.extract(), mimetype=u';charset='.join(resource.mimetype))
     return response

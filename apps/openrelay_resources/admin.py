@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from resources.models import Resource
+from openrelay_resources.models import Resource
 
 
 class ResourceAdmin(admin.ModelAdmin):
