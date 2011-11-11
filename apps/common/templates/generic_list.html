@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans 'List' %}{% endblock %}
+
+{% block content %}
+    <table class="bordered-table zebra-striped">
+        <thead></thead>
+        <tbody>
+            {% for object in object_list %}
+                <tr><td>{{ object }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
