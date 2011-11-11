@@ -12,11 +12,19 @@ import magic
 
 from django_gpg import GPG, GPGVerificationError, GPGDecryptionError
 
-from resources.conf.settings import STORAGE_BACKEND
-from resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
+from openrelay_resources.conf.settings import STORAGE_BACKEND
+from openrelay_resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
     MAGIC_NUMBER
 
 gpg = GPG()
+
+class ResourceManager(models.Manager):
+    def get(self, *args, **kwargs):
+        try:
+            return super(ResourceManager, self).get(*args, **kwargs)
+        except self.model.MultipleObjectsReturned:
+            uuid = kwargs.pop('uuid')
+            return super(ResourceManager, self).get_query_set().filter(uuid=uuid)[0]
 
 
 class ResourceBase(models.Model):
@@ -32,9 +40,11 @@ class ResourceBase(models.Model):
     class Meta:
         abstract = True
 
-
+        
 class Resource(ResourceBase):
     file = models.FileField(upload_to='resources', storage=STORAGE_BACKEND(), verbose_name=_(u'file'))
+
+    objects = ResourceManager()
 
     @staticmethod
     def encode_metadata(dictionary):

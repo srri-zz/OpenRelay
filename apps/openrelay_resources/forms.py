@@ -4,7 +4,7 @@ from django.utils.translation import ugettext
 
 from django_gpg import GPG, Key
 
-from resources.models import Resource
+from openrelay_resources.models import Resource
 
 #TODO: import this from a project wide place
 gpg = GPG()
