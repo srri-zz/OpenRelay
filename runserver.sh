@@ -21,7 +21,7 @@ start_server () {
   fi
   cd $PROJECTLOC
   echo "starting ${ADDRESS}:${2}"
-  $BASE_CMD$2 --pid=$1 local_server.py
+  $BASE_CMD$2 --pid=$1 settings_local_server.py
 }
 
 stop_server (){
