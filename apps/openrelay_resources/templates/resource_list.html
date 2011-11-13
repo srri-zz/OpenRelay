@@ -8,6 +8,7 @@
         <thead>
             <tr>
                 <th>{% trans 'UUID (database)' %}</th>
+                <th>{% trans 'UUID (verified)' %}</th>
                 <th>{% trans 'Metadata' %}</th>
                 <th>{% trans 'Exists in storage' %}</th>
                 <th>{% trans 'Is valid?' %}</th>
@@ -25,6 +26,7 @@
             {% for object in object_list %}
                 <tr>
                     <td>{{ object }}</td>
+                    <td>{{ object.real_uuid }}</td>
                     <td>{{ object.metadata }}</td>
                     <td>{{ object.exists }}</td>
                     <td>{{ object.is_valid }}</td>
