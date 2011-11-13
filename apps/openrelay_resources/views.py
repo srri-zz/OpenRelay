@@ -6,6 +6,8 @@ from django.contrib import messages
 from django.views.generic.list_detail import object_list
 from django.core.urlresolvers import reverse
 
+from django_gpg import GPGSigningError
+
 from openrelay_resources.forms import ResourceForm
 from openrelay_resources.models import Resource
 
@@ -36,9 +38,13 @@ def resource_upload(request):
         form = ResourceForm(request.POST, request.FILES)
         if form.is_valid():
             resource = form.save(commit=False)
-            resource.save(key=form.cleaned_data['key'], name=form.cleaned_data['name'])
-            messages.success(request, _(u'Resource created successfully.'))
-            return HttpResponseRedirect(reverse('resource_upload'))
+            try:
+                resource.save(key=form.cleaned_data['key'], name=form.cleaned_data['name'])
+                messages.success(request, _(u'Resource created successfully.'))
+                return HttpResponseRedirect(reverse('resource_upload'))
+            except GPGSigningError, msg:
+                messages.error(request, msg)
+                return HttpResponseRedirect(reverse('resource_upload'))
     else:
         form = ResourceForm()
 
