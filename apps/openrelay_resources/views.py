@@ -37,10 +37,10 @@ def resource_upload(request):
     if request.method == 'POST':
         form = ResourceForm(request.POST, request.FILES)
         if form.is_valid():
-            resource = form.save(commit=False)
+            pending_resource = form.save(commit=False)
             try:
-                resource.save(key=form.cleaned_data['key'], name=form.cleaned_data['name'])
-                messages.success(request, _(u'Resource created successfully.'))
+                resource = pending_resource.save(key=form.cleaned_data['key'], name=form.cleaned_data['name'])
+                messages.success(request, _(u'Resource: %s, created successfully.') % resource)
                 return HttpResponseRedirect(reverse('resource_upload'))
             except GPGSigningError, msg:
                 messages.error(request, msg)
