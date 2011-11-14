@@ -5,21 +5,23 @@
 
 {% block title %}{% trans 'Create/Edit' %}{% endblock %}
 {% block content %}
+    <div class="row">
+        <div class="span12" >    
+            {% if form.is_multipart %}
+                <form name="{{ form.prefix }}" enctype="multipart/form-data" method="{{ submit_method|default:'post' }}" action="{{ form_action }}" class="form">
+            {% else %}
+                <form name="{{ form.prefix }}" method="{{ submit_method|default:'post' }}" action="{{ form_action }}" class="form">
+            {% endif %}
 
-    {% if form.is_multipart %}
-        <form name="{{ form.prefix }}" enctype="multipart/form-data" method="{{ submit_method|default:'post' }}" action="{{ form_action }}" class="form">
-    {% else %}
-        <form name="{{ form.prefix }}" method="{{ submit_method|default:'post' }}" action="{{ form_action }}" class="form">
-    {% endif %}
+            {% if submit_method != "GET" and submit_method != "get" %}
+                {% csrf_token %}
+            {% endif %}
 
-    {% if submit_method != "GET" and submit_method != "get" %}
-        {% csrf_token %}
-    {% endif %}
-
-    {{ form|bootstrap }}
-    
+            {{ form|bootstrap }}
         <div class="actions">
             <button type="submit" class="btn primary">{% trans 'Submit' %}</button> &nbsp;
         </div>
     </form>
+    
+    </div></div>
 {% endblock %}
