@@ -54,11 +54,11 @@ def key_create(request):
     
     
 def key_delete(request, fingerprint, key_type):
-    print key_type
     if request.method == 'POST':
         try:
-            secret = key_type == 'sec' 
-            gpg.delete_key(fingerprint, secret=secret)
+            secret = key_type == 'sec'
+            key = Key.get(gpg, fingerprint, secret=secret)
+            gpg.delete_key(key)
             messages.success(request, _(u'Key: %s, deleted successfully.') % fingerprint)
             return HttpResponseRedirect(reverse('home_view'))
         except Exception, msg:

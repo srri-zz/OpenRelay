@@ -10,7 +10,7 @@ from django.core.urlresolvers import reverse
 
 import magic
 
-from django_gpg import GPG, Key, GPGVerificationError, GPGDecryptionError
+from django_gpg import GPG, Key, GPGVerificationError, GPGDecryptionError, KeyFetchingError
 
 from openrelay_resources.conf.settings import STORAGE_BACKEND
 from openrelay_resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
@@ -107,6 +107,10 @@ class Resource(ResourceBase):
     @staticmethod
     def get_fake_upload_to(return_value):
         return lambda instance, filename: unicode(return_value)
+        
+    def __init__(self, *args, **kwargs):
+        super(Resource, self).__init__(*args, **kwargs)
+        self.properties = {}
 
     def save(self, key, *args, **kwargs):
         name = kwargs.pop('name', None)
@@ -194,31 +198,66 @@ class Resource(ResourceBase):
 
         try:
             descriptor = self.open()
-            return gpg.verify_file(descriptor)
+            verify = gpg.verify_file(descriptor)
+            if verify.status == 'no public key':
+                # Try to fetch the public key from the keyservers
+                try:
+                    gpg.receive_key(verify.key_id)
+                    return self._verify()
+                except KeyFetchingError:
+                    return verify
+            else:
+                return verify
         except IOError:
             return None
 
-    @property
-    def is_valid(self):
-        try:
-            if self._verify():
-                return True
-            else:
-                return None
-        except GPGVerificationError:
-            return False
-
-    @property
-    def raw_timestamp(self):
+    def _refresh_properties(self):
         try:
             verify = self._verify()
-            return int(verify.sig_timestamp)
-        except GPGVerificationError:
-            return None
+            if verify:
+                self.properties = {
+                    'signature_status': verify.status,
+                    'username': verify.username,
+                    'signature_id': verify.signature_id,
+                    'key_id': verify.key_id,
+                    'fingerprint': verify.fingerprint,
+                    'is_valid': True,
+                    'raw_timestamp': verify.sig_timestamp,
+                    'timestamp': datetime.fromtimestamp(int(verify.sig_timestamp)),
+                }
+            else:
+                self.properties = {
+                    'signature_status': verify.status,
+                    'username': verify.username,
+                    'signature_id': None,
+                    'key_id': verify.key_id,
+                    'fingerprint': None,
+                    'is_valid': False,
+                    'raw_timestamp': None,
+                    'timestamp': None,
+                }
+        except GPGVerificationError, msg:
+            self.properties = {
+                'signature_status': msg,
+                'username': None,
+                'signature_id': None,
+                'key_id': None,
+                'fingerprint': None,
+                'is_valid': False,
+                'raw_timestamp': None,
+                'timestamp': None,
+            }
 
-    @property
-    def timestamp(self):
-        return datetime.fromtimestamp(self.raw_timestamp)
+    def __getattr__(self, name):
+        attribute_list = ['is_valid', 'signature_status', 'username', 'signature_id', 'raw_timestamp', 'timestamp', 'fingerprint', 'key_id']
+        if name in attribute_list:
+            try:
+                return self.properties[name]
+            except KeyError:
+                self._refresh_properties()
+                return self.properties[name]
+        else:
+            raise AttributeError, name                
 
     def open(self):
         """
@@ -241,46 +280,6 @@ class Resource(ResourceBase):
             return mimetype, encoding
         else:
             return u'', u''
-
-    @property
-    def fingerprint(self):
-        try:
-            verify = self._verify()
-            return verify.fingerprint
-        except GPGVerificationError:
-            return None
-
-    @property
-    def key_id(self):
-        try:
-            verify = self._verify()
-            return verify.key_id
-        except GPGVerificationError:
-            return None
-
-    @property
-    def signature_id(self):
-        try:
-            verify = self._verify()
-            return verify.signature_id
-        except GPGVerificationError:
-            return None
-
-    @property
-    def username(self):
-        try:
-            verify = self._verify()
-            return verify.username
-        except GPGVerificationError:
-            return None
-
-    @property
-    def signature_status(self):
-        try:
-            verify = self._verify()
-            return verify.status
-        except GPGVerificationError:
-            return None
 
     @models.permalink
     def get_absolute_url(self):
