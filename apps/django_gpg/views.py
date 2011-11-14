@@ -35,10 +35,10 @@ def key_create(request):
                     name_real = form.cleaned_data['name'],
                     name_comment = form.cleaned_data['comment'],
                     name_email = form.cleaned_data['email'],
+                    passphrase = form.cleaned_data['passphrase'],
                 )
-                    
-                    
-                messages.success(request, _(u'Key: %s, created successfully.') % key)
+
+                messages.success(request, _(u'Key pair: %s, created successfully.') % key.fingerprint)
                 return HttpResponseRedirect(reverse('key_create'))
             except Exception, msg:
                 messages.error(request, msg)
@@ -49,4 +49,23 @@ def key_create(request):
     return render_to_response('generic_form.html', {
         'form': form,
         'title': _(u'Create a new key'),
-    }, context_instance=RequestContext(request))    
+        'message': _(u'The key creation process can take a few minutes, don\'t close or browse another page until it has finished.')
+    }, context_instance=RequestContext(request))
+    
+    
+def key_delete(request, fingerprint, key_type):
+    print key_type
+    if request.method == 'POST':
+        try:
+            secret = key_type == 'sec' 
+            gpg.delete_key(fingerprint, secret=secret)
+            messages.success(request, _(u'Key: %s, deleted successfully.') % fingerprint)
+            return HttpResponseRedirect(reverse('home_view'))
+        except Exception, msg:
+            messages.error(request, msg)
+            return HttpResponseRedirect(reverse('home_view'))
+
+    return render_to_response('generic_confirm.html', {
+        'title': _(u'Delete key'),
+        'message': _(u'Are you sure you wish to delete key:%s?  If you try to delete a public key that is part of a public/private pair the private key will be deleted as well.') %  Key.get(gpg, fingerprint)
+    }, context_instance=RequestContext(request))

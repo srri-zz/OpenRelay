@@ -15,7 +15,7 @@
             {% for object in object_list %}
                 <tr>
                     <td>{{ object.uuid }}</td>
-                    <td><a href="{% url resource_serve object.uuid %}">[{% trans 'Serve' %}]</a>
+                    <td><a href="{% url resource_serve object.uuid %}">{% trans 'Serve' %}</a>
                 </tr>
             {% endfor %}
         </tbody>
