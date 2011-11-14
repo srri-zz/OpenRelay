@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans 'Resource list' %}{% endblock %}
+
+{% block content %}
+    <table class="bordered-table zebra-striped">
+        <thead>
+            <tr>
+                <th>{% trans 'UUID' %}</th>
+                <th>{% trans 'Links' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for object in object_list %}
+                <tr>
+                    <td>{{ object.uuid }}</td>
+                    <td><a href="{% url resource_serve object.uuid %}">[{% trans 'Serve' %}]</a>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+

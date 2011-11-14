@@ -1,3 +1,4 @@
+import urlparse
 from datetime import datetime
 from StringIO import StringIO
 
@@ -5,6 +6,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.core.files.base import ContentFile
 from django.utils.simplejson import dumps, loads
+from django.core.urlresolvers import reverse
 
 import magic
 
@@ -12,7 +14,9 @@ from django_gpg import GPG, GPGVerificationError, GPGDecryptionError
 
 from openrelay_resources.conf.settings import STORAGE_BACKEND
 from openrelay_resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
-    MAGIC_NUMBER, TIME_STAMP_SEPARATOR
+    MAGIC_NUMBER, TIME_STAMP_SEPARATOR, MAGIC_VERSION
+from openrelay_resources.exceptions import ORInvalidResourceFile
+from openrelay_resources.filters import FilteredHTML, FilterError
 
 gpg = GPG()
 
@@ -46,6 +50,15 @@ class Resource(ResourceBase):
 
     objects = ResourceManager()
 
+
+    @staticmethod
+    def prepare_resource_uuid(key, filename):
+        return RESOURCE_SEPARATOR.join([key, filename])
+    
+    @staticmethod
+    def prepare_resource_url(key, filename):
+        return urlparse.urljoin(reverse('resource_serve'), Resource.prepare_resource_uuid(key, filename))
+
     @staticmethod
     def encode_metadata(dictionary):
         json_data = dumps(dictionary)
@@ -53,6 +66,8 @@ class Resource(ResourceBase):
 
     @staticmethod
     def decode_metadata(data):
+        # Stream implementation, disabled until stream based processing
+        # is added
         '''
         #section = SECTION_LENGTH
         size = ''
@@ -72,9 +87,22 @@ class Resource(ResourceBase):
                 size =+ char
         return loads(metadata)
         '''
-        delimiter_pos = data.find(r'%c' % BINARY_DELIMITER)
-        json_size = int(data[len(MAGIC_NUMBER):delimiter_pos])
-        return loads(data[delimiter_pos + 1:delimiter_pos + 1 + json_size]), delimiter_pos + 1 + json_size
+        
+        try:
+            magic_end = data.index(r'%c' % BINARY_DELIMITER)
+            if data[:magic_end] != MAGIC_NUMBER:
+                raise ORInvalidResourceFile('Invalid magic number')
+
+            version_end = data.find(r'%c' % BINARY_DELIMITER, magic_end + 1)
+            if data[magic_end + 1:version_end] != '1':
+                raise ORInvalidResourceFile('Invalid/unknown resource file format version')
+            
+            size_end = data.find(r'%c' % BINARY_DELIMITER, version_end + 1)
+            json_size = int(data[version_end + 1:size_end])
+            return loads(data[size_end + 1:size_end + 1 + json_size]), size_end + 1 + json_size
+        except ValueError:
+            raise ORInvalidResourceFile('Magic number, version or metadata markers not found')
+
 
     @staticmethod
     def get_fake_upload_to(return_value):
@@ -85,16 +113,26 @@ class Resource(ResourceBase):
         if not name:
             name = self.file.name
 
-        uuid = RESOURCE_SEPARATOR.join([key, name])
-
+        uuid = Resource.prepare_resource_uuid(key, name)
         metadata = {
             'uuid': uuid,
+            'filename': self.file.name,
         }
 
         container = StringIO()
         container.write(MAGIC_NUMBER)
+        container.write(r'%c' % BINARY_DELIMITER)
+        container.write(MAGIC_VERSION)
+        container.write(r'%c' % BINARY_DELIMITER)
         container.write(Resource.encode_metadata(metadata))
-        container.write(self.file.file.read())
+        if kwargs.pop('filter_html'):
+            try:
+                container.write(FilteredHTML(self.file.file.read(), url_filter=lambda x: Resource.prepare_resource_url(key, x)))
+            except FilterError:
+                self.file.file.seek(0)
+                container.write(self.file.file.read())
+        else:
+            container.write(self.file.file.read())
         container.seek(0)
 
         signature = gpg.sign_file(container, key=kwargs.get('key', None))
@@ -106,6 +144,7 @@ class Resource(ResourceBase):
 
         container.close()
         super(Resource, self).save(*args, **kwargs)
+        return self
 
     def exists(self):
         return self.file.storage.exists(self.full_name)
@@ -122,13 +161,32 @@ class Resource(ResourceBase):
             content = result.data[metadata_size:]
             return metadata, content
         except GPGDecryptionError:
+            #TODO: research: return None or an empty dictionary {}
             return None, None
         except IOError:
+            #TODO: research: return None or an empty dictionary {}
             return None, None
+        except ORInvalidResourceFile, error:
+            #TODO: research: return error string or {'error':error}
+            return error, error
 
     @property
     def metadata(self):
         return self.decode_resource()[0]
+            
+    @property
+    def real_uuid(self):
+        try:
+            descriptor = self.open()
+            result = gpg.decrypt_file(descriptor)
+            metadata, metadata_size = Resource.decode_metadata(result.data)
+            return u'%s%c%s' % (self.fingerprint, RESOURCE_SEPARATOR, metadata['filename'])
+        except GPGDecryptionError:
+            return None
+        except IOError:
+            return None
+        except ORInvalidResourceFile, error:
+            return error
 
     def _verify(self):
         if not self.file.name:

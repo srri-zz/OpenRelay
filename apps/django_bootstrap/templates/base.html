@@ -89,10 +89,11 @@
             <li><a href="{% url home_view %}">{% trans 'Home' %}</a></li>
             
             <li class="dropdown" data-dropdown="dropdown">
-              <a class="dropdown-toggle" href="#">{% trans 'Content' %}</a>
+              <a class="dropdown-toggle" href="#">{% trans 'Resources' %}</a>
               <ul class="dropdown-menu">
                     <li><a href="{% url resource_upload %}">{% trans 'Upload' %}</a></li>
-                    <li><a href="{% url resource_list %}">{% trans 'List' %}</a></li>  
+                    <li><a href="{% url resource_list_simple %}">{% trans 'List' %}</a></li>  
+                    <li><a href="{% url resource_list %}">{% trans 'List (detailed)' %}</a></li>  
               </ul>
             </li>            
             <li><a href="{% url settings_list %}">{% trans 'Settings' %}</a></li>
@@ -120,7 +121,7 @@
 
     <div class="container">
         <div class="row">
-            <div class="span12">
+            <div class="span12" style="width: 99%;">
                 {% for message in messages %}
                     <div class="alert-message {{ message.tags }} fade in"  data-alert="alert" >
                         <a href="#" class="close">×</a>
@@ -138,7 +139,7 @@
         
                 
         <div class="row">
-          <div class="span24">
+          <div class="span24" style="width: 99%;">
             {% block content %}{% endblock %}
           </div>
         </div>
