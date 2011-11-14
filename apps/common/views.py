@@ -26,6 +26,7 @@ from django.contrib.sites.models import get_current_site
 SETTINGS_LIST = (
     ('openrelay_resources', 'STORAGE_BACKEND', 'RESOURCES_STORAGE_BACKEND'),
     ('openrelay_resources', 'FILESTORAGE_LOCATION', 'RESOURCES_FILESTORAGE_LOCATION'),
+    ('core', 'KEYSERVERS', 'CORE_KEYSERVERS'),
 )
     
 @csrf_protect
