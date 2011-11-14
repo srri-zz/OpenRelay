@@ -7,3 +7,4 @@ python-gnupg==0.2.8
 -e git://github.com/ahupp/python-magic.git@a75cf0a4a7790eb106155c947af9612f15693b6e#egg=python-magic
 djangorestframework==0.2.3
 gunicorn==0.13.4
+http://www.crummy.com/software/BeautifulSoup/unreleased/4.x/BeautifulSoup-4.0b.tar.gz
