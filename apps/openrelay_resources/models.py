@@ -1,3 +1,4 @@
+import urlparse
 from datetime import datetime
 from StringIO import StringIO
 
@@ -5,6 +6,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.core.files.base import ContentFile
 from django.utils.simplejson import dumps, loads
+from django.core.urlresolvers import reverse
 
 import magic
 
@@ -14,6 +16,7 @@ from openrelay_resources.conf.settings import STORAGE_BACKEND
 from openrelay_resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
     MAGIC_NUMBER, TIME_STAMP_SEPARATOR, MAGIC_VERSION
 from openrelay_resources.exceptions import ORInvalidResourceFile
+from openrelay_resources.filters import FilteredHTML, FilterError
 
 gpg = GPG()
 
@@ -46,6 +49,15 @@ class Resource(ResourceBase):
     file = models.FileField(upload_to='resources', storage=STORAGE_BACKEND(), verbose_name=_(u'file'))
 
     objects = ResourceManager()
+
+
+    @staticmethod
+    def prepare_resource_uuid(key, filename):
+        return RESOURCE_SEPARATOR.join([key, filename])
+    
+    @staticmethod
+    def prepare_resource_url(key, filename):
+        return urlparse.urljoin(reverse('resource_serve'), Resource.prepare_resource_uuid(key, filename))
 
     @staticmethod
     def encode_metadata(dictionary):
@@ -101,8 +113,7 @@ class Resource(ResourceBase):
         if not name:
             name = self.file.name
 
-        uuid = RESOURCE_SEPARATOR.join([key, name])
-
+        uuid = Resource.prepare_resource_uuid(key, name)
         metadata = {
             'uuid': uuid,
             'filename': self.file.name,
@@ -114,7 +125,14 @@ class Resource(ResourceBase):
         container.write(MAGIC_VERSION)
         container.write(r'%c' % BINARY_DELIMITER)
         container.write(Resource.encode_metadata(metadata))
-        container.write(self.file.file.read())
+        if kwargs.pop('filter_html'):
+            try:
+                container.write(FilteredHTML(self.file.file.read(), url_filter=lambda x: Resource.prepare_resource_url(key, x)))
+            except FilterError:
+                self.file.file.seek(0)
+                container.write(self.file.file.read())
+        else:
+            container.write(self.file.file.read())
         container.seek(0)
 
         signature = gpg.sign_file(container, key=kwargs.get('key', None))

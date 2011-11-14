@@ -25,3 +25,9 @@ class ResourceForm(forms.ModelForm):
         label=_(u'Key'),
         help_text=_(u'The private key that will be used to sign the file.'),
     )
+    
+    filter_html = forms.BooleanField(
+        label=_('Filter HTML?'), 
+        help_text=_(u'Automatically convert relative references to images, links, CSS and Javascript.'),
+        initial=True
+    )
