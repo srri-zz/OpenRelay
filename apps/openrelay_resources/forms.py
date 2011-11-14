@@ -5,8 +5,7 @@ from django_gpg import GPG, Key
 
 from openrelay_resources.models import Resource
 
-#TODO: import this from a project wide place
-gpg = GPG()
+from core.runtime import gpg
 
 
 class ResourceForm(forms.ModelForm):

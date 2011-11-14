@@ -10,7 +10,7 @@ from django.core.urlresolvers import reverse
 
 import magic
 
-from django_gpg import GPG, GPGVerificationError, GPGDecryptionError
+from django_gpg import GPG, Key, GPGVerificationError, GPGDecryptionError
 
 from openrelay_resources.conf.settings import STORAGE_BACKEND
 from openrelay_resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
@@ -18,7 +18,7 @@ from openrelay_resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
 from openrelay_resources.exceptions import ORInvalidResourceFile
 from openrelay_resources.filters import FilteredHTML, FilterError
 
-gpg = GPG()
+from core.runtime import gpg
 
 
 class ResourceManager(models.Manager):
@@ -135,7 +135,7 @@ class Resource(ResourceBase):
             container.write(self.file.file.read())
         container.seek(0)
 
-        signature = gpg.sign_file(container, key=kwargs.get('key', None))
+        signature = gpg.sign_file(container, key=Key.get(gpg, key))
         self.file.file = ContentFile(signature.data)
 
         self.file.field.generate_filename = Resource.get_fake_upload_to('%s%c%s' % (uuid, TIME_STAMP_SEPARATOR, signature.timestamp))
