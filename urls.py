@@ -10,6 +10,7 @@ urlpatterns = patterns('',
     url(r'^common/', include('common.urls')),
     url(r'^bittorrent/', include('bittorrent.urls')),
     url(r'^resources/', include('openrelay_resources.urls')),
+    url(r'^gpg/', include('django_gpg.urls')),
 
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin.site.urls)),

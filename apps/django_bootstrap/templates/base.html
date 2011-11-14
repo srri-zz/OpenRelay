@@ -87,7 +87,14 @@
 
           <ul class="nav">
             <li><a href="{% url home_view %}">{% trans 'Home' %}</a></li>
-            
+            <li class="dropdown" data-dropdown="dropdown">
+              <a class="dropdown-toggle" href="#">{% trans 'Key management' %}</a>
+              <ul class="dropdown-menu">
+                    <li><a href="{% url key_create %}">{% trans 'Create new key pair' %}</a></li>  
+                    <li><a href="{% url key_private_list %}">{% trans 'Private key list' %}</a></li>  
+                    <li><a href="{% url key_public_list %}">{% trans 'Public key list' %}</a></li>  
+              </ul>
+            </li>            
             <li class="dropdown" data-dropdown="dropdown">
               <a class="dropdown-toggle" href="#">{% trans 'Resources' %}</a>
               <ul class="dropdown-menu">

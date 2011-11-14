@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <table class="bordered-table zebra-striped">
+        <thead>
+            <tr>
+                <th>{% trans 'ID' %}</th>
+                <th>{% trans 'User IDs' %}</th>
+                <th>{% trans 'Fingerprint' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for object in object_list %}
+                <tr>
+                    <td>{{ object.key_id }}</td>
+                    <td>{{ object.user_ids }}</td>
+                    <td>{{ object.fingerprint }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="99">{% trans 'There are no keys available.' %}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
