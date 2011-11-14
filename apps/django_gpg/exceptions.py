@@ -12,3 +12,11 @@ class GPGSigningError(GPGException):
 
 class GPGDecryptionError(GPGException):
     pass
+
+
+class KeyDeleteError(GPGException):
+    pass
+
+
+class KeyGenerationError(GPGException):
+    pass
