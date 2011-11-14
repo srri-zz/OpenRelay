@@ -7,7 +7,7 @@ from django.core.files.base import File
 from django.utils.translation import ugettext_lazy as _
 
 from django_gpg.exceptions import GPGVerificationError, GPGSigningError, \
-    GPGDecryptionError
+    GPGDecryptionError, KeyDeleteError, KeyGenerationError
 
 
 KEY_TYPES = {
@@ -172,6 +172,16 @@ class GPG(object):
 
     def create_key(self, *args, **kwargs):
         input_data = self.gpg.gen_key_input(**kwargs)
-        fingerprint = self.gpg.gen_key(input_data)
-        return Key.get(self.gpg, fingerprint)
+        key = self.gpg.gen_key(input_data)
+        if not key:
+            raise KeyGenerationError('Unable to generate key')
+            
+        return Key.get(self, key.fingerprint)
         
+    def delete_key(self, fingerprint, secret=False):
+        status = self.gpg.delete_keys(fingerprint, secret).status
+        if status == 'Must delete secret key first':
+            self.delete_key(fingerprint, secret=True)
+            self.delete_key(fingerprint, secret=False)
+        elif status != 'ok':
+            raise KeyDeleteError('Unable to delete key')
