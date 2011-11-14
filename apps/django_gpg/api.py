@@ -27,8 +27,7 @@ class Key(object):
         result = []
         keys = gpg.gpg.list_keys(secret=secret)
         for key in keys:
-            key_instance = Key(fingerprint=key['fingerprint'], uids=key['uids'], type=key['type'])
-            key_instance.data = gpg.gpg.export_keys([key['keyid']], secret=secret)
+            key_instance = Key(fingerprint=key['fingerprint'], uids=key['uids'], type=key['type'], data = gpg.gpg.export_keys([key['keyid']], secret=secret))
             result.append(key_instance)
 
         return result
@@ -36,20 +35,20 @@ class Key(object):
     @classmethod
     def get(cls, gpg, key_id, secret=False):
         if len(key_id) > 16:
-            # key_id is a fingerpint
+            # key_id is a fingerprint
             key_id = Key.get_key_id(key_id)
             
         keys = gpg.gpg.list_keys(secret=secret)
         key = next((key for key in keys if key['keyid'] == key_id), None)
-        key_instance = Key(fingerprint=key['fingerprint'], uids=key['uids'], type=key['type'])
-        key_instance.data = gpg.gpg.export_keys([key['keyid']], secret=secret)
+        key_instance = Key(fingerprint=key['fingerprint'], uids=key['uids'], type=key['type'], data=gpg.gpg.export_keys([key['keyid']], secret=secret))
 
         return key_instance
 
-    def __init__(self, fingerprint, uids, type):
+    def __init__(self, fingerprint, uids, type, data):
         self.fingerprint = fingerprint
         self.uids = uids
         self.type = type
+        self.data = data
 
     @property
     def key_id(self):
@@ -70,7 +69,7 @@ class Key(object):
 
 
 class GPG(object):
-    def __init__(self, binary_path=None, home=None, keyring=None):
+    def __init__(self, binary_path=None, home=None, keyring=None, keyservers=None):
         kwargs = {}
         if binary_path:
             kwargs['gpgbinary'] = binary_path
@@ -79,7 +78,9 @@ class GPG(object):
             kwargs['gnupghome'] = home
 
         if keyring:
-            kwargs['keywring'] = keyring
+            kwargs['keyring'] = keyring
+
+        self.keyservers = keyservers
 
         self.gpg = gnupg.GPG(**kwargs)
 
@@ -98,8 +99,11 @@ class GPG(object):
         descriptor.close()
         if verify:
             return verify
+        elif verify.status == 'no public key':
+            # Exception to the rule, to be able to query the keyservers
+            return verify
         else:
-            raise GPGVerificationError('Signature could not be verified!')
+            raise GPGVerificationError(verify.status)
 
     def verify(self, data):
         # TODO: try to merge with verify_file
@@ -108,7 +112,7 @@ class GPG(object):
         if verify:
             return verify
         else:
-            raise GPGVerificationError('Signature could not be verified!')
+            raise GPGVerificationError(verify.status)
 
     def sign_file(self, file_input, key=None, destination=None, key_id=None, passphrase=None, clearsign=False):
         """
@@ -189,6 +193,17 @@ class GPG(object):
             self.delete_key(key)
         elif status != 'ok':
             raise KeyDeleteError('Unable to delete key')
-     
+
+
+    def receive_key(self, fingerprint):
+        result = None
+        for keyserver in self.keyservers:
+            import_result = self.gpg.recv_keys(keyserver, fingerprint)
+            if import_result:
+                result = import_result
+                break
         
+        if not result:
+            raise KeyFetchingError()
         
+        return Key.get(self, result[0]['fingerprint'], secret=False)
