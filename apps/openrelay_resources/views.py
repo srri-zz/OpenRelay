@@ -39,7 +39,7 @@ def resource_upload(request):
         if form.is_valid():
             pending_resource = form.save(commit=False)
             try:
-                resource = pending_resource.save(key=form.cleaned_data['key'], name=form.cleaned_data['name'])
+                resource = pending_resource.save(key=form.cleaned_data['key'], name=form.cleaned_data['name'], filter_html=form.cleaned_data['filter_html'])
                 messages.success(request, _(u'Resource: %s, created successfully.') % resource)
                 return HttpResponseRedirect(reverse('resource_upload'))
             except GPGSigningError, msg:
@@ -54,9 +54,16 @@ def resource_upload(request):
     }, context_instance=RequestContext(request))
 
 
-def resource_list(request):
+def resource_list(request, simple=True):
+    if simple:
+        query_set = Resource.objects.values('uuid').distinct().order_by()
+        template_name='resource_list_simple.html'        
+    else:
+        query_set = Resource.objects.all()
+        template_name='resource_list.html'
+        
     return object_list(
         request,
-        queryset=Resource.objects.all(),
-        template_name='resource_list.html',
+        queryset=query_set,
+        template_name=template_name,
     )
