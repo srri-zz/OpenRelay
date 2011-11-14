@@ -34,6 +34,10 @@ class Key(object):
 
     @classmethod
     def get(cls, gpg, key_id, secret=False):
+        if len(key_id) > 16:
+            # key_id is a fingerpint
+            key_id = Key.get_key_id(key_id)
+            
         keys = gpg.gpg.list_keys(secret=secret)
         key = next((key for key in keys if key['keyid'] == key_id), None)
         key_instance = Key(fingerprint=key['fingerprint'], uids=key['uids'], type=key['type'])
@@ -50,8 +54,12 @@ class Key(object):
     def key_id(self):
         return Key.get_key_id(self.fingerprint)
 
+    @property
+    def user_ids(self):
+        return u', '.join(self.uids)
+
     def __str__(self):
-        return '%s "%s" (%s)' % (self.key_id, self.uids[0], KEY_TYPES.get(self.type, _(u'unknown')))
+        return '%s "%s" (%s)' % (self.key_id, self.user_ids, KEY_TYPES.get(self.type, _(u'unknown')))
 
     def __unicode__(self):
         return unicode(self.__str__())
@@ -161,3 +169,9 @@ class GPG(object):
             raise GPGDecryptionError('Unable to decrypt file')
 
         return result
+
+    def create_key(self, *args, **kwargs):
+        input_data = self.gpg.gen_key_input(**kwargs)
+        fingerprint = self.gpg.gen_key(input_data)
+        return Key.get(self.gpg, fingerprint)
+        
