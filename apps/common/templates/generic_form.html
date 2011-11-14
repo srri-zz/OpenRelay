@@ -7,6 +7,9 @@
 {% block content %}
     <div class="row">
         <div class="span12" >    
+            {% if message %}
+                <h3>{{ message }}</h3><br />
+            {% endif %}
             {% if form.is_multipart %}
                 <form name="{{ form.prefix }}" enctype="multipart/form-data" method="{{ submit_method|default:'post' }}" action="{{ form_action }}" class="form">
             {% else %}
