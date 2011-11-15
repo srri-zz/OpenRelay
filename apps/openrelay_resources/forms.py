@@ -15,7 +15,20 @@ class ResourceForm(forms.ModelForm):
 
     name = forms.CharField(
         label=_(u'Name'),
-        help_text=_(u'A name that uniquely identifies this resource, if left blank the filename is used instead.'),
+        help_text=_(u'An internal name that uniquely identifies this resource, if left blank the filename is used instead.'),
+        required=False,
+    )
+
+    label = forms.CharField(
+        label=_(u'Label'),
+        help_text=_(u'A human readable name that describes the resource to the users, if left blank the filename is used instead.'),
+        required=False,
+    )
+
+    description = forms.CharField(
+        label=_(u'Description'),
+        widget=forms.widgets.Textarea(attrs={'rows': 4}),
+        help_text=_(u'A more detailed description of this resource.'),
         required=False,
     )
 
