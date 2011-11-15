@@ -17,17 +17,9 @@ from openrelay_resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
     MAGIC_NUMBER, TIME_STAMP_SEPARATOR, MAGIC_VERSION
 from openrelay_resources.exceptions import ORInvalidResourceFile
 from openrelay_resources.filters import FilteredHTML, FilterError
+from openrelay_resources.managers import ResourceManager
 
 from core.runtime import gpg
-
-
-class ResourceManager(models.Manager):
-    def get(self, *args, **kwargs):
-        try:
-            return super(ResourceManager, self).get(*args, **kwargs)
-        except self.model.MultipleObjectsReturned:
-            uuid = kwargs.pop('uuid')
-            return super(ResourceManager, self).get_query_set().filter(uuid=uuid)[0]
 
 
 class ResourceBase(models.Model):
