@@ -3,7 +3,8 @@ from django.conf.urls.defaults import patterns, url
 from djangorestframework.views import ListModelView
 
 from server_talk.resources import ResourceResource
-from server_talk.views import OpenRelayAPI, ReadOnlyInstanceModelView, Services, Announce
+from server_talk.views import OpenRelayAPI, ReadOnlyInstanceModelView, \
+    Services, Announce, Heartbeat
 
 
 urlpatterns = patterns('',
@@ -14,6 +15,7 @@ urlpatterns = patterns('',
 
     url(r'^services/$', Services.as_view(), name='service-root'),
     url(r'^services/announce/$', Announce.as_view(), name='service-announce'),
+    url(r'^services/heartbeat/$', Heartbeat.as_view(), name='service-heartbeat'),
 )
 
 urlpatterns += patterns('server_talk.views',

@@ -19,6 +19,7 @@ from server_talk.forms import JoinForm
 from server_talk.api import RemoteCall
 from server_talk.conf.settings import PORT
 from server_talk.exceptions import AnnounceClientError
+from server_talk.utils import CPUsage
 
 logger = logging.getLogger(__name__)
 
@@ -47,15 +48,18 @@ class ReadOnlyInstanceModelView(InstanceMixin, ReadModelMixin, ModelView):
 
 class Services(View):
     def get(self, request):
-        return [{'name': 'Announce', 'url': reverse('service-announce')}]
+        return [
+            {'name': 'Announce', 'url': reverse('service-announce')},
+            {'name': 'Heartbeat', 'url': reverse('service-heartbeat')},
+        ]
 
 
 class Announce(View):
     def post(self, request):
-        logger.info('INFO: received announce call from: %s @ %s' % ('uuid', request.META['REMOTE_ADDR']))
         uuid = request.POST.get('uuid')
         ip_address = request.POST.get('ip_address')
         port = request.POST.get('port')
+        logger.info('received announce call from: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
         if uuid and ip_address and port:
             sibling_data = {'ip_address': ip_address, 'port': port}
             sibling, created = Sibling.objects.get_or_create(uuid=uuid, defaults=sibling_data)
@@ -71,6 +75,13 @@ class Announce(View):
             return local_node_info
         else:
             return Response(status.PARTIAL_CONTENT)
+
+
+class Heartbeat(View):
+    def get(self, request):
+        uuid = request.POST.get('uuid')
+        logger.info('received heartbeat call from: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
+        return {'cpuload': CPUsage()}
 
 
 def join(request):
