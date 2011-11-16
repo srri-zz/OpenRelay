@@ -23,6 +23,7 @@ SETTINGS_LIST = (
     ('openrelay_resources', 'FILESTORAGE_LOCATION', 'RESOURCES_FILESTORAGE_LOCATION'),
     ('core', 'KEYSERVERS', 'CORE_KEYSERVERS'),
     ('server_talk', 'PORT', 'SERVER_PORT'),
+    ('server_talk', 'HEARTBEAT_QUERY_INTERVAL', 'SERVER_HEARTBEAT_QUERY_INTERVAL'),
 )
 
 

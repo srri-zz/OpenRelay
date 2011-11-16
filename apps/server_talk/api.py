@@ -22,7 +22,8 @@ from djangorestframework import status
 
 from server_talk.models import LocalNode, Sibling
 from server_talk.conf.settings import PORT
-from server_talk.exceptions import AnnounceClientError
+from server_talk.exceptions import AnnounceClientError, NoSuchNode, \
+    HeartbeatError
 
 logger = logging.getLogger(__name__)
 
@@ -30,31 +31,45 @@ logger = logging.getLogger(__name__)
 class RemoteCall(object):
     def __init__(self, *args, **kwargs):
         self.ip_address = kwargs.pop('ip_address', '')
-        self.port = kwargs .pop('port', '')
+        self.port = kwargs.pop('port', '')
         self.uuid = kwargs.pop('uuid', None)
+        
+        if not self.ip_address:
+            try:
+                sibling = Sibling.objects.get(uuid=self.uuid)
+                self.ip_address = sibling.ip_address
+                self.port = sibling.port
+            except Sibling.DoesNotExist:
+                raise NoSuchNode('Node: %s, does not exists' % uuid)
+                
+                
+    def get_full_ip_address(self):
+        return u'%s%s' % (self.ip_address, u':%s' % self.port if self.port else '')
 
+    def get_service_url(self, service_name):
+        return urlparse.urlunparse(['http', self.get_full_ip_address(), reverse(service_name), '', '', ''])
+        
     def announce(self):
         '''
-        Announce ourselves to another OpenRelay node
+        Announce the local node to another OpenRelay node
         '''
         local_node_info = {
             'ip_address': socket.gethostbyname(socket.gethostname()),
             'port': PORT,
             'uuid': LocalNode.get().uuid,
         }
-        full_ip_address = u'%s%s' % (self.ip_address, u':%s' % self.port if self.port else '')
-        url = urlparse.urlunparse(['http', full_ip_address, reverse('service-announce'), '', '', ''])
-
+        full_ip_address = self.get_full_ip_address()
+        url = self.get_service_url('service-announce')
         try:
             response = requests.post(url, data=local_node_info)
         except requests.ConnectionError:
-            logger.error('ERROR: unable to connect to url: %s' % url)
+            logger.error('unable to connect to url: %s' % url)
             raise AnnounceClientError('Unable to join network')
 
         if response.status_code == status.OK:
             node_answer = loads(response.content)
             if node_answer['uuid'] == LocalNode.get().uuid:
-                logger.error('ERROR: announce service on node with uuid: %s and url: %s, responded the same UUID as the local server' % (node_answer['uuid'], full_ip_address))
+                logger.error('announce service on node with uuid: %s and url: %s, responded the same UUID as the local server' % (node_answer['uuid'], full_ip_address))
                 raise AnnounceClientError('Remote and local nodes identity conflict')
             else:
                 sibling_data = {'ip_address':  node_answer['ip_address'], 'port': node_answer['port']}
@@ -64,5 +79,19 @@ class RemoteCall(object):
                     sibling.port = sibling_data['port']
                     sibling.save()
         else:
-            logger.error('ERROR: announce service on remote node responded with a non OK code')
+            logger.error('announce service on remote node responded with a non OK code')
             raise AnnounceClientError('Unable to join network')
+            
+    def heartbeat(self):
+        '''
+        Check a host's availability and cpu load
+        '''
+        url = self.get_service_url('service-heartbeat')
+        try:
+            logger.debug('calling heartbeat service on url: %s' % url)
+            response = requests.get(url)
+            logger.debug('received heartbeat from url: %s' % url)
+            return loads(response.content)
+        except requests.ConnectionError:
+            logger.error('unable to connect to url: %s' % url)
+            raise HeartbeatError('Unable to query node')

@@ -138,6 +138,7 @@ INSTALLED_APPS = (
     'bittorrent',
     'django_gpg',
     'openrelay_resources',
+    'lock_manager',
     'server_talk',
     'core',
 )

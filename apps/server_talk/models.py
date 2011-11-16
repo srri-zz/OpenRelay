@@ -50,8 +50,10 @@ class LocalNode(Nodebase):
 
 class Sibling(Nodebase):
     ip_address = models.IPAddressField(verbose_name=_(u'URL'))
-    port = models.PositiveIntegerField(verbose_name=_(u'port'))
-    #verified = models.BooleanField(verbose_name=_(u'verified'))
+    port = models.PositiveIntegerField(blank=True, verbose_name=_(u'port'))
+    #verified = models.BooleanField(verbose_name=_(u'verified'))  #GPG Key verified?
+    last_heartbeat = models.DateTimeField(blank=True, default=datetime.datetime.now(), verbose_name=_(u'last heartbeat check'))
+    cpuload = models.PositiveIntegerField(blank=True, default=0, verbose_name=_(u'cpu load'))
 
     class Meta(Nodebase.Meta):
         verbose_name = _(u'sibling node')
