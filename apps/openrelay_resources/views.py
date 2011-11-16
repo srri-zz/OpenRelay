@@ -3,7 +3,6 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.contrib import messages
-from django.views.generic.list_detail import object_list
 from django.core.urlresolvers import reverse
 
 from django_gpg import GPGSigningError
@@ -63,18 +62,11 @@ def resource_upload(request):
 def resource_list(request, simple=True):
     if simple:
         query_set = [Resource.objects.get(uuid=resource['uuid']) for resource in Resource.objects.values('uuid').distinct().order_by()]
-        template_name='resource_list_simple.html'        
+        template_name = 'resource_list_simple.html'
     else:
         query_set = Resource.objects.all()
-        template_name='resource_list.html'
+        template_name = 'resource_list.html'
 
     return render_to_response(template_name, {
         'object_list': query_set,
     }, context_instance=RequestContext(request))
-        
-
-    return object_list(
-        request,
-        queryset=query_set,
-        template_name=template_name,
-    )

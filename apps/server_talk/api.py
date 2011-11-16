@@ -15,7 +15,7 @@ import socket
 
 import requests
 
-from django.utils.simplejson import dumps, loads
+from django.utils.simplejson import loads
 from django.core.urlresolvers import reverse
 
 from djangorestframework import status
@@ -32,7 +32,7 @@ class RemoteCall(object):
         self.ip_address = kwargs.pop('ip_address', '')
         self.port = kwargs .pop('port', '')
         self.uuid = kwargs.pop('uuid', None)
-    
+
     def announce(self):
         '''
         Announce ourselves to another OpenRelay node
@@ -44,7 +44,7 @@ class RemoteCall(object):
         }
         full_ip_address = u'%s%s' % (self.ip_address, u':%s' % self.port if self.port else '')
         url = urlparse.urlunparse(['http', full_ip_address, reverse('service-announce'), '', '', ''])
-        
+
         try:
             response = requests.post(url, data=local_node_info)
         except requests.ConnectionError:
@@ -62,7 +62,7 @@ class RemoteCall(object):
                 if not created:
                     sibling.ip_address = sibling_data['ip_address']
                     sibling.port = sibling_data['port']
-                    sibling.save()                
+                    sibling.save()
         else:
             logger.error('ERROR: announce service on remote node responded with a non OK code')
             raise AnnounceClientError('Unable to join network')

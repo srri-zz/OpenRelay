@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
-from django_gpg import GPG, Key
+from django_gpg import Key
 
 from openrelay_resources.models import Resource
 
@@ -37,9 +37,9 @@ class ResourceForm(forms.ModelForm):
         label=_(u'Key'),
         help_text=_(u'The private key that will be used to sign the file.'),
     )
-    
+
     filter_html = forms.BooleanField(
-        label=_('Filter HTML?'), 
+        label=_('Filter HTML?'),
         help_text=_(u'Automatically convert relative references to images, links, CSS and Javascript.'),
         initial=True
     )

@@ -1,7 +1,6 @@
 import uuid
 
 from django.db.models.signals import post_syncdb
-from django.core.signals import request_finished
 from django.dispatch import receiver
 
 from server_talk.models import LocalNode

@@ -10,7 +10,7 @@ from django.core.urlresolvers import reverse
 
 import magic
 
-from django_gpg import GPG, Key, GPGVerificationError, GPGDecryptionError, KeyFetchingError
+from django_gpg import Key, GPGVerificationError, GPGDecryptionError, KeyFetchingError
 
 from openrelay_resources.conf.settings import STORAGE_BACKEND
 from openrelay_resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
@@ -45,7 +45,7 @@ class Resource(ResourceBase):
     @staticmethod
     def prepare_resource_uuid(key, filename):
         return RESOURCE_SEPARATOR.join([key, filename])
-    
+
     @staticmethod
     def prepare_resource_url(key, filename):
         return urlparse.urljoin(reverse('resource_serve'), Resource.prepare_resource_uuid(key, filename))
@@ -58,7 +58,7 @@ class Resource(ResourceBase):
     @staticmethod
     def get_fake_upload_to(return_value):
         return lambda instance, filename: unicode(return_value)
-        
+
     def __init__(self, *args, **kwargs):
         super(Resource, self).__init__(*args, **kwargs)
         self._signature_properties = {}
@@ -74,7 +74,7 @@ class Resource(ResourceBase):
         metadata = {
             'filename': self.file.name,
         }
-        
+
         label = kwargs.pop('label')
         if label:
             metadata['label'] = label
@@ -121,17 +121,17 @@ class Resource(ResourceBase):
     def metadata(self):
         self._refresh_metadata()
         return self._metadata
-        
+
     def _refresh_metadata(self):
         if not self._metadata:
             try:
                 descriptor = self.open()
-                result = gpg.decrypt_file(descriptor)        
+                result = gpg.decrypt_file(descriptor)
                 self._decode_result(result.data)
             except (GPGDecryptionError, IOError):
                 self._metadata = None
                 self._content = None
-            except ORInvalidResourceFile, error:
+            except ORInvalidResourceFile:
                 self._metadata = None
                 self._content = None
 
@@ -144,14 +144,14 @@ class Resource(ResourceBase):
             version_end = data.find(r'%c' % BINARY_DELIMITER, magic_end + 1)
             if data[magic_end + 1:version_end] != '1':
                 raise ORInvalidResourceFile('Invalid/unknown resource file format version')
-            
+
             size_end = data.find(r'%c' % BINARY_DELIMITER, version_end + 1)
             json_size = int(data[version_end + 1:size_end])
             self._content = data[size_end + 1 + json_size:]
             self._metadata = loads(data[size_end + 1:size_end + 1 + json_size])
         except ValueError:
             raise ORInvalidResourceFile('Magic number, version or metadata markers not found')
-            
+
     @property
     def real_uuid(self):
         try:
@@ -233,7 +233,7 @@ class Resource(ResourceBase):
             self._refresh_metadata()
             return self._metadata[name]
         else:
-            raise AttributeError, name                
+            raise AttributeError
 
     def open(self):
         """

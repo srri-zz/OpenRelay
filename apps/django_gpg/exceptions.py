@@ -20,7 +20,7 @@ class KeyDeleteError(GPGException):
 
 class KeyGenerationError(GPGException):
     pass
-    
-    
+
+
 class KeyFetchingError(GPGException):
     pass

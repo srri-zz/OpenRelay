@@ -13,9 +13,9 @@ class NewKeyForm(forms.Form):
         widget=forms.widgets.Textarea(attrs={'rows': 4}),
         help_text=_(u'A comment or a note to help identify this key.'),
     )
-    
+
     email = forms.CharField(
-        label=_('Email'), 
+        label=_('Email'),
     )
 
     passphrase = forms.CharField(

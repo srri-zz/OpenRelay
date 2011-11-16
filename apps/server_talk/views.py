@@ -3,7 +3,7 @@ import logging
 import socket
 
 from django.utils.translation import ugettext_lazy as _
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.contrib import messages
@@ -67,7 +67,7 @@ class Announce(View):
                 'ip_address': socket.gethostbyname(socket.gethostname()),
                 'port': PORT,
                 'uuid': LocalNode.get().uuid,
-            }            
+            }
             return local_node_info
         else:
             return Response(status.PARTIAL_CONTENT)
@@ -95,20 +95,17 @@ def join(request):
         'form': form,
         'title': _(u'Join the OpenRelay network via a remote node'),
     }, context_instance=RequestContext(request))
-    
-    
+
+
 def node_list(request):
     return render_to_response('node_list.html', {
         'object_list': Sibling.objects.all(),
         'title': _(u'Network node list'),
-    }, context_instance=RequestContext(request))    
-    
-    
+    }, context_instance=RequestContext(request))
+
+
 def node_info(request):
     return render_to_response('node_list.html', {
         'object_list': [LocalNode.get()],
         'title': _(u'Local node information'),
-    }, context_instance=RequestContext(request))    
-    
-    
-#def inventory_view(request):
+    }, context_instance=RequestContext(request))

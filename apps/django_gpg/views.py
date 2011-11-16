@@ -1,9 +1,8 @@
 from django.utils.translation import ugettext_lazy as _
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.contrib import messages
-from django.views.generic.list_detail import object_list
 from django.core.urlresolvers import reverse
 
 from django_gpg import Key
@@ -19,12 +18,12 @@ def key_list(request, secret=True):
     else:
         object_list = Key.get_all(gpg)
         title = _(u'Public key list')
-        
+
     return render_to_response('key_list.html', {
         'object_list': object_list,
         'title': title,
     }, context_instance=RequestContext(request))
-       
+
 
 def key_create(request):
     if request.method == 'POST':
@@ -32,10 +31,10 @@ def key_create(request):
         if form.is_valid():
             try:
                 key = gpg.create_key(
-                    name_real = form.cleaned_data['name'],
-                    name_comment = form.cleaned_data['comment'],
-                    name_email = form.cleaned_data['email'],
-                    passphrase = form.cleaned_data['passphrase'],
+                    name_real=form.cleaned_data['name'],
+                    name_comment=form.cleaned_data['comment'],
+                    name_email=form.cleaned_data['email'],
+                    passphrase=form.cleaned_data['passphrase'],
                 )
 
                 messages.success(request, _(u'Key pair: %s, created successfully.') % key.fingerprint)
@@ -51,8 +50,8 @@ def key_create(request):
         'title': _(u'Create a new key'),
         'message': _(u'The key creation process can take a few minutes, don\'t close or browse another page until it has finished.')
     }, context_instance=RequestContext(request))
-    
-    
+
+
 def key_delete(request, fingerprint, key_type):
     if request.method == 'POST':
         try:
@@ -67,5 +66,5 @@ def key_delete(request, fingerprint, key_type):
 
     return render_to_response('generic_confirm.html', {
         'title': _(u'Delete key'),
-        'message': _(u'Are you sure you wish to delete key:%s?  If you try to delete a public key that is part of a public/private pair the private key will be deleted as well.') %  Key.get(gpg, fingerprint)
+        'message': _(u'Are you sure you wish to delete key:%s?  If you try to delete a public key that is part of a public/private pair the private key will be deleted as well.') % Key.get(gpg, fingerprint)
     }, context_instance=RequestContext(request))

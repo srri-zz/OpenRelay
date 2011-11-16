@@ -10,7 +10,6 @@ from django_gpg.exceptions import GPGVerificationError, GPGSigningError, \
     GPGDecryptionError, KeyDeleteError, KeyGenerationError, \
     KeyFetchingError
 
-
 KEY_TYPES = {
     'pub': _(u'Public'),
     'sec': _(u'Secret'),
@@ -27,7 +26,12 @@ class Key(object):
         result = []
         keys = gpg.gpg.list_keys(secret=secret)
         for key in keys:
-            key_instance = Key(fingerprint=key['fingerprint'], uids=key['uids'], type=key['type'], data = gpg.gpg.export_keys([key['keyid']], secret=secret))
+            key_instance = Key(
+                fingerprint=key['fingerprint'],
+                uids=key['uids'],
+                type=key['type'],
+                data=gpg.gpg.export_keys([key['keyid']], secret=secret)
+            )
             result.append(key_instance)
 
         return result
@@ -37,10 +41,15 @@ class Key(object):
         if len(key_id) > 16:
             # key_id is a fingerprint
             key_id = Key.get_key_id(key_id)
-            
+
         keys = gpg.gpg.list_keys(secret=secret)
         key = next((key for key in keys if key['keyid'] == key_id), None)
-        key_instance = Key(fingerprint=key['fingerprint'], uids=key['uids'], type=key['type'], data=gpg.gpg.export_keys([key['keyid']], secret=secret))
+        key_instance = Key(
+            fingerprint=key['fingerprint'],
+            uids=key['uids'],
+            type=key['type'],
+            data=gpg.gpg.export_keys([key['keyid']], secret=secret)
+        )
 
         return key_instance
 
@@ -183,9 +192,9 @@ class GPG(object):
         key = self.gpg.gen_key(input_data)
         if not key:
             raise KeyGenerationError('Unable to generate key')
-            
+
         return Key.get(self, key.fingerprint)
-        
+
     def delete_key(self, key):
         status = self.gpg.delete_keys(key.fingerprint, key.type == 'sec').status
         if status == 'Must delete secret key first':
@@ -194,7 +203,6 @@ class GPG(object):
         elif status != 'ok':
             raise KeyDeleteError('Unable to delete key')
 
-
     def receive_key(self, fingerprint):
         result = None
         for keyserver in self.keyservers:
@@ -202,8 +210,8 @@ class GPG(object):
             if import_result:
                 result = import_result
                 break
-        
+
         if not result:
             raise KeyFetchingError()
-        
+
         return Key.get(self, result[0]['fingerprint'], secret=False)
