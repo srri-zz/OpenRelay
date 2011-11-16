@@ -10,7 +10,7 @@ from lock_manager.conf.settings import DEFAULT_LOCK_TIMEOUT
 class Lock(models.Model):
     creation_datetime = models.DateTimeField(verbose_name=_(u'creation datetime'))
     timeout = models.IntegerField(default=DEFAULT_LOCK_TIMEOUT, verbose_name=_(u'timeout'))
-    name = models.CharField(max_length=32, verbose_name=_(u'name'), unique=True)
+    name = models.CharField(max_length=48, verbose_name=_(u'name'), unique=True)
     
     objects = LockManager()
     
@@ -19,6 +19,9 @@ class Lock(models.Model):
         
     def save(self, *args, **kwargs):
         self.creation_datetime = datetime.datetime.now()
+        if not self.timeout and not kwarget.get('timeout'):
+            self.timeout = DEFAULT_LOCK_TIMEOUT
+            
         super(Lock, self).save(*args, **kwargs)
         
     class Meta:
