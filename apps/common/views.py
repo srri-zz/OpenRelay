@@ -27,6 +27,7 @@ SETTINGS_LIST = (
     ('openrelay_resources', 'STORAGE_BACKEND', 'RESOURCES_STORAGE_BACKEND'),
     ('openrelay_resources', 'FILESTORAGE_LOCATION', 'RESOURCES_FILESTORAGE_LOCATION'),
     ('core', 'KEYSERVERS', 'CORE_KEYSERVERS'),
+    ('server_talk', 'PORT', 'SERVER_PORT'),
 )
     
 @csrf_protect
