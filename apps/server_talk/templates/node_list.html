@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <table class="bordered-table zebra-striped">
+        <thead>
+            <tr>
+                <th>{% trans 'UUID' %}</th>
+                <th>{% trans 'IP address' %}</th>
+                <th>{% trans 'Port' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for object in object_list %}
+                <tr>
+                    <td>{{ object }}</td>
+                    <td>{{ object.ip_address }}</td>
+                    <td>{{ object.port }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+

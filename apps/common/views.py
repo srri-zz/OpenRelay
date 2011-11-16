@@ -3,32 +3,29 @@ import types
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, QueryDict
+from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.utils.http import base36_to_int
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.utils.translation import ugettext_lazy as _
 from django.contrib import messages
-from django.core.exceptions import ImproperlyConfigured
 from django.utils.importlib import import_module
 
 # Avoid shadowing the login() and logout() views below.
 from django.contrib.auth import REDIRECT_FIELD_NAME, login as auth_login, logout as auth_logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm, PasswordChangeForm
-from django.contrib.auth.models import User
-from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.sites.models import get_current_site
 
 SETTINGS_LIST = (
     ('openrelay_resources', 'STORAGE_BACKEND', 'RESOURCES_STORAGE_BACKEND'),
     ('openrelay_resources', 'FILESTORAGE_LOCATION', 'RESOURCES_FILESTORAGE_LOCATION'),
     ('core', 'KEYSERVERS', 'CORE_KEYSERVERS'),
+    ('server_talk', 'PORT', 'SERVER_PORT'),
 )
-    
+
+
 @csrf_protect
 @never_cache
 def login_view(request, template_name='login.html',
@@ -60,7 +57,7 @@ def login_view(request, template_name='login.html',
             if request.session.test_cookie_worked():
                 request.session.delete_test_cookie()
         else:
-            messages.error(request, _(u'Incorrent username or password.'))
+            messages.error(request, ugettext(u'Incorrent username or password.'))
 
     request.session.set_test_cookie()
 
@@ -75,7 +72,7 @@ def login_view(request, template_name='login.html',
     context.update(extra_context or {})
     return HttpResponseRedirect(reverse('home_view'))
 
- 
+
 def return_type(value):
     if isinstance(value, types.FunctionType):
         return value.__doc__ if value.__doc__ else _(u'function found')
@@ -88,7 +85,7 @@ def return_type(value):
     else:
         return value
 
-        
+
 def settings_list(request):
     object_list = []
     for setting in SETTINGS_LIST:

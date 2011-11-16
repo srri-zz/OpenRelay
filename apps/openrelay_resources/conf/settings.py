@@ -1,3 +1,5 @@
+import os
+
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
@@ -11,5 +13,5 @@ class FileBasedStorage(FileSystemStorage):
         self.location = FILESTORAGE_LOCATION
 
 
-FILESTORAGE_LOCATION = getattr(settings, 'RESOURCES_FILESTORAGE_LOCATION', '/tmp')
+FILESTORAGE_LOCATION = getattr(settings, 'RESOURCES_FILESTORAGE_LOCATION', os.path.join(settings.PROJECT_ROOT, 'resource_storage'))
 STORAGE_BACKEND = getattr(settings, 'RESOURCES_STORAGE_BACKEND', FileBasedStorage)

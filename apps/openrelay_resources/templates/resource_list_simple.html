@@ -8,6 +8,9 @@
         <thead>
             <tr>
                 <th>{% trans 'UUID' %}</th>
+                <th>{% trans 'Filename' %}</th>
+                <th>{% trans 'Label' %}</th>
+                <th>{% trans 'Description' %}</th>
                 <th>{% trans 'Links' %}</th>
             </tr>
         </thead>
@@ -15,6 +18,9 @@
             {% for object in object_list %}
                 <tr>
                     <td>{{ object.uuid }}</td>
+                    <td>{{ object.metadata.filename }}</td>
+                    <td>{{ object.metadata.label }}</td>
+                    <td>{{ object.metadata.description }}</td>
                     <td><a href="{% url resource_serve object.uuid %}">{% trans 'Serve' %}</a>
                 </tr>
             {% endfor %}

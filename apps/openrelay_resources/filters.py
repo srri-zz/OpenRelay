@@ -1,6 +1,6 @@
 import urlparse
 
-from django.utils.encoding import smart_unicode, force_unicode, smart_str, DjangoUnicodeDecodeError
+from django.utils.encoding import smart_unicode, DjangoUnicodeDecodeError
 
 from bs4 import BeautifulSoup
 from HTMLParser import HTMLParseError
@@ -10,9 +10,9 @@ import magic
 
 class FilterError(Exception):
     pass
-    
 
-class FilteredHTML(object):        
+
+class FilteredHTML(object):
     @staticmethod
     def is_external_top_level_link(url):
         scheme, netloc, path, qs, anchor = urlparse.urlsplit(url)
@@ -40,16 +40,16 @@ class FilteredHTML(object):
                 tag['href'] = self.fix_relative_url(tag['href'])
 
     def __init__(self, data, prettify=False, *args, **kwargs):
-        self.url_filter = kwargs.pop('url_filter', lambda x:x)
+        self.url_filter = kwargs.pop('url_filter', lambda x: x)
         self.prettify = prettify
         magic_mime = magic.Magic(mime=True)
 
         if magic_mime.from_buffer(data) != 'text/html':
             raise FilterError('Non HTML data')
-        
+
         #magic_encoding = magic.Magic(mime_encoding=True)
         #if magic_encoding.from_buffer(data) !='utf-8':
-        
+
         try:
             self.data = smart_unicode(data)
         except DjangoUnicodeDecodeError:
@@ -59,12 +59,12 @@ class FilteredHTML(object):
             self.soup = BeautifulSoup(self.data)
 
             self.fix_links()
-            
+
             if self.prettify:
-                self.html = soup.prettify()
+                self.html = self.soup.prettify()
             else:
                 self.html = unicode(self.soup)
-                
+
         #except (HTMLParseError, UnicodeDecodeError, RuntimeError):
         except HTMLParseError, msg:
             raise FilterError(msg)

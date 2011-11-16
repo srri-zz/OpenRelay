@@ -10,24 +10,16 @@ from django.core.urlresolvers import reverse
 
 import magic
 
-from django_gpg import GPG, Key, GPGVerificationError, GPGDecryptionError, KeyFetchingError
+from django_gpg import Key, GPGVerificationError, GPGDecryptionError, KeyFetchingError
 
 from openrelay_resources.conf.settings import STORAGE_BACKEND
 from openrelay_resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
     MAGIC_NUMBER, TIME_STAMP_SEPARATOR, MAGIC_VERSION
 from openrelay_resources.exceptions import ORInvalidResourceFile
 from openrelay_resources.filters import FilteredHTML, FilterError
+from openrelay_resources.managers import ResourceManager
 
 from core.runtime import gpg
-
-
-class ResourceManager(models.Manager):
-    def get(self, *args, **kwargs):
-        try:
-            return super(ResourceManager, self).get(*args, **kwargs)
-        except self.model.MultipleObjectsReturned:
-            uuid = kwargs.pop('uuid')
-            return super(ResourceManager, self).get_query_set().filter(uuid=uuid)[0]
 
 
 class ResourceBase(models.Model):
@@ -50,11 +42,10 @@ class Resource(ResourceBase):
 
     objects = ResourceManager()
 
-
     @staticmethod
     def prepare_resource_uuid(key, filename):
         return RESOURCE_SEPARATOR.join([key, filename])
-    
+
     @staticmethod
     def prepare_resource_url(key, filename):
         return urlparse.urljoin(reverse('resource_serve'), Resource.prepare_resource_uuid(key, filename))
@@ -65,52 +56,14 @@ class Resource(ResourceBase):
         return r'%d%c%s' % (len(json_data), BINARY_DELIMITER, json_data)
 
     @staticmethod
-    def decode_metadata(data):
-        # Stream implementation, disabled until stream based processing
-        # is added
-        '''
-        #section = SECTION_LENGTH
-        size = ''
-        #metadata = ''
-
-        while True:
-            char = descriptor.read(1)
-            #if section == SECTION_LENGTH:
-            if char == '%c' % 0x00:
-                #section = SECTION_METADATA
-                size = int(size)
-                print 'size', size
-                descriptor.read(1)
-                metadata = read(size)
-                break
-            else:
-                size =+ char
-        return loads(metadata)
-        '''
-        
-        try:
-            magic_end = data.index(r'%c' % BINARY_DELIMITER)
-            if data[:magic_end] != MAGIC_NUMBER:
-                raise ORInvalidResourceFile('Invalid magic number')
-
-            version_end = data.find(r'%c' % BINARY_DELIMITER, magic_end + 1)
-            if data[magic_end + 1:version_end] != '1':
-                raise ORInvalidResourceFile('Invalid/unknown resource file format version')
-            
-            size_end = data.find(r'%c' % BINARY_DELIMITER, version_end + 1)
-            json_size = int(data[version_end + 1:size_end])
-            return loads(data[size_end + 1:size_end + 1 + json_size]), size_end + 1 + json_size
-        except ValueError:
-            raise ORInvalidResourceFile('Magic number, version or metadata markers not found')
-
-
-    @staticmethod
     def get_fake_upload_to(return_value):
         return lambda instance, filename: unicode(return_value)
-        
+
     def __init__(self, *args, **kwargs):
         super(Resource, self).__init__(*args, **kwargs)
-        self.properties = {}
+        self._signature_properties = {}
+        self._metadata = {}
+        self._content = None
 
     def save(self, key, *args, **kwargs):
         name = kwargs.pop('name', None)
@@ -119,9 +72,16 @@ class Resource(ResourceBase):
 
         uuid = Resource.prepare_resource_uuid(key, name)
         metadata = {
-            'uuid': uuid,
             'filename': self.file.name,
         }
+
+        label = kwargs.pop('label')
+        if label:
+            metadata['label'] = label
+
+        description = kwargs.pop('description')
+        if description:
+            metadata['description'] = description
 
         container = StringIO()
         container.write(MAGIC_NUMBER)
@@ -157,40 +117,53 @@ class Resource(ResourceBase):
         self.file.storage.delete(self.uuid)
         super(Resource, self).delete(*args, **kwargs)
 
-    def decode_resource(self):
-        try:
-            descriptor = self.open()
-            result = gpg.decrypt_file(descriptor)
-            metadata, metadata_size = Resource.decode_metadata(result.data)
-            content = result.data[metadata_size:]
-            return metadata, content
-        except GPGDecryptionError:
-            #TODO: research: return None or an empty dictionary {}
-            return None, None
-        except IOError:
-            #TODO: research: return None or an empty dictionary {}
-            return None, None
-        except ORInvalidResourceFile, error:
-            #TODO: research: return error string or {'error':error}
-            return error, error
-
     @property
     def metadata(self):
-        return self.decode_resource()[0]
-            
+        self._refresh_metadata()
+        return self._metadata
+
+    def _refresh_metadata(self):
+        if not self._metadata:
+            try:
+                descriptor = self.open()
+                result = gpg.decrypt_file(descriptor)
+                self._decode_result(result.data)
+            except (GPGDecryptionError, IOError):
+                self._metadata = None
+                self._content = None
+            except ORInvalidResourceFile:
+                self._metadata = None
+                self._content = None
+
+    def _decode_result(self, data):
+        try:
+            magic_end = data.index(r'%c' % BINARY_DELIMITER)
+            if data[:magic_end] != MAGIC_NUMBER:
+                raise ORInvalidResourceFile('Invalid magic number')
+
+            version_end = data.find(r'%c' % BINARY_DELIMITER, magic_end + 1)
+            if data[magic_end + 1:version_end] != '1':
+                raise ORInvalidResourceFile('Invalid/unknown resource file format version')
+
+            size_end = data.find(r'%c' % BINARY_DELIMITER, version_end + 1)
+            json_size = int(data[version_end + 1:size_end])
+            self._content = data[size_end + 1 + json_size:]
+            self._metadata = loads(data[size_end + 1:size_end + 1 + json_size])
+        except ValueError:
+            raise ORInvalidResourceFile('Magic number, version or metadata markers not found')
+
     @property
     def real_uuid(self):
         try:
-            descriptor = self.open()
-            result = gpg.decrypt_file(descriptor)
-            metadata, metadata_size = Resource.decode_metadata(result.data)
-            return u'%s%c%s' % (self.fingerprint, RESOURCE_SEPARATOR, metadata['filename'])
+            return u'%s%c%s' % (self.fingerprint, RESOURCE_SEPARATOR, self.filename)
         except GPGDecryptionError:
             return None
         except IOError:
             return None
         except ORInvalidResourceFile, error:
             return error
+        except KeyError:
+            ORInvalidResourceFile('UUID verification error')
 
     def _verify(self):
         if not self.file.name:
@@ -209,55 +182,58 @@ class Resource(ResourceBase):
             else:
                 return verify
         except IOError:
-            return None
+            return False
 
-    def _refresh_properties(self):
-        try:
-            verify = self._verify()
-            if verify:
-                self.properties = {
-                    'signature_status': verify.status,
-                    'username': verify.username,
-                    'signature_id': verify.signature_id,
-                    'key_id': verify.key_id,
-                    'fingerprint': verify.fingerprint,
-                    'is_valid': True,
-                    'raw_timestamp': verify.sig_timestamp,
-                    'timestamp': datetime.fromtimestamp(int(verify.sig_timestamp)),
-                }
-            else:
-                self.properties = {
-                    'signature_status': verify.status,
-                    'username': verify.username,
+    def _refresh_signature_properties(self):
+        if not self._signature_properties:
+            try:
+                verify = self._verify()
+                if verify:
+                    self._signature_properties = {
+                        'signature_status': verify.status,
+                        'username': verify.username,
+                        'signature_id': verify.signature_id,
+                        'key_id': verify.key_id,
+                        'fingerprint': verify.fingerprint,
+                        'is_valid': True,
+                        'raw_timestamp': verify.sig_timestamp,
+                        'timestamp': datetime.fromtimestamp(int(verify.sig_timestamp)),
+                    }
+                else:
+                    self._signature_properties = {
+                        'signature_status': verify.status,
+                        'username': verify.username,
+                        'signature_id': None,
+                        'key_id': verify.key_id,
+                        'fingerprint': None,
+                        'is_valid': False,
+                        'raw_timestamp': None,
+                        'timestamp': None,
+                    }
+            except GPGVerificationError, msg:
+                self._signature_properties = {
+                    'signature_status': msg,
+                    'username': None,
                     'signature_id': None,
-                    'key_id': verify.key_id,
+                    'key_id': None,
                     'fingerprint': None,
                     'is_valid': False,
                     'raw_timestamp': None,
                     'timestamp': None,
                 }
-        except GPGVerificationError, msg:
-            self.properties = {
-                'signature_status': msg,
-                'username': None,
-                'signature_id': None,
-                'key_id': None,
-                'fingerprint': None,
-                'is_valid': False,
-                'raw_timestamp': None,
-                'timestamp': None,
-            }
 
     def __getattr__(self, name):
-        attribute_list = ['is_valid', 'signature_status', 'username', 'signature_id', 'raw_timestamp', 'timestamp', 'fingerprint', 'key_id']
-        if name in attribute_list:
-            try:
-                return self.properties[name]
-            except KeyError:
-                self._refresh_properties()
-                return self.properties[name]
+        signature_properties_list = ['is_valid', 'signature_status', 'username', 'signature_id', 'raw_timestamp', 'timestamp', 'fingerprint', 'key_id']
+        metadata_attributes_list = ['filename', 'label', 'description']
+
+        if name in signature_properties_list:
+            self._refresh_signature_properties()
+            return self._signature_properties[name]
+        elif name in metadata_attributes_list:
+            self._refresh_metadata()
+            return self._metadata[name]
         else:
-            raise AttributeError, name                
+            raise AttributeError
 
     def open(self):
         """
@@ -265,15 +241,17 @@ class Resource(ResourceBase):
         """
         return self.file.storage.open(self.file.name)
 
-    def extract(self):
-        return self.decode_resource()[1]
+    @property
+    def content(self):
+        self._refresh_metadata()
+        return self._content
 
     @property
     def mimetype(self):
         magic_mime = magic.Magic(mime=True)
         magic_encoding = magic.Magic(mime_encoding=True)
 
-        content = self.decode_resource()[1]
+        content = self.content
         if content:
             mimetype = magic_mime.from_buffer(content)
             encoding = magic_encoding.from_buffer(content)
