@@ -4,3 +4,11 @@ class ServerTalkException(Exception):
 
 class AnnounceClientError(ServerTalkException):
     pass
+    
+    
+class NoSuchNode(ServerTalkException):
+    pass
+
+
+class HeartbeatError(ServerTalkException):
+    pass
