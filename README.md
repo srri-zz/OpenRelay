@@ -30,6 +30,8 @@ To install the python dependencies ``easy_install`` can be used, however for eas
     $ source bin/activate
     $ cd OpenRelay
     $ pip install -r requirements/production.txt
+    $ git submodule init
+    $ git submodule update
 
 Populate the database with the project's schema doing:
 
