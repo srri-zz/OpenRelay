@@ -10,6 +10,8 @@
                 <th>{% trans 'UUID' %}</th>
                 <th>{% trans 'IP address' %}</th>
                 <th>{% trans 'Port' %}</th>
+                <th>{% trans 'Last heartbeat' %}</th>
+                <th>{% trans 'CPU load' %}</th>
             </tr>
         </thead>
         <tbody>
@@ -18,6 +20,8 @@
                     <td>{{ object }}</td>
                     <td>{{ object.ip_address }}</td>
                     <td>{{ object.port }}</td>
+                    <td>{{ object.last_heartbeat }}</td>
+                    <td>{{ object.cpuload }}</td>
                 </tr>
             {% endfor %}
         </tbody>
