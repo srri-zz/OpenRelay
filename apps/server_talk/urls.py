@@ -15,3 +15,9 @@ urlpatterns = patterns('',
     url(r'^services/$', Services.as_view(), name='service-root'),
     url(r'^services/announce/$', Announce.as_view(), name='service-announce'),
 )
+
+urlpatterns += patterns('server_talk.views',
+    url(r'^join/$', 'join', (), 'join'),
+    url(r'^node/list/$', 'node_list', (), 'node_list'),
+    url(r'^node/local/$', 'node_info', (), 'node_info'),
+)
