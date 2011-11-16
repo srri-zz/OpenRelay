@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans 'Resource list' %}{% endblock %}
+{% block title %}{% trans 'Resource list (detailed)' %}{% endblock %}
 
 {% block content %}
     <table class="bordered-table zebra-striped">
         <thead>
             <tr>
                 <th>{% trans 'UUID (database)' %}</th>
-                <th>{% trans 'Metadata' %}</th>
+                <th>{% trans 'UUID (verified)' %}</th>
+                {#<th>{% trans 'Metadata' %}</th>#}
                 <th>{% trans 'Exists in storage' %}</th>
                 <th>{% trans 'Is valid?' %}</th>
                 <th>{% trans 'Signature status' %}</th>
@@ -17,7 +18,6 @@
                 <th>{% trans 'MIME type' %}</th>
                 <th>{% trans 'Encoding' %}</th>
                 <th>{% trans 'Signee' %}</th>
-                <th>{% trans 'Key ID' %}</th>
                 <th>{% trans 'Links' %}</th>
             </tr>
         </thead>
@@ -25,7 +25,8 @@
             {% for object in object_list %}
                 <tr>
                     <td>{{ object }}</td>
-                    <td>{{ object.metadata }}</td>
+                    <td>{{ object.real_uuid }}</td>
+                    {#<td>{{ object.metadata }}</td>#}
                     <td>{{ object.exists }}</td>
                     <td>{{ object.is_valid }}</td>
                     <td>{{ object.signature_status }}</td>
@@ -34,8 +35,7 @@
                     <td>{{ object.mimetype.0 }}</td>
                     <td>{{ object.mimetype.1 }}</td>
                     <td>{{ object.username }}</td>
-                    <td>{{ object.key_id }}</td>
-                    <td><a href="{{ object.get_absolute_url }}">[{% trans 'View' %}]</a></td>
+                    <td><a href="{{ object.get_absolute_url }}">{% trans 'Serve' %}</a></td>
                 </tr>
             {% endfor %}
         </tbody>
