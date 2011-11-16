@@ -1,0 +1,3 @@
+[submodule "apps/django_bootstrap/static/bootstrap"]
+	path = apps/django_bootstrap/static/bootstrap
+	url = git://github.com/twitter/bootstrap.git
