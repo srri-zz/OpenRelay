@@ -103,6 +103,16 @@
                     <li><a href="{% url resource_list %}">{% trans 'List (detailed)' %}</a></li>  
               </ul>
             </li>            
+
+            <li class="dropdown" data-dropdown="dropdown">
+              <a class="dropdown-toggle" href="#">{% trans 'Network' %}</a>
+              <ul class="dropdown-menu">
+                    <li><a href="{% url join %}">{% trans 'Join' %}</a></li>
+                    <li><a href="{% url node_list %}">{% trans 'Node list' %}</a></li>
+                    <li><a href="{% url node_info %}">{% trans 'Local node info' %}</a></li>
+              </ul>
+            </li>            
+
             <li><a href="{% url settings_list %}">{% trans 'Settings' %}</a></li>
             <li><a href="{% url api-root %}">{% trans 'API' %}</a></li>
             <li><a href="{% url about_view %}">{% trans 'About' %}</a></li>
