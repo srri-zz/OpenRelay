@@ -25,7 +25,7 @@ Core
 
 .. data:: CORE_KEYSERVERS
 
-    Default: ``['ldap://keyserver.pgp.com', 'hkp://keyserver.ubuntu.com:11371', 'hkp://pool.sks-keyservers.net']``
+    Default: ``['http://peer.to:11371']``
     
     The list of key server that the node will query for public keys to verify resources.  This setting option may be eliminated in the future when OpenRelay supports storing and replicating of public keys without using centralize key servers.
 
