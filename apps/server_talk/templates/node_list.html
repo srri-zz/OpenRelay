@@ -12,6 +12,8 @@
                 <th>{% trans 'Port' %}</th>
                 <th>{% trans 'Last heartbeat' %}</th>
                 <th>{% trans 'CPU load' %}</th>
+                <th>{% trans 'Last inventory hash' %}</th>
+                <th>{% trans 'Inventory hash' %}</th>
             </tr>
         </thead>
         <tbody>
@@ -22,6 +24,8 @@
                     <td>{{ object.port }}</td>
                     <td>{{ object.last_heartbeat }}</td>
                     <td>{{ object.cpuload }}</td>
+                    <td>{{ object.last_inventory_hash }}</td>
+                    <td>{{ object.inventory_hash }}</td>
                 </tr>
             {% endfor %}
         </tbody>
