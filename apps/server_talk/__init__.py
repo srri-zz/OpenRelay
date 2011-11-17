@@ -11,9 +11,11 @@ from core.runtime import scheduler
 
 from server_talk.models import LocalNode, Sibling
 from server_talk import models as server_talk_model
-from server_talk.exceptions import HeartbeatError
+from server_talk.exceptions import HeartbeatError, InventoryHashError
 from server_talk.api import RemoteCall
-from server_talk.conf.settings import HEARTBEAT_QUERY_INTERVAL
+from server_talk.conf.settings import HEARTBEAT_QUERY_INTERVAL, \
+INVENTORY_QUERY_INTERVAL
+
 
 logger = logging.getLogger(__name__)
 
@@ -36,15 +38,37 @@ def heartbeat_check():
     if siblings:
         oldest = siblings[0]
         try:
-            lock = Lock.objects.acquire_lock(oldest.uuid, 10)
+            lock = Lock.objects.acquire_lock(u''.join(['heartbeat_check', oldest.uuid]), 20)
             node = RemoteCall(uuid=oldest.uuid)
             oldest.last_heartbeat = datetime.datetime.now()
             response = node.heartbeat()
             oldest.cpuload = int(float(response['cpuload']))
             oldest.save()
-            Lock.objects.release_lock(oldest.uuid)
+            lock.release()
         except LockError:
             pass
         except HeartbeatError:
-            Lock.objects.release_lock(oldest.uuid)
+            lock.release()
 
+
+@scheduler.interval_schedule(seconds=INVENTORY_QUERY_INTERVAL)
+def inventory_hash_check():
+    '''
+    Find the node with the oldest inventory timestamp and query it
+    '''
+    logging.debug('DEBUG: inventory_hash_check()')
+    siblings = Sibling.objects.all().order_by('last_inventory_hash')
+    if siblings:
+        oldest = siblings[0]
+        try:
+            lock = Lock.objects.acquire_lock(u''.join(['inventory_hash', oldest.uuid]), 20)
+            node = RemoteCall(uuid=oldest.uuid)
+            oldest.last_inventory_hash = datetime.datetime.now()
+            response = node.inventory_hash()
+            oldest.inventory_hash = response['inventory_hash']
+            oldest.save()
+            lock.release()
+        except LockError:
+            pass
+        except InventoryHashError:
+            lock.release()

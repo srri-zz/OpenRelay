@@ -12,3 +12,7 @@ class NoSuchNode(ServerTalkException):
 
 class HeartbeatError(ServerTalkException):
     pass
+
+
+class InventoryHashError(ServerTalkException):
+    pass
