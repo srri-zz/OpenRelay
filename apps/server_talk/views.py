@@ -17,7 +17,7 @@ from djangorestframework.response import Response
 
 from openrelay_resources.models import Resource
 
-from server_talk.models import LocalNode, Sibling
+from server_talk.models import LocalNode, Sibling, Resource
 from server_talk.forms import JoinForm
 from server_talk.api import RemoteCall
 from server_talk.conf.settings import PORT
@@ -96,7 +96,7 @@ class InventoryHash(View):
         uuid = request.GET.get('uuid')
         # TODO: Reject call from non verified nodes
         logger.info('received inventory hash call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
-        return {'inventory_hash': HASH_FUNCTION(u''.join(Resource.objects.all().order_by('uuid').values_list('uuid', flat=True)))}
+        return {'inventory_hash': HASH_FUNCTION(u''.join([resource.full_name for resource in Resource.objects.all().order_by('uuid')]))}
 
 
 def join(request):
@@ -135,3 +135,11 @@ def node_info(request):
         'object_list': [LocalNode.get()],
         'title': _(u'Local node information'),
     }, context_instance=RequestContext(request))
+
+
+def resource_list(request):
+    return render_to_response('network_resource_list.html', {
+        'object_list': Resource.objects.all(),
+        'title': _(u'Network resource list'),
+    }, context_instance=RequestContext(request))
+

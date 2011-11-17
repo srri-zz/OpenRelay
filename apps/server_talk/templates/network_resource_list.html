@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <table class="bordered-table zebra-striped">
+        <thead>
+            <tr>
+                <th>{% trans 'UUID' %}</th>
+                <th>{% trans 'Timestamp' %}</th>
+                <th>{% trans 'Holders' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for object in object_list %}
+                <tr>
+                    <td>{{ object }}</td>
+                    <td>{{ object.time_stamp }}</td>
+                    <td>
+                        <ul>
+                        {% for holder in object.resourceholder_set.all %}
+                            <li>{{ holder }}</li>
+                        {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+

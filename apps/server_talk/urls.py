@@ -20,7 +20,8 @@ urlpatterns = patterns('',
 )
 
 urlpatterns += patterns('server_talk.views',
-    url(r'^join/$', 'join', (), 'join'),
-    url(r'^node/list/$', 'node_list', (), 'node_list'),
-    url(r'^node/local/$', 'node_info', (), 'node_info'),
+    url(r'^network/join/$', 'join', (), 'join'),
+    url(r'^network/node/list/$', 'node_list', (), 'node_list'),
+    url(r'^network/node/local/$', 'node_info', (), 'node_info'),
+    url(r'^network/resource/list/$', 'resource_list', (), 'network_resource_list'),
 )
