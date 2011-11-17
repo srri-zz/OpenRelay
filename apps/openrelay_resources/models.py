@@ -111,7 +111,7 @@ class Resource(ResourceBase):
         return self
 
     def exists(self):
-        return self.file.storage.exists(self.full_name)
+        return self.file.storage.exists(self.file.name)
 
     def delete(self, *args, **kwargs):
         self.file.storage.delete(self.uuid)
