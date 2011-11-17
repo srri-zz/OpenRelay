@@ -7,7 +7,8 @@
 # request-resource: request a resource from another server
 # my_name_is: request server info (version, api version)
 # workaholic: requests the cpu load and resource serving stats of a server (could be merged with [ping])
-# report: blacklist a server that has repeatedly tampered with files
+# report: blacklist a server that has repeatedly tampered with files (from authoritative nodes only)
+# unblacklist
 
 import urlparse
 import logging
@@ -23,7 +24,7 @@ from djangorestframework import status
 from server_talk.models import LocalNode, Sibling
 from server_talk.conf.settings import PORT
 from server_talk.exceptions import AnnounceClientError, NoSuchNode, \
-    HeartbeatError
+    HeartbeatError, InventoryHashError, ResourceListError
 
 logger = logging.getLogger(__name__)
 
@@ -89,9 +90,37 @@ class RemoteCall(object):
         url = self.get_service_url('service-heartbeat')
         try:
             logger.debug('calling heartbeat service on url: %s' % url)
-            response = requests.get(url)
+            response = requests.get(url, data={'uuid': LocalNode.get().uuid})
             logger.debug('received heartbeat from url: %s' % url)
             return loads(response.content)
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
             raise HeartbeatError('Unable to query node')
+            
+    def inventory_hash(self):
+        '''
+        Ask for a node's hash of it's inventories
+        '''
+        url = self.get_service_url('service-inventory_hash')
+        try:
+            logger.debug('calling inventory_hash service on url: %s' % url)
+            response = requests.get(url, data={'uuid': LocalNode.get().uuid})
+            logger.debug('received inventory_hash from url: %s' % url)
+            return loads(response.content)
+        except requests.ConnectionError:
+            logger.error('unable to connect to url: %s' % url)
+            raise InventoryHashError('Unable to query node')            
+
+    def resource_list(self):
+        '''
+        Retrieve a node's resource list
+        '''
+        url = self.get_service_url('resource-root')
+        try:
+            logger.debug('calling resource_list service on url: %s' % url)
+            response = requests.get(url, data={'uuid': LocalNode.get().uuid})
+            logger.debug('received resource_list from url: %s' % url)
+            return loads(response.content)
+        except requests.ConnectionError:
+            logger.error('unable to connect to url: %s' % url)
+            raise ResourceListError('Unable to query node')            

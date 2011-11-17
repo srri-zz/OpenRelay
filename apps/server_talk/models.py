@@ -54,6 +54,8 @@ class Sibling(Nodebase):
     #verified = models.BooleanField(verbose_name=_(u'verified'))  #GPG Key verified?
     last_heartbeat = models.DateTimeField(blank=True, default=datetime.datetime.now(), verbose_name=_(u'last heartbeat check'))
     cpuload = models.PositiveIntegerField(blank=True, default=0, verbose_name=_(u'cpu load'))
+    last_inventory_hash = models.DateTimeField(blank=True, default=datetime.datetime.now(), verbose_name=_(u'last inventory check'))
+    inventory_hash = models.CharField(max_length=64, blank=True, verbose_name=_(u'inventory hash'))
 
     class Meta(Nodebase.Meta):
         verbose_name = _(u'sibling node')
@@ -62,3 +64,15 @@ class Sibling(Nodebase):
 
 class Resource(ResourceBase):
     pass
+    
+    
+class ResourceHolder(models.Model):
+    resource = models.ForeignKey(Resource, verbose_name=_(u'resource'))
+    node = models.ForeignKey(Sibling, verbose_name=_(u'Sibling'))
+    
+    def __unicode__(self):
+        return unicode(self.node)
+    
+    class Meta:
+        verbose_name = _(u'resource holder')
+        verbose_name_plural = _(u'resource holders')

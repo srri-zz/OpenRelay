@@ -111,7 +111,7 @@ class Resource(ResourceBase):
         return self
 
     def exists(self):
-        return self.file.storage.exists(self.full_name)
+        return self.file.storage.exists(self.file.name)
 
     def delete(self, *args, **kwargs):
         self.file.storage.delete(self.uuid)
@@ -264,6 +264,5 @@ class Resource(ResourceBase):
         return ('resource_serve', [self.uuid, self.time_stamp])
 
     class Meta(ResourceBase.Meta):
-        ordering = ('-time_stamp', )
         verbose_name = _(u'resource')
         verbose_name_plural = _(u'resources')

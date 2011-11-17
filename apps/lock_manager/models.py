@@ -24,6 +24,14 @@ class Lock(models.Model):
             
         super(Lock, self).save(*args, **kwargs)
         
+    def release(self):
+        try:
+            lock = Lock.objects.get(name=self.name, creation_datetime=self.creation_datetime)
+            lock.delete()
+        except Lock.DoesNotExist:
+            # Out lock expired and was reassigned
+            pass
+        
     class Meta:
         verbose_name = _(u'lock')
         verbose_name_plural = _(u'locks')

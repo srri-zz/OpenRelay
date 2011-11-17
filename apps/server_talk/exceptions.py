@@ -12,3 +12,14 @@ class NoSuchNode(ServerTalkException):
 
 class HeartbeatError(ServerTalkException):
     pass
+
+
+class InventoryHashError(ServerTalkException):
+    pass
+
+
+class ResourceListError(ServerTalkException):
+    '''
+    Raise when the client node is unable or receives bad data calling
+    the resource-list service 
+    '''
