@@ -1,6 +1,7 @@
 """The root view for OpenRelay API"""
 import logging
 import socket
+import hashlib
 
 from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponseRedirect
@@ -14,6 +15,8 @@ from djangorestframework.views import View, ModelView
 from djangorestframework import status
 from djangorestframework.response import Response
 
+from openrelay_resources.models import Resource
+
 from server_talk.models import LocalNode, Sibling
 from server_talk.forms import JoinForm
 from server_talk.api import RemoteCall
@@ -22,6 +25,7 @@ from server_talk.exceptions import AnnounceClientError
 from server_talk.utils import CPUsage
 
 logger = logging.getLogger(__name__)
+HASH_FUNCTION = lambda x: hashlib.sha256(x).hexdigest()
 
 
 class OpenRelayAPI(View):
@@ -51,6 +55,7 @@ class Services(View):
         return [
             {'name': 'Announce', 'url': reverse('service-announce')},
             {'name': 'Heartbeat', 'url': reverse('service-heartbeat')},
+            {'name': 'Inventory hash', 'url': reverse('service-inventory_hash')},
         ]
 
 
@@ -62,6 +67,7 @@ class Announce(View):
         logger.info('received announce call from: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
         if uuid and ip_address and port:
             sibling_data = {'ip_address': ip_address, 'port': port}
+            # TODO: Verify node identity
             sibling, created = Sibling.objects.get_or_create(uuid=uuid, defaults=sibling_data)
             if not created:
                 sibling.ip_address = sibling_data['ip_address']
@@ -79,9 +85,18 @@ class Announce(View):
 
 class Heartbeat(View):
     def get(self, request):
-        uuid = request.POST.get('uuid')
-        logger.info('received heartbeat call from: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
+        uuid = request.GET.get('uuid')
+        # TODO: Reject call from non verified nodes
+        logger.info('received heartbeat call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
         return {'cpuload': CPUsage()}
+
+
+class InventoryHash(View):
+    def get(self, request):
+        uuid = request.GET.get('uuid')
+        # TODO: Reject call from non verified nodes
+        logger.info('received inventory hash call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
+        return {'inventory_hash': HASH_FUNCTION(u''.join(Resource.objects.all().order_by('uuid').values_list('uuid', flat=True)))}
 
 
 def join(request):

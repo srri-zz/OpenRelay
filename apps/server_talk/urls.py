@@ -4,7 +4,7 @@ from djangorestframework.views import ListModelView
 
 from server_talk.resources import ResourceResource
 from server_talk.views import OpenRelayAPI, ReadOnlyInstanceModelView, \
-    Services, Announce, Heartbeat
+    Services, Announce, Heartbeat, InventoryHash
 
 
 urlpatterns = patterns('',
@@ -16,6 +16,7 @@ urlpatterns = patterns('',
     url(r'^services/$', Services.as_view(), name='service-root'),
     url(r'^services/announce/$', Announce.as_view(), name='service-announce'),
     url(r'^services/heartbeat/$', Heartbeat.as_view(), name='service-heartbeat'),
+    url(r'^services/inventory_hash/$', InventoryHash.as_view(), name='service-inventory_hash'),
 )
 
 urlpatterns += patterns('server_talk.views',
