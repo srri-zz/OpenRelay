@@ -59,14 +59,15 @@ def resource_upload(request):
     }, context_instance=RequestContext(request))
 
 
-def resource_list(request, simple=True):
-    if simple:
-        query_set = [Resource.objects.get(uuid=resource['uuid']) for resource in Resource.objects.values('uuid').distinct().order_by()]
-        template_name = 'resource_list_simple.html'
-    else:
-        query_set = Resource.objects.all()
-        template_name = 'resource_list.html'
+def resource_list(request):
+    query_set = [Resource.objects.get(uuid=resource['uuid']) for resource in Resource.objects.values('uuid').distinct().order_by()]
 
-    return render_to_response(template_name, {
+    return render_to_response('resource_list.html', {
         'object_list': query_set,
+    }, context_instance=RequestContext(request))
+    
+    
+def resource_details(request, uuid):
+    return render_to_response('resource_details.html', {
+        'object_list': Resource.objects.filter(uuid=uuid).order_by('-time_stamp'),
     }, context_instance=RequestContext(request))
