@@ -46,3 +46,11 @@ API
     
     
     Time interval in seconds to perform heartbeat checks on other OpenRelay nodes.
+
+
+.. data:: SERVER_INVENTORY_QUERY_INTERVAL
+
+    Default: ``11``
+    
+    
+    Time interval in seconds to perform an inventory hash checks on other OpenRelay nodes.
