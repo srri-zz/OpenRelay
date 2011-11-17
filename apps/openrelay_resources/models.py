@@ -264,6 +264,5 @@ class Resource(ResourceBase):
         return ('resource_serve', [self.uuid, self.time_stamp])
 
     class Meta(ResourceBase.Meta):
-        ordering = ('-time_stamp', )
         verbose_name = _(u'resource')
         verbose_name_plural = _(u'resources')
