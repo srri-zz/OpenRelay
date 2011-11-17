@@ -64,3 +64,15 @@ class Sibling(Nodebase):
 
 class Resource(ResourceBase):
     pass
+    
+    
+class ResourceHolder(models.Model):
+    resource = models.ForeignKey(Resource, verbose_name=_(u'resource'))
+    node = models.ForeignKey(Sibling, verbose_name=_(u'Sibling'))
+    
+    def __unicode__(self):
+        return unicode(self.node)
+    
+    class Meta:
+        verbose_name = _(u'resource holder')
+        verbose_name_plural = _(u'resource holders')
