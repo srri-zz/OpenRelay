@@ -29,8 +29,7 @@ class LockManager(models.Manager):
             return lock
         except IntegrityError:
             # There is already an existing lock
-            # Check it's expiration date and if expired, delete it and 
-            # create it again
+            # Check it's expiration date and if expired, reset it
             try:
                 lock = self.model.objects.get(name=name)
             except self.model.DoesNotExist:
@@ -40,16 +39,10 @@ class LockManager(models.Manager):
 
             if datetime.datetime.now() > lock.creation_datetime + datetime.timedelta(seconds=lock.timeout):
                 logger.debug('DEBUG: reseting deleting stale lock: %s' % name)
-                #lock.delete()
                 lock.timeout=timeout
                 logger.debug('DEBUG: try to reacquire stale lock: %s' % name)
                 lock.save()
                 return lock
             else:
                 raise LockError('Unable to acquire lock')
-
-        
-    @transaction.commit_on_success
-    def release_lock(self, name):
-        lock = self.model.objects.get(name=name)
-        lock.delete()
+ 
