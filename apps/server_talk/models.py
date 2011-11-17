@@ -54,6 +54,8 @@ class Sibling(Nodebase):
     #verified = models.BooleanField(verbose_name=_(u'verified'))  #GPG Key verified?
     last_heartbeat = models.DateTimeField(blank=True, default=datetime.datetime.now(), verbose_name=_(u'last heartbeat check'))
     cpuload = models.PositiveIntegerField(blank=True, default=0, verbose_name=_(u'cpu load'))
+    last_inventory_hash = models.DateTimeField(blank=True, default=datetime.datetime.now(), verbose_name=_(u'last inventory check'))
+    inventory_hash = models.CharField(max_length=64, blank=True, verbose_name=_(u'inventory hash'))
 
     class Meta(Nodebase.Meta):
         verbose_name = _(u'sibling node')
