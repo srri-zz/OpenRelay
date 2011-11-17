@@ -3,20 +3,27 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to OpenRelay's documentation!
-=====================================
+========
+Overview
+========
 
-Contents:
+**OpenRelay** is an Open source, peer to peer based web hosting project.  This is the initial Django_ based implementation of the protocols that make up the OpenRelay network.
+
+.. _Django: http://www.djangoproject.com/
+
+
+:Website: http://peer.to/peer
+:Source:  https://github.com/Captainkrtek/OpenRelay
+
+========
+Contents
+========
 
 .. toctree::
-   :maxdepth: 2
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+    :maxdepth: 2
+    
+    installation
+    settings
+    development
+    internals
+    credits
