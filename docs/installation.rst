@@ -2,7 +2,7 @@
 Installation
 ============
 
-Initialize a ``virtualenv`` to deploy the project::
+Initialize an ``virtualenv`` to deploy the project::
 
     $ virtualenv --no-site-packages OpenRelay
 
