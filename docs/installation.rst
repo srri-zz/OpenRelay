@@ -2,7 +2,7 @@
 Installation
 ============
 
-Colin test Initialize a ``virtualenv`` to deploy the project::
+Initialize a ``virtualenv`` to deploy the project::
 
     $ virtualenv --no-site-packages OpenRelay
 
