@@ -109,7 +109,7 @@ class RemoteCall(object):
             return loads(response.content)
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
-            raise InventoryHashError('Unable to query node')            
+            raise InventoryHashError('Unable to query node')
 
     def resource_list(self):
         '''
@@ -123,4 +123,4 @@ class RemoteCall(object):
             return loads(response.content)
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
-            raise ResourceListError('Unable to query node')            
+            raise ResourceListError('Unable to query node')
