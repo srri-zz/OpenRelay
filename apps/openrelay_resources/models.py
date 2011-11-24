@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.files.base import ContentFile
 from django.utils.simplejson import dumps, loads
 from django.core.urlresolvers import reverse
+from django.template.defaultfilters import slugify
 
 import magic
 
@@ -46,9 +47,16 @@ class ResourceBase(models.Model):
 class VersionBase(models.Model):
     timestamp = models.PositiveIntegerField(verbose_name=_(u'timestamp'), db_index=True)
 
+    @staticmethod
+    def prepare_full_resource_name(uuid, timestamp):
+        return u'%s%c%s' % (uuid, TIME_STAMP_SEPARATOR, timestamp)
+
     @property
     def full_name(self):
-        return u'%s%c%s' % (self.resource.uuid, TIME_STAMP_SEPARATOR, self.timestamp)
+        return VersionBase.prepare_full_resource_name(self.resource.uuid, self.timestamp)
+
+    def __unicode__(self):
+        return self.full_name
 
     class Meta:
         abstract = True
@@ -77,6 +85,9 @@ class Resource(ResourceBase):
         uuid = Resource.prepare_resource_uuid(key, name)
         try:
             resource = Resource.objects.get(uuid=uuid)
+            self.pk = resource.pk
+            self.uuid = resource.uuid
+            super(Resource, self).save(*args , **kwargs)
         except Resource.DoesNotExist:
             self.uuid = uuid
             super(Resource, self).save(*args , **kwargs)
@@ -112,9 +123,6 @@ class Version(VersionBase):
         self._signature_properties = {}
         self._metadata = {}
         self._content = None
-        
-    def __unicode__(self):
-        return self.verified_uuid
 
     def save(self, key, *args, **kwargs):
         if self.pk:
@@ -155,7 +163,8 @@ class Version(VersionBase):
         signature = gpg.sign_file(container, key)
         self.file.file = ContentFile(signature.data)
 
-        self.file.field.generate_filename = Version.get_fake_upload_to('%s%c%s' % (self.resource.uuid, TIME_STAMP_SEPARATOR, signature.timestamp))
+        # Added slugify to sanitize the final filename
+        self.file.field.generate_filename = Version.get_fake_upload_to(slugify(Version.prepare_full_resource_name(self.resource.uuid, signature.timestamp)))
         self.timestamp = int(signature.timestamp)
 
         container.close()
@@ -167,6 +176,7 @@ class Version(VersionBase):
     def delete(self, *args, **kwargs):
         # Delete using filename not uuid as 
         # there is no warraty the uuid is formed as a valid filename
+        print 'delete: %s' % self.file.name
         self.file.storage.delete(self.file.name)
         super(Version, self).delete(*args, **kwargs)
 
