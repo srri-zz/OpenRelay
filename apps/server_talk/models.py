@@ -62,12 +62,12 @@ class Sibling(Nodebase):
         verbose_name_plural = _(u'sibling nodes')
 
 
-class Resource(ResourceBase):
+class NetworkResource(ResourceBase):
     pass
     
     
 class ResourceHolder(models.Model):
-    resource = models.ForeignKey(Resource, verbose_name=_(u'resource'))
+    resource = models.ForeignKey(NetworkResource, verbose_name=_(u'resource'))
     node = models.ForeignKey(Sibling, verbose_name=_(u'Sibling'))
     
     def __unicode__(self):

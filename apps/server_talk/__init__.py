@@ -10,7 +10,7 @@ from lock_manager.exceptions import LockError
 from core.runtime import scheduler
 
 #TODO: rename Resource to NetworkResource
-from server_talk.models import LocalNode, Sibling, Resource, ResourceHolder
+from server_talk.models import LocalNode, Sibling, NetworkResource, ResourceHolder
 from server_talk import models as server_talk_model
 from server_talk.exceptions import HeartbeatError, InventoryHashError
 from server_talk.api import RemoteCall
@@ -29,7 +29,7 @@ def create_identify(sender, **kwargs):
         print 'Existing identify not modified.'
 
 
-@scheduler.interval_schedule(seconds=HEARTBEAT_QUERY_INTERVAL)
+#@scheduler.interval_schedule(seconds=HEARTBEAT_QUERY_INTERVAL)
 def heartbeat_check():
     '''
     Find the node with the oldest hearbeat timestamp and query it
@@ -52,7 +52,7 @@ def heartbeat_check():
             lock.release()
 
 
-@scheduler.interval_schedule(seconds=INVENTORY_QUERY_INTERVAL)
+#@scheduler.interval_schedule(seconds=INVENTORY_QUERY_INTERVAL)
 def inventory_hash_check():
     '''
     Find the node with the oldest inventory timestamp and query it
@@ -71,13 +71,13 @@ def inventory_hash_check():
                 # later the ones it doesn't have anymore
                 ResourceHolder.objects.filter(node__uuid=oldest.uuid).delete()
                 for resource_item in remote_api.resource_list():
-                    resource, created = Resource.objects.get_or_create(uuid=resource_item['uuid'], time_stamp=resource_item['time_stamp'])
+                    resource, created = NetworkResource.objects.get_or_create(uuid=resource_item['uuid'], time_stamp=resource_item['time_stamp'])
                     resource.resourceholder_set.get_or_create(node=oldest)
                 
             oldest.inventory_hash = response['inventory_hash']
             oldest.save()
             # Delete network resources that have no holder
-            Resource.objects.filter(resourceholder=None).delete()
+            NetworkResource.objects.filter(resourceholder=None).delete()
             lock.release()
         except LockError:
             pass
