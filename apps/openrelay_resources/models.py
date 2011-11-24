@@ -25,24 +25,26 @@ from core.runtime import gpg
 class ResourceBase(models.Model):
     uuid = models.CharField(max_length=48, blank=True, editable=False, verbose_name=_(u'UUID'))
 
-    def __unicode__(self):
-        return self.latest_version().verified_uuid
-        #return self.uuid
+    def latest_version(self):
+        return self.version_set.order_by('timestamp')[0]
 
     def __getattr__(self, name):
         return self.latest_version().__getattr__(name)
 
-    def latest_version(self):
-        return self.version_set.order_by('timestamp')[0]
+    def verified_uuid(self):
+        return self.latest_version().verified_uuid
 
+    def __unicode__(self):
+        return self.uuid
+    
     class Meta:
         abstract = True
 
-    #objects = ResourceManager()
+    objects = ResourceManager()
 
 
 class VersionBase(models.Model):
-    timestamp = models.PositiveIntegerField(verbose_name=_(u'timestamp'))
+    timestamp = models.PositiveIntegerField(verbose_name=_(u'timestamp'), db_index=True)
 
     @property
     def full_name(self):
@@ -50,6 +52,7 @@ class VersionBase(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ('-timestamp',)
 
 
 class Resource(ResourceBase):
@@ -162,9 +165,9 @@ class Version(VersionBase):
         return self.file.storage.exists(self.file.name)
 
     def delete(self, *args, **kwargs):
-        # TODO: delete using filename not uuid
-        # (uuid) no warraty uuid is valid filename
-        self.file.storage.delete(self.uuid)
+        # Delete using filename not uuid as 
+        # there is no warraty the uuid is formed as a valid filename
+        self.file.storage.delete(self.file.name)
         super(Version, self).delete(*args, **kwargs)
 
     def _refresh_metadata(self):
