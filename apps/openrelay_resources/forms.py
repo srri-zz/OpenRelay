@@ -3,15 +3,13 @@ from django.utils.translation import ugettext_lazy as _
 
 from django_gpg import Key
 
-from openrelay_resources.models import Resource
-
 from core.runtime import gpg
 
 
-class ResourceForm(forms.ModelForm):
-    class Meta:
-        model = Resource
-        exclude = ('time_stamp',)
+class ResourceForm(forms.Form):
+    file = forms.FileField(
+        label=(u'File'),
+    )
 
     name = forms.CharField(
         label=_(u'Name'),
