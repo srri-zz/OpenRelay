@@ -5,10 +5,11 @@ from django.template import RequestContext
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 
-from django_gpg import GPGSigningError
+from django_gpg import GPGSigningError, Key
+from core.runtime import gpg
 
 from openrelay_resources.forms import ResourceForm
-from openrelay_resources.models import Resource
+from openrelay_resources.models import Resource, Version
 
 
 def _get_object_or_404(model, *args, **kwargs):
@@ -36,10 +37,11 @@ def resource_upload(request):
     if request.method == 'POST':
         form = ResourceForm(request.POST, request.FILES)
         if form.is_valid():
-            pending_resource = form.save(commit=False)
             try:
-                resource = pending_resource.save(
-                    key=form.cleaned_data['key'],
+                resource = Resource()
+                resource.save(
+                    file=request.FILES['file'],
+                    key=Key.get(gpg, form.cleaned_data['key']),
                     name=form.cleaned_data['name'],
                     label=form.cleaned_data['label'],
                     description=form.cleaned_data['description'],
