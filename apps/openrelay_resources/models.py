@@ -8,6 +8,7 @@ from django.core.files.base import ContentFile
 from django.utils.simplejson import dumps, loads
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
+from django.core.exceptions import ValidationError
 
 import magic
 
@@ -15,7 +16,7 @@ from django_gpg import Key, GPGVerificationError, GPGDecryptionError, KeyFetchin
 
 from openrelay_resources.conf.settings import STORAGE_BACKEND
 from openrelay_resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
-    MAGIC_NUMBER, TIME_STAMP_SEPARATOR, MAGIC_VERSION
+    MAGIC_NUMBER, TIMESTAMP_SEPARATOR, MAGIC_VERSION
 from openrelay_resources.exceptions import ORInvalidResourceFile
 from openrelay_resources.filters import FilteredHTML, FilterError
 from openrelay_resources.managers import ResourceManager
@@ -27,17 +28,26 @@ class ResourceBase(models.Model):
     uuid = models.CharField(max_length=48, blank=True, editable=False, verbose_name=_(u'UUID'))
 
     def latest_version(self):
-        return self.version_set.order_by('timestamp')[0]
+        return self.version_set.order_by('-timestamp')[0]
 
     def __getattr__(self, name):
-        return self.latest_version().__getattr__(name)
+        # If an attribute is not found for the Resource instance
+        # try the Version instance
+        return getattr(self.latest_version(), name)
 
+    @property
     def verified_uuid(self):
         return self.latest_version().verified_uuid
 
     def __unicode__(self):
         return self.uuid
-    
+
+
+    def clean(self):
+        # Don't allow timestamp separators in the filename or resource name
+        if TIMESTAMP_SEPARATOR in self.uuid:
+            raise ValidationError('timestamp separators are not allows in the uuid or as part of the resource name')
+            
     class Meta:
         abstract = True
 
@@ -45,18 +55,18 @@ class ResourceBase(models.Model):
 
 
 class VersionBase(models.Model):
-    timestamp = models.PositiveIntegerField(verbose_name=_(u'timestamp'), db_index=True)
+    timestamp = models.PositiveIntegerField(verbose_name=_(u'timestamp'), db_index=True, editable=False)
 
     @staticmethod
     def prepare_full_resource_name(uuid, timestamp):
-        return u'%s%c%s' % (uuid, TIME_STAMP_SEPARATOR, timestamp)
+        return u'%s%c%s' % (uuid, TIMESTAMP_SEPARATOR, timestamp)
 
     @property
-    def full_name(self):
+    def full_uuid(self):
         return VersionBase.prepare_full_resource_name(self.resource.uuid, self.timestamp)
 
     def __unicode__(self):
-        return self.full_name
+        return self.full_uuid
 
     class Meta:
         abstract = True
@@ -74,7 +84,6 @@ class Resource(ResourceBase):
         
     def save(self, *args, **kwargs):
         key = kwargs.pop('key')
-        name = kwargs.pop('name')
         file = kwargs.pop('file')
         label = kwargs.pop('label')
         description = kwargs.pop('description')
@@ -103,7 +112,7 @@ class Resource(ResourceBase):
 
 class Version(VersionBase):
     resource = models.ForeignKey(Resource, verbose_name=_(u'resource'))
-    file = models.FileField(upload_to='resources', storage=STORAGE_BACKEND(), verbose_name=_(u'file'))
+    file = models.FileField(upload_to='resources', storage=STORAGE_BACKEND(), verbose_name=_(u'file'), editable=False)
 
     @staticmethod
     def prepare_resource_url(key, filename):
@@ -126,7 +135,7 @@ class Version(VersionBase):
 
     def save(self, key, *args, **kwargs):
         if self.pk:
-            raise NotImplemented('Resource update is not yet implemented, re upload the content directly from the UI.')
+            raise NotImplemented('Cannot update an existing resource, create a new version from the same content instead.')
 
         name = kwargs.pop('name', None)
         if not name:
@@ -176,7 +185,6 @@ class Version(VersionBase):
     def delete(self, *args, **kwargs):
         # Delete using filename not uuid as 
         # there is no warraty the uuid is formed as a valid filename
-        print 'delete: %s' % self.file.name
         self.file.storage.delete(self.file.name)
         super(Version, self).delete(*args, **kwargs)
 
@@ -194,11 +202,13 @@ class Version(VersionBase):
                 self._content = None
 
     def _decode_result(self, data):
+        # TODO: Change to a regex
         try:
             magic_end = data.index(r'%c' % BINARY_DELIMITER)
             if data[:magic_end] != MAGIC_NUMBER:
                 raise ORInvalidResourceFile('Invalid magic number')
 
+            # TODO: Change all find instances to index?
             version_end = data.find(r'%c' % BINARY_DELIMITER, magic_end + 1)
             if data[magic_end + 1:version_end] != '1':
                 raise ORInvalidResourceFile('Invalid/unknown resource file format version')
@@ -283,10 +293,6 @@ class Version(VersionBase):
     def __getattr__(self, name):
         signature_properties_list = ['is_valid', 'signature_status', 'username', 'signature_id', 'raw_timestamp', 'timestamp', 'fingerprint', 'key_id']
         metadata_attributes_list = ['name', 'label', 'description']
-    
-        if name == 'metadata':
-            self._refresh_metadata()
-            return self._metadata
         
         if name in signature_properties_list:
             try:
@@ -317,6 +323,11 @@ class Version(VersionBase):
         return self._content
 
     @property
+    def metadata(self):
+        self._refresh_metadata()
+        return self._metadata
+
+    @property
     def mimetype(self):
         magic_mime = magic.Magic(mime=True)
         magic_encoding = magic.Magic(mime_encoding=True)
@@ -331,7 +342,7 @@ class Version(VersionBase):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('resource_serve', [self.resource.uuid, self.timestamp])
+        return ('resource_serve', [self.full_uuid])
 
     class Meta(VersionBase.Meta):
         verbose_name = _(u'version')
