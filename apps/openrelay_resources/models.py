@@ -24,31 +24,76 @@ from core.runtime import gpg
 
 class ResourceBase(models.Model):
     uuid = models.CharField(max_length=48, blank=True, editable=False, verbose_name=_(u'UUID'))
-    time_stamp = models.PositiveIntegerField(verbose_name=_(u'timestamp'))
 
     def __unicode__(self):
-        return self.uuid
+        return self.latest_version().verified_uuid
+        #return self.uuid
+
+    def __getattr__(self, name):
+        return self.latest_version().__getattr__(name)
+
+    def latest_version(self):
+        return self.version_set.order_by('timestamp')[0]
+
+    class Meta:
+        abstract = True
+
+    #objects = ResourceManager()
+
+
+class VersionBase(models.Model):
+    timestamp = models.PositiveIntegerField(verbose_name=_(u'timestamp'))
 
     @property
     def full_name(self):
-        return u'%s%c%s' % (self.uuid, TIME_STAMP_SEPARATOR, self.time_stamp)
+        return u'%s%c%s' % (self.resource.uuid, TIME_STAMP_SEPARATOR, self.timestamp)
 
     class Meta:
         abstract = True
 
 
 class Resource(ResourceBase):
-    file = models.FileField(upload_to='resources', storage=STORAGE_BACKEND(), verbose_name=_(u'file'))
-
-    objects = ResourceManager()
-
     @staticmethod
-    def prepare_resource_uuid(key, filename):
-        return RESOURCE_SEPARATOR.join([key, filename])
+    def prepare_resource_uuid(key, name):
+        return RESOURCE_SEPARATOR.join([key.fingerprint, name])
+        
+    @models.permalink
+    def get_absolute_url(self):
+        return ('resource_serve', [self.uuid])
+        
+    def save(self, *args, **kwargs):
+        key = kwargs.pop('key')
+        name = kwargs.pop('name')
+        file = kwargs.pop('file')
+        label = kwargs.pop('label')
+        description = kwargs.pop('description')
+        filter_html= kwargs.pop('filter_html')
+        
+        name = kwargs.pop('name', file.name)
+                    
+        uuid = Resource.prepare_resource_uuid(key, name)
+        try:
+            resource = Resource.objects.get(uuid=uuid)
+        except Resource.DoesNotExist:
+            self.uuid = uuid
+            super(Resource, self).save(*args , **kwargs)
+            resource = self
+        
+        version = Version(resource=resource, file=file)
+        version.save(key=key, name=name, label=label, description=description, filter_html=filter_html)
+    
+    class Meta(ResourceBase.Meta):
+        verbose_name = _(u'resource')
+        verbose_name_plural = _(u'resources')
+
+
+class Version(VersionBase):
+    resource = models.ForeignKey(Resource, verbose_name=_(u'resource'))
+    file = models.FileField(upload_to='resources', storage=STORAGE_BACKEND(), verbose_name=_(u'file'))
 
     @staticmethod
     def prepare_resource_url(key, filename):
-        return urlparse.urljoin(reverse('resource_serve'), Resource.prepare_resource_uuid(key, filename))
+        return urlparse.urljoin(reverse('resource_serve'), Resource.prepare_resource_uuid(key.fingerprint, filename))
 
     @staticmethod
     def encode_metadata(dictionary):
@@ -60,19 +105,24 @@ class Resource(ResourceBase):
         return lambda instance, filename: unicode(return_value)
 
     def __init__(self, *args, **kwargs):
-        super(Resource, self).__init__(*args, **kwargs)
+        super(Version, self).__init__(*args, **kwargs)
         self._signature_properties = {}
         self._metadata = {}
         self._content = None
+        
+    def __unicode__(self):
+        return self.verified_uuid
 
     def save(self, key, *args, **kwargs):
+        if self.pk:
+            raise NotImplemented('Resource update is not yet implemented, re upload the content directly from the UI.')
+
         name = kwargs.pop('name', None)
         if not name:
             name = self.file.name
 
-        uuid = Resource.prepare_resource_uuid(key, name)
         metadata = {
-            'filename': self.file.name,
+            'name': name,
         }
 
         label = kwargs.pop('label')
@@ -88,10 +138,10 @@ class Resource(ResourceBase):
         container.write(r'%c' % BINARY_DELIMITER)
         container.write(MAGIC_VERSION)
         container.write(r'%c' % BINARY_DELIMITER)
-        container.write(Resource.encode_metadata(metadata))
+        container.write(Version.encode_metadata(metadata))
         if kwargs.pop('filter_html'):
             try:
-                container.write(FilteredHTML(self.file.file.read(), url_filter=lambda x: Resource.prepare_resource_url(key, x)))
+                container.write(FilteredHTML(self.file.file.read(), url_filter=lambda x: Version.prepare_resource_url(key, x)))
             except FilterError:
                 self.file.file.seek(0)
                 container.write(self.file.file.read())
@@ -99,28 +149,23 @@ class Resource(ResourceBase):
             container.write(self.file.file.read())
         container.seek(0)
 
-        signature = gpg.sign_file(container, key=Key.get(gpg, key))
+        signature = gpg.sign_file(container, key)
         self.file.file = ContentFile(signature.data)
 
-        self.file.field.generate_filename = Resource.get_fake_upload_to('%s%c%s' % (uuid, TIME_STAMP_SEPARATOR, signature.timestamp))
-        self.uuid = uuid
-        self.time_stamp = int(signature.timestamp)
+        self.file.field.generate_filename = Version.get_fake_upload_to('%s%c%s' % (self.resource.uuid, TIME_STAMP_SEPARATOR, signature.timestamp))
+        self.timestamp = int(signature.timestamp)
 
         container.close()
-        super(Resource, self).save(*args, **kwargs)
-        return self
+        super(Version, self).save(*args, **kwargs)
 
     def exists(self):
         return self.file.storage.exists(self.file.name)
 
     def delete(self, *args, **kwargs):
+        # TODO: delete using filename not uuid
+        # (uuid) no warraty uuid is valid filename
         self.file.storage.delete(self.uuid)
-        super(Resource, self).delete(*args, **kwargs)
-
-    @property
-    def metadata(self):
-        self._refresh_metadata()
-        return self._metadata
+        super(Version, self).delete(*args, **kwargs)
 
     def _refresh_metadata(self):
         if not self._metadata:
@@ -153,9 +198,9 @@ class Resource(ResourceBase):
             raise ORInvalidResourceFile('Magic number, version or metadata markers not found')
 
     @property
-    def real_uuid(self):
+    def verified_uuid(self):
         try:
-            return u'%s%c%s' % (self.fingerprint, RESOURCE_SEPARATOR, self.filename)
+            return u'%s%c%s' % (self.fingerprint, RESOURCE_SEPARATOR, self.name)
         except GPGDecryptionError:
             return None
         except IOError:
@@ -224,14 +269,26 @@ class Resource(ResourceBase):
 
     def __getattr__(self, name):
         signature_properties_list = ['is_valid', 'signature_status', 'username', 'signature_id', 'raw_timestamp', 'timestamp', 'fingerprint', 'key_id']
-        metadata_attributes_list = ['filename', 'label', 'description']
-
+        metadata_attributes_list = ['name', 'label', 'description']
+    
+        if name == 'metadata':
+            self._refresh_metadata()
+            return self._metadata
+        
         if name in signature_properties_list:
-            self._refresh_signature_properties()
-            return self._signature_properties[name]
+            try:
+                self._refresh_signature_properties()
+                return self._signature_properties[name]
+            except KeyError, msg:
+                # Convert KeyError excepetion into an AttributeError
+                # as we are simulating class properties
+                raise AttributeError(msg)
         elif name in metadata_attributes_list:
             self._refresh_metadata()
-            return self._metadata[name]
+            # Don't raise KeyError or AttributeError exception for a
+            # non existant value on 'label' or 'description' as these are
+            # blank by default 
+            return self._metadata.get(name, u'')
         else:
             raise AttributeError
 
@@ -261,8 +318,8 @@ class Resource(ResourceBase):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('resource_serve', [self.uuid, self.time_stamp])
+        return ('resource_serve', [self.resource.uuid, self.timestamp])
 
-    class Meta(ResourceBase.Meta):
-        verbose_name = _(u'resource')
-        verbose_name_plural = _(u'resources')
+    class Meta(VersionBase.Meta):
+        verbose_name = _(u'version')
+        verbose_name_plural = _(u'versions')
