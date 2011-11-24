@@ -23,11 +23,8 @@ def _get_object_or_404(model, *args, **kwargs):
         raise Http404('No %s matches the given query.' % model._meta.object_name)
 
 
-def resource_serve(request, uuid, time_stamp=None):
-    if time_stamp:
-        resource = _get_object_or_404(Resource, uuid=uuid, time_stamp=time_stamp)
-    else:
-        resource = _get_object_or_404(Resource, uuid=uuid)
+def resource_serve(request, uuid):
+    resource = _get_object_or_404(Resource, uuid=uuid)
 
     response = HttpResponse(resource.content, mimetype=u';charset='.join(resource.mimetype))
     return response
@@ -63,13 +60,12 @@ def resource_upload(request):
 
 def resource_list(request):
     query_set = [Resource.objects.get(uuid=resource['uuid']) for resource in Resource.objects.values('uuid').distinct().order_by()]
-
     return render_to_response('resource_list.html', {
-        'object_list': query_set,
+        'object_list': Resource.objects.all()
     }, context_instance=RequestContext(request))
     
     
 def resource_details(request, uuid):
     return render_to_response('resource_details.html', {
-        'object_list': Resource.objects.filter(uuid=uuid).order_by('-time_stamp'),
+        'resource': get_object_or_404(Resource, uuid=uuid),
     }, context_instance=RequestContext(request))

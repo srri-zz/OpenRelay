@@ -1,14 +1,15 @@
 from django.contrib import admin
 
-from openrelay_resources.models import Resource
+from openrelay_resources.models import Resource, Version
+
+
+class VersionInline(admin.StackedInline):
+    model = Version
 
 
 class ResourceAdmin(admin.ModelAdmin):
     model = Resource
-    #list_display = ('user', 'document', 'datetime_accessed')
-    #readonly_fields = ('user', 'document', 'datetime_accessed')
-    #list_filter = ('user',)
-    #date_hierarchy = 'datetime_accessed'
+    inlines = [VersionInline]
 
 
 admin.site.register(Resource, ResourceAdmin)

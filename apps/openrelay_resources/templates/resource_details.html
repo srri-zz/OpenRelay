@@ -14,9 +14,9 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ object_list.0 }}</td>
-                <td>{{ object_list.0.real_uuid }}</td>
-                <td>{{ object_list.0.username }}</td>
+                <td>{{ resource.uuid }}</td>
+                <td>{{ resource.verified_uuid }}</td>
+                <td>{{ resource.username }}</td>
             </tr>
         </tbody>
     </table>
@@ -38,27 +38,23 @@
             </tr>
         </thead>
         <tbody>
-            {% for object in object_list %}
+            {% for version in resource.version_set.all %}
                 <tr>
-                    <td>{{ object.timestamp }}</td>
-                    <td>{{ object.raw_timestamp }}</td>
+                    <td>{{ version.timestamp }}</td>
+                    <td>{{ version.raw_timestamp }}</td>
                     <td>
-                        <ul>
-
-                        {% for key, value in object.metadata.items %}
-                        <li>{{ key }}: {{ value }}</li>
-                        
-                        
-                        {% endfor %}
-                        </ul>
-                    
+                        <table class="bordered-table zebra-striped">
+                            {% for key, value in version.metadata.items %}
+                                <tr><td>{{ key }}</td><td>{{ value }}</td></tr>
+                            {% endfor %}
+                        </table>
                     </td>
-                    <td>{{ object.exists }}</td>
-                    <td>{{ object.is_valid }}</td>
-                    <td>{{ object.signature_status }}</td>
-                    <td>{{ object.mimetype.0 }}</td>
-                    <td>{{ object.mimetype.1 }}</td>
-                    <td><a href="{{ object.get_absolute_url }}">{% trans 'Serve' %}</a></td>
+                    <td>{{ version.exists }}</td>
+                    <td>{{ version.is_valid }}</td>
+                    <td>{{ version.signature_status }}</td>
+                    <td>{{ version.mimetype.0 }}</td>
+                    <td>{{ version.mimetype.1 }}</td>
+                    <td><a href="{{ version.get_absolute_url }}">{% trans 'Serve' %}</a></td>
                 </tr>
             {% endfor %}
         </tbody>
