@@ -99,7 +99,7 @@ class GPG(object):
         """
         if isinstance(file_input, types.StringTypes):
             descriptor = open(file_input, 'rb')
-        elif isinstance(file_input, types.FileType) or isinstance(file_input, File):
+        elif isinstance(file_input, types.FileType) or isinstance(file_input, File) or isinstance(file_input, StringIO):
             descriptor = file_input
         else:
             raise ValueError('Invalid file_input argument type')
@@ -172,7 +172,7 @@ class GPG(object):
     def decrypt_file(self, file_input):
         if isinstance(file_input, types.StringTypes):
             input_descriptor = open(file_input, 'rb')
-        elif isinstance(file_input, types.FileType) or isinstance(file_input, File):
+        elif isinstance(file_input, types.FileType) or isinstance(file_input, File) or isinstance(file_input, StringIO):
             input_descriptor = file_input
         else:
             raise ValueError('Invalid file_input argument type')

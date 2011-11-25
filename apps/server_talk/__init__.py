@@ -9,13 +9,14 @@ from lock_manager.models import Lock
 from lock_manager.exceptions import LockError
 from core.runtime import scheduler
 
-#TODO: rename Resource to NetworkResource
-from server_talk.models import LocalNode, Sibling, Resource, ResourceHolder
+from openrelay_resources.literals import TIMESTAMP_SEPARATOR
+
+from server_talk.models import LocalNode, Sibling, NetworkResourceVersion, ResourceHolder
 from server_talk import models as server_talk_model
 from server_talk.exceptions import HeartbeatError, InventoryHashError
 from server_talk.api import RemoteCall
-from server_talk.conf.settings import HEARTBEAT_QUERY_INTERVAL, \
-INVENTORY_QUERY_INTERVAL
+from server_talk.conf.settings import (HEARTBEAT_QUERY_INTERVAL,
+    INVENTORY_QUERY_INTERVAL)
 
 
 logger = logging.getLogger(__name__)
@@ -29,6 +30,7 @@ def create_identify(sender, **kwargs):
         print 'Existing identify not modified.'
 
 
+# TODO: move this to tasks.py
 @scheduler.interval_schedule(seconds=HEARTBEAT_QUERY_INTERVAL)
 def heartbeat_check():
     '''
@@ -52,6 +54,8 @@ def heartbeat_check():
             lock.release()
 
 
+# TODO: move this to tasks.py
+# TODO: move DB logic to api.py
 @scheduler.interval_schedule(seconds=INVENTORY_QUERY_INTERVAL)
 def inventory_hash_check():
     '''
@@ -71,13 +75,16 @@ def inventory_hash_check():
                 # later the ones it doesn't have anymore
                 ResourceHolder.objects.filter(node__uuid=oldest.uuid).delete()
                 for resource_item in remote_api.resource_list():
-                    resource, created = Resource.objects.get_or_create(uuid=resource_item['uuid'], time_stamp=resource_item['time_stamp'])
+                    uuid, timestamp=resource_item['uuid'].split(TIMESTAMP_SEPARATOR)
+                    print 'uuid', uuid
+                    print 'timestamp', timestamp
+                    resource, created = NetworkResourceVersion.objects.get_or_create(uuid=uuid, timestamp=timestamp)
                     resource.resourceholder_set.get_or_create(node=oldest)
                 
             oldest.inventory_hash = response['inventory_hash']
             oldest.save()
             # Delete network resources that have no holder
-            Resource.objects.filter(resourceholder=None).delete()
+            NetworkResourceVersion.objects.filter(resourceholder=None).delete()
             lock.release()
         except LockError:
             pass

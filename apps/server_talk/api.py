@@ -21,12 +21,38 @@ from django.core.urlresolvers import reverse
 
 from djangorestframework import status
 
-from server_talk.models import LocalNode, Sibling
+from openrelay_resources.models import Version
+
+from server_talk.models import LocalNode, Sibling, NetworkResourceVersion
 from server_talk.conf.settings import PORT
-from server_talk.exceptions import AnnounceClientError, NoSuchNode, \
-    HeartbeatError, InventoryHashError, ResourceListError
+from server_talk.exceptions import (AnnounceClientError, NoSuchNode,
+    HeartbeatError, InventoryHashError, ResourceListError,
+    NetworkResourceNotFound, NetworkResourceDownloadError)
 
 logger = logging.getLogger(__name__)
+
+
+class NetworkCall(object):
+    def find_resource(self, uuid):
+        try:
+            network_resource_version = NetworkResourceVersion.objects.get(uuid=uuid)
+            # Get the holder with the lowest CPU load
+            # TODO: take into account the how stale is the CPU load based on the last query datetime
+            resource_holders = network_resource_version.resourceholder_set.values_list('node', flat=True)
+            resource_holder = Sibling.objects.filter(pk__in=resource_holders).order_by('-cpuload')[0]
+            node = RemoteCall(uuid=resource_holder.uuid)
+            resource_raw = node.download_version(uuid)
+            resource = Version.create(resource_raw)
+
+            # TODO: Verify resource
+            # TODO: Add resource to local cache
+            return resource
+
+        except (NetworkResourceVersion.DoesNotExist, IndexError):
+            raise NetworkResourceNotFound
+
+        except NetworkResourceDownloadError:
+            raise NetworkResourceNotFound
 
 
 class RemoteCall(object):
@@ -47,22 +73,24 @@ class RemoteCall(object):
     def get_full_ip_address(self):
         return u'%s%s' % (self.ip_address, u':%s' % self.port if self.port else '')
 
-    def get_service_url(self, service_name):
-        return urlparse.urlunparse(['http', self.get_full_ip_address(), reverse(service_name), '', '', ''])
+    def get_service_url(self, service_name, *args, **kwargs):
+        return urlparse.urlunparse(['http', self.get_full_ip_address(), reverse(service_name, *args, **kwargs), '', '', ''])
+        
+    def get_id_package(self):
+        return {
+            'ip_address': socket.gethostbyname(socket.gethostname()),
+            'port': PORT,
+            'uuid': LocalNode.get().uuid,
+        }
         
     def announce(self):
         '''
         Announce the local node to another OpenRelay node
         '''
-        local_node_info = {
-            'ip_address': socket.gethostbyname(socket.gethostname()),
-            'port': PORT,
-            'uuid': LocalNode.get().uuid,
-        }
         full_ip_address = self.get_full_ip_address()
         url = self.get_service_url('service-announce')
         try:
-            response = requests.post(url, data=local_node_info)
+            response = requests.post(url, data=self.get_id_package())
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
             raise AnnounceClientError('Unable to join network')
@@ -90,7 +118,7 @@ class RemoteCall(object):
         url = self.get_service_url('service-heartbeat')
         try:
             logger.debug('calling heartbeat service on url: %s' % url)
-            response = requests.get(url, data={'uuid': LocalNode.get().uuid})
+            response = requests.get(url, data=self.get_id_package())
             logger.debug('received heartbeat from url: %s' % url)
             return loads(response.content)
         except requests.ConnectionError:
@@ -104,7 +132,7 @@ class RemoteCall(object):
         url = self.get_service_url('service-inventory_hash')
         try:
             logger.debug('calling inventory_hash service on url: %s' % url)
-            response = requests.get(url, data={'uuid': LocalNode.get().uuid})
+            response = requests.get(url, data=self.get_id_package())
             logger.debug('received inventory_hash from url: %s' % url)
             return loads(response.content)
         except requests.ConnectionError:
@@ -115,12 +143,41 @@ class RemoteCall(object):
         '''
         Retrieve a node's resource list
         '''
-        url = self.get_service_url('resource-root')
+        url = self.get_service_url('version-root')
         try:
             logger.debug('calling resource_list service on url: %s' % url)
-            response = requests.get(url, data={'uuid': LocalNode.get().uuid})
+            response = requests.get(url, data=self.get_id_package())
             logger.debug('received resource_list from url: %s' % url)
             return loads(response.content)
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
             raise ResourceListError('Unable to query node')
+            
+    def heartbeat(self):
+        '''
+        Check a host's availability and cpu load
+        '''
+        url = self.get_service_url('service-heartbeat')
+        try:
+            logger.debug('calling heartbeat service on url: %s' % url)
+            response = requests.get(url, data=self.get_id_package())
+            logger.debug('received heartbeat from url: %s' % url)
+            return loads(response.content)
+        except requests.ConnectionError:
+            logger.error('unable to connect to url: %s' % url)
+            raise HeartbeatError('Unable to query node')          
+            
+            
+    def download_version(self, uuid):
+        '''
+        Download a resource version from a remote node
+        '''
+        url = self.get_service_url('version-download', args=[uuid])
+        try:
+            logger.debug('calling version download on url: %s' % url)
+            response = requests.get(url, data=self.get_id_package())
+            logger.debug('received download from url: %s' % url)
+            return response.content
+        except requests.ConnectionError:
+            logger.error('unable to connect to url: %s' % url)
+            raise NetworkResourceDownloadError('Unable to query node')

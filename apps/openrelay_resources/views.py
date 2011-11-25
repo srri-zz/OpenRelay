@@ -5,10 +5,14 @@ from django.template import RequestContext
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 
-from django_gpg import GPGSigningError
+from django_gpg import GPGSigningError, Key
+from core.runtime import gpg
+
+from server_talk.api import NetworkCall
+from server_talk.exceptions import NetworkResourceNotFound
 
 from openrelay_resources.forms import ResourceForm
-from openrelay_resources.models import Resource
+from openrelay_resources.models import Resource, Version
 
 
 def _get_object_or_404(model, *args, **kwargs):
@@ -22,24 +26,28 @@ def _get_object_or_404(model, *args, **kwargs):
         raise Http404('No %s matches the given query.' % model._meta.object_name)
 
 
-def resource_serve(request, uuid, time_stamp=None):
-    if time_stamp:
-        resource = _get_object_or_404(Resource, uuid=uuid, time_stamp=time_stamp)
-    else:
-        resource = _get_object_or_404(Resource, uuid=uuid)
+def resource_serve(request, uuid):
+    try:
+        resource = Resource.objects.get(uuid=uuid)
+    except Resource.DoesNotExist:
+        network = NetworkCall()
+        try:
+            resource = network.find_resource(uuid)
+        except NetworkResourceNotFound:
+            raise Http404
 
-    response = HttpResponse(resource.content, mimetype=u';charset='.join(resource.mimetype))
-    return response
+    return HttpResponse(resource.content, mimetype=u';charset='.join(resource.mimetype))
 
 
 def resource_upload(request):
     if request.method == 'POST':
         form = ResourceForm(request.POST, request.FILES)
         if form.is_valid():
-            pending_resource = form.save(commit=False)
             try:
-                resource = pending_resource.save(
-                    key=form.cleaned_data['key'],
+                resource = Resource()
+                resource.save(
+                    file=request.FILES['file'],
+                    key=Key.get(gpg, form.cleaned_data['key']),
                     name=form.cleaned_data['name'],
                     label=form.cleaned_data['label'],
                     description=form.cleaned_data['description'],
@@ -61,13 +69,12 @@ def resource_upload(request):
 
 def resource_list(request):
     query_set = [Resource.objects.get(uuid=resource['uuid']) for resource in Resource.objects.values('uuid').distinct().order_by()]
-
     return render_to_response('resource_list.html', {
-        'object_list': query_set,
+        'object_list': Resource.objects.all()
     }, context_instance=RequestContext(request))
     
     
 def resource_details(request, uuid):
     return render_to_response('resource_details.html', {
-        'object_list': Resource.objects.filter(uuid=uuid).order_by('-time_stamp'),
+        'resource': get_object_or_404(Resource, uuid=uuid),
     }, context_instance=RequestContext(request))

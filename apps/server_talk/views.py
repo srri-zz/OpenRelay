@@ -4,7 +4,7 @@ import socket
 import hashlib
 
 from django.utils.translation import ugettext_lazy as _
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.contrib import messages
@@ -15,9 +15,9 @@ from djangorestframework.views import View, ModelView
 from djangorestframework import status
 from djangorestframework.response import Response
 
-from openrelay_resources.models import Resource
+from openrelay_resources.models import Resource, Version
 
-from server_talk.models import LocalNode, Sibling, Resource
+from server_talk.models import LocalNode, Sibling, NetworkResourceVersion
 from server_talk.forms import JoinForm
 from server_talk.api import RemoteCall
 from server_talk.conf.settings import PORT
@@ -28,6 +28,18 @@ logger = logging.getLogger(__name__)
 HASH_FUNCTION = lambda x: hashlib.sha256(x).hexdigest()
 
 
+def _get_object_or_404(model, *args, **kwargs):
+    '''
+    Custom get_object_or_404 as the Django one call .get() method on a
+    QuerySet thus ignoring a custom manager's .get() method
+    '''
+    try:
+        return model.objects.get(*args, **kwargs)
+    except model.DoesNotExist:
+        raise Http404('No %s matches the given query.' % model._meta.object_name)
+
+
+# API views
 class OpenRelayAPI(View):
     """This is the REST API for OpenRelay (https://github.com/Captainkrtek/OpenRelay).
 
@@ -40,23 +52,106 @@ class OpenRelayAPI(View):
 
     def get(self, request):
         return [
-            {'name': 'Resources', 'url': reverse('resource-root')},
-            {'name': 'Services', 'url': reverse('service-root')}
-        ]
-
-
-class ReadOnlyInstanceModelView(InstanceMixin, ReadModelMixin, ModelView):
-    """A view which provides default operations for read only against a model instance."""
-    _suffix = 'Instance'
-
-
-class Services(View):
-    def get(self, request):
-        return [
+            {'name': 'Resources', 'url': reverse('resource_file-root')},
+            {'name': 'Versions', 'url': reverse('version-root')},
             {'name': 'Announce', 'url': reverse('service-announce')},
             {'name': 'Heartbeat', 'url': reverse('service-heartbeat')},
             {'name': 'Inventory hash', 'url': reverse('service-inventory_hash')},
         ]
+
+
+class ResourceFileRoot(View):
+    def get(self, request):
+        return [
+            {
+                'uuid': resource.uuid,
+                'url': reverse('resource_file', args=[resource.uuid]),
+            }
+            for resource in Resource.objects.all()
+        ]
+    
+
+class ResourceFileObject(View):
+    def get(self, request, uuid):
+        resource = get_object_or_404(Resource, uuid=uuid)
+        return {
+            'uuid': resource.uuid,
+            'name': resource.name,
+            'label': resource.label,
+            'description': resource.description,
+            'metadata': resource.metadata,
+            'versions': [
+                {
+                    'timestamp': version.timestamp,
+                    'url': reverse('version', args=[version.full_uuid]),
+                }
+                for version in resource.version_set.all()
+            ],
+            'download': reverse('version-download', args=[resource.uuid]),
+            'serve': reverse('version-serve', args=[resource.uuid]),
+            'latest_version': resource.latest_version().full_uuid,
+        }
+
+   
+class VersionRoot(View):
+    def get(self, request):
+        return [
+            {
+                'uuid': version.full_uuid,
+                'url': reverse('version', args=[version.full_uuid]),
+                'name': version.name,
+                'label': version.label,
+                'description': version.description,                
+            }
+            for version in Version.objects.all()
+        ]    
+
+
+class VersionObject(View):
+    def get(self, request, uuid):
+        version = Resource.objects.get(uuid=uuid)
+        return {
+            'uuid': version.full_uuid,
+            'name': version.name,
+            'label': version.label,
+            'description': version.description,
+            'metadata': version.metadata,
+            'exists': version.exists,
+            'is_valid': version.is_valid,
+            'signature_status': version.signature_status,
+            'mimetype': version.mimetype[0],
+            'encoding': version.mimetype[1],
+            'username': version.username,
+            'signature_id': version.signature_id,
+            'raw_timestamp': version.raw_timestamp,
+            'timestamp': version.timestamp,
+            'fingerprint': version.fingerprint,
+            'key_id': version.key_id,
+            'download': reverse('version-download', args=[version.full_uuid]),
+            'serve': reverse('version-serve', args=[version.full_uuid]),
+        }
+
+        
+class ResourceDownload(View):
+    def get(self, request, uuid):
+        #logger.info('received resource download call from node: %s @ %s' % (node_uuid, request.META['REMOTE_ADDR']))
+        try:
+            resource = Resource.objects.get(uuid=uuid)
+        except Resource.DoesNotExist:
+            raise Http404('No %s matches the given query.' % Resource._meta.object_name)
+
+        return HttpResponse(resource.open())
+
+
+class ResourceServe(View):
+    def get(self, request, uuid):
+        #logger.info('received resource serve call from node: %s @ %s' % (node_uuid, request.META['REMOTE_ADDR']))
+        try:
+            resource = Resource.objects.get(uuid=uuid)
+        except Resource.DoesNotExist:
+            raise Http404('No %s matches the given query.' % Resource._meta.object_name)
+        
+        return HttpResponse(resource.content, mimetype=u';charset='.join(resource.mimetype))
 
 
 class Announce(View):
@@ -96,9 +191,10 @@ class InventoryHash(View):
         uuid = request.GET.get('uuid')
         # TODO: Reject call from non verified nodes
         logger.info('received inventory hash call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
-        return {'inventory_hash': HASH_FUNCTION(u''.join([resource.full_name for resource in Resource.objects.all().order_by('uuid')]))}
-
-
+        return {'inventory_hash': HASH_FUNCTION(u''.join([version.full_uuid for version in Version.objects.all().order_by('timestamp')]))}
+     
+        
+# Interactive views - user
 def join(request):
     if request.method == 'POST':
         form = JoinForm(request.POST)
@@ -139,7 +235,6 @@ def node_info(request):
 
 def resource_list(request):
     return render_to_response('network_resource_list.html', {
-        'object_list': Resource.objects.all(),
+        'object_list': NetworkResourceVersion.objects.all(),
         'title': _(u'Network resource list'),
     }, context_instance=RequestContext(request))
-
