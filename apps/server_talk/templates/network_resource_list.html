@@ -10,13 +10,14 @@
                 <th>{% trans 'UUID' %}</th>
                 <th>{% trans 'Timestamp' %}</th>
                 <th>{% trans 'Holders' %}</th>
+                <th>{% trans 'Links' %}</th>
             </tr>
         </thead>
         <tbody>
             {% for object in object_list %}
                 <tr>
                     <td>{{ object }}</td>
-                    <td>{{ object.time_stamp }}</td>
+                    <td>{{ object.timestamp }}</td>
                     <td>
                         <ul>
                         {% for holder in object.resourceholder_set.all %}
@@ -24,6 +25,7 @@
                         {% endfor %}
                         </ul>
                     </td>
+                    <td><a href="{% url resource_serve object.full_uuid %}">{% trans 'Serve' %}</a></td>
                 </tr>
             {% endfor %}
         </tbody>
