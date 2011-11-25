@@ -43,6 +43,13 @@ To familiarize yourself with the technical details of the project read the :ref:
 
 .. _docs:
 
+----------------
+Getting Involved
+----------------
+
+**OpenRelay**, as mentioned earlier, is under active development. If you're interested in getting involved, clone the repo and send us a pull request with your update. If you're interested
+in becoming a maintainer, email steve@peer.to with your qualifications.
+
 -----------------
 Documentation
 -----------------
@@ -64,3 +71,4 @@ You can also generate the documentation in format other than HTML.
 
 .. _`reStructured Text`: http://docutils.sourceforge.net/rst.html
 .. _Sphinx: http://sphinx.pocoo.org
+
