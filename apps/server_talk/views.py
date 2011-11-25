@@ -235,6 +235,6 @@ def node_info(request):
 
 def resource_list(request):
     return render_to_response('network_resource_list.html', {
-        'object_list': NetworkResourceVersion.objects.all(),
+        'object_list': [NetworkResourceVersion.objects.get(uuid=resource['uuid']) for resource in NetworkResourceVersion.objects.values('uuid').distinct().order_by()],
         'title': _(u'Network resource list'),
     }, context_instance=RequestContext(request))
