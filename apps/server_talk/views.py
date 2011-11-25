@@ -17,7 +17,7 @@ from djangorestframework.response import Response
 
 from openrelay_resources.models import Resource, Version
 
-from server_talk.models import LocalNode, Sibling, NetworkResource
+from server_talk.models import LocalNode, Sibling, NetworkResourceVersion
 from server_talk.forms import JoinForm
 from server_talk.api import RemoteCall
 from server_talk.conf.settings import PORT
@@ -99,6 +99,9 @@ class VersionRoot(View):
             {
                 'uuid': version.full_uuid,
                 'url': reverse('version', args=[version.full_uuid]),
+                'name': version.name,
+                'label': version.label,
+                'description': version.description,                
             }
             for version in Version.objects.all()
         ]    
@@ -232,6 +235,6 @@ def node_info(request):
 
 def resource_list(request):
     return render_to_response('network_resource_list.html', {
-        'object_list': Resource.objects.all(),
+        'object_list': NetworkResourceVersion.objects.all(),
         'title': _(u'Network resource list'),
     }, context_instance=RequestContext(request))
