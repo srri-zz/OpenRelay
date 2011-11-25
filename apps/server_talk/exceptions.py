@@ -23,3 +23,10 @@ class ResourceListError(ServerTalkException):
     Raise when the client node is unable or receives bad data calling
     the resource-list service 
     '''
+
+class NetworkResourceNotFound(ServerTalkException):
+    pass
+
+
+class NetworkResourceDownloadError(ServerTalkException):
+    pass
