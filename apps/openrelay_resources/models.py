@@ -26,9 +26,19 @@ from core.runtime import gpg
 
 class ResourceBase(models.Model):
     uuid = models.CharField(max_length=48, blank=True, editable=False, verbose_name=_(u'UUID'))
+    
+    class LatestVersionCache(object):
+        pk = None
+    
+    _latest_version_cache = LatestVersionCache()
 
     def latest_version(self):
-        return self.version_set.order_by('-timestamp')[0]
+        latest_version_instance = getattr(self, u''.join([self.resource_version_model_name.lower(), '_set'])).order_by('-timestamp')[0]
+
+        if latest_version_instance.pk != self._latest_version_cache.pk:
+            self._latest_version_cache = latest_version_instance
+        
+        return self._latest_version_cache
 
     def __getattr__(self, name):
         # If an attribute is not found for the Resource instance
@@ -63,7 +73,8 @@ class VersionBase(models.Model):
 
     @property
     def full_uuid(self):
-        return VersionBase.prepare_full_resource_name(self.resource.uuid, self.timestamp)
+        resource = getattr(self, self.parent_resource_model_name.lower())
+        return VersionBase.prepare_full_resource_name(resource.uuid, self.timestamp)
 
     def __unicode__(self):
         return self.full_uuid
@@ -73,7 +84,10 @@ class VersionBase(models.Model):
         ordering = ('-timestamp',)
 
 
+
 class Resource(ResourceBase):
+    resource_version_model_name = u'Version'
+
     @staticmethod
     def prepare_resource_uuid(key, name):
         return RESOURCE_SEPARATOR.join([key.fingerprint, name])
@@ -89,13 +103,15 @@ class Resource(ResourceBase):
         description = kwargs.pop('description')
         filter_html= kwargs.pop('filter_html')
         
-        name = kwargs.pop('name', file.name)
+        name = kwargs.pop('name', None)
+        if not name:
+            name = file.name
                     
         uuid = Resource.prepare_resource_uuid(key, name)
         try:
             resource = Resource.objects.get(uuid=uuid)
             self.pk = resource.pk
-            self.uuid = resource.uuid
+            self.uuid = uuid
             super(Resource, self).save(*args , **kwargs)
         except Resource.DoesNotExist:
             self.uuid = uuid
@@ -111,12 +127,15 @@ class Resource(ResourceBase):
 
 
 class Version(VersionBase):
+    parent_resource_model_name = u'Resource'
+    
     resource = models.ForeignKey(Resource, verbose_name=_(u'resource'))
     file = models.FileField(upload_to='resources', storage=STORAGE_BACKEND(), verbose_name=_(u'file'), editable=False)
 
     @staticmethod
     def prepare_resource_url(key, filename):
-        return urlparse.urljoin(reverse('resource_serve'), Resource.prepare_resource_uuid(key.fingerprint, filename))
+        #return urlparse.urljoin(reverse('resource_serve', args=[Resource.prepare_resource_uuid(key.fingerprint, filename)]))
+        return reverse('resource_serve', args=[Resource.prepare_resource_uuid(key, filename)])
 
     @staticmethod
     def encode_metadata(dictionary):
@@ -127,11 +146,18 @@ class Version(VersionBase):
     def get_fake_upload_to(return_value):
         return lambda instance, filename: unicode(return_value)
 
+    @classmethod
+    def create(cls, data):
+        version = cls()
+        version._raw = data
+        return version
+
     def __init__(self, *args, **kwargs):
         super(Version, self).__init__(*args, **kwargs)
         self._signature_properties = {}
         self._metadata = {}
         self._content = None
+        self._raw = None
 
     def save(self, key, *args, **kwargs):
         if self.pk:
@@ -315,7 +341,13 @@ class Version(VersionBase):
         """
         Returns a file-like object to the resource data
         """
-        return self.file.storage.open(self.file.name)
+        if self._raw:
+            container = StringIO()
+            container.write(self._raw)
+            container.seek(0)
+            return container
+        else:
+            return self.file.storage.open(self.file.name)
 
     @property
     def content(self):
