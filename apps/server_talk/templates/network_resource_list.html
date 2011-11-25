@@ -7,24 +7,20 @@
     <table class="bordered-table zebra-striped">
         <thead>
             <tr>
-                <th>{% trans 'UUID' %}</th>
+                <th>{% trans 'Name' %}</th>
+                <th>{% trans 'Label' %}</th>
+                <th>{% trans 'Description' %}</th>
                 <th>{% trans 'Timestamp' %}</th>
-                <th>{% trans 'Holders' %}</th>
                 <th>{% trans 'Links' %}</th>
             </tr>
         </thead>
         <tbody>
             {% for object in object_list %}
                 <tr>
-                    <td>{{ object }}</td>
-                    <td>{{ object.timestamp }}</td>
-                    <td>
-                        <ul>
-                        {% for holder in object.resourceholder_set.all %}
-                            <li>{{ holder }}</li>
-                        {% endfor %}
-                        </ul>
-                    </td>
+                    <td>{{ object.name }}</td>
+                    <td>{{ object.label }}</td>
+                    <td>{{ object.description }}</td>
+                    <td>{{ object.formated_timestamp }}</td>
                     <td><a href="{% url resource_serve object.full_uuid %}">{% trans 'Serve' %}</a></td>
                 </tr>
             {% endfor %}

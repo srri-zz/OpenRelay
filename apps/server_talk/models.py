@@ -82,6 +82,9 @@ class NetworkResourceVersionManager(models.Manager):
 class NetworkResourceVersion(models.Model):
     uuid = models.CharField(max_length=48, blank=True, editable=False, verbose_name=_(u'UUID'))
     timestamp = models.PositiveIntegerField(verbose_name=_(u'timestamp'), db_index=True, editable=False)
+    name = models.CharField(max_length=255, verbose_name=_(u'name'), editable=False)
+    label = models.CharField(blank=True, max_length=255, verbose_name=_(u'label'), editable=False)
+    description = models.TextField(blank=True, verbose_name=_(u'description'), editable=False)
     
     objects = NetworkResourceVersionManager()
 
@@ -90,6 +93,10 @@ class NetworkResourceVersion(models.Model):
         
     def full_uuid(self):
         return VersionBase.prepare_full_resource_name(self.uuid, self.timestamp)
+    
+    @property
+    def formated_timestamp(self):
+        return datetime.datetime.fromtimestamp(self.timestamp)
         
     class Meta(Nodebase.Meta):
         verbose_name = _(u'network resource version')
