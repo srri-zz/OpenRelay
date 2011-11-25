@@ -4,7 +4,8 @@ import socket
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from openrelay_resources.models import ResourceBase
+from openrelay_resources.models import ResourceBase, VersionBase
+from openrelay_resources.literals import TIMESTAMP_SEPARATOR
 
 from server_talk.conf.settings import PORT
 
@@ -20,8 +21,12 @@ class Nodebase(models.Model):
         verbose_name = _(u'node')
         verbose_name_plural = _(u'nodes')
 
-
+        
 class LocalNode(Nodebase):
+    '''
+    This class holds information of the currenty node, the "self" node, 
+    and it is a singleton model
+    '''
     lock_id = models.CharField(max_length=1, default='1', editable=False, verbose_name=_(u'lock field'), unique=True)
 
     @classmethod
@@ -62,12 +67,37 @@ class Sibling(Nodebase):
         verbose_name_plural = _(u'sibling nodes')
 
 
-class NetworkResource(ResourceBase):
-    pass
+class NetworkResourceVersionManager(models.Manager):
+    def get(self, uuid):
+        try:
+            simple_uuid, timestamp = uuid.split(TIMESTAMP_SEPARATOR)
+            return super(NetworkResourceVersionManager, self).get(uuid=simple_uuid, timestamp=timestamp)
+        except ValueError:
+            try:
+                return super(NetworkResourceVersionManager, self).filter(uuid=uuid).order_by('-timestamp')[0]
+            except IndexError:
+                raise self.model.DoesNotExist
+
+
+class NetworkResourceVersion(models.Model):
+    uuid = models.CharField(max_length=48, blank=True, editable=False, verbose_name=_(u'UUID'))
+    timestamp = models.PositiveIntegerField(verbose_name=_(u'timestamp'), db_index=True, editable=False)
     
+    objects = NetworkResourceVersionManager()
+
+    def __unicode__(self):
+        return self.uuid
+        
+    def full_uuid(self):
+        return VersionBase.prepare_full_resource_name(self.uuid, self.timestamp)
+        
+    class Meta(Nodebase.Meta):
+        verbose_name = _(u'network resource version')
+        verbose_name_plural = _(u'network resource versions')
+
     
 class ResourceHolder(models.Model):
-    resource = models.ForeignKey(NetworkResource, verbose_name=_(u'resource'))
+    resource_version = models.ForeignKey(NetworkResourceVersion, verbose_name=_(u'resource version'))
     node = models.ForeignKey(Sibling, verbose_name=_(u'Sibling'))
     
     def __unicode__(self):
