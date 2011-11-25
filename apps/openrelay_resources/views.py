@@ -8,6 +8,9 @@ from django.core.urlresolvers import reverse
 from django_gpg import GPGSigningError, Key
 from core.runtime import gpg
 
+from server_talk.api import NetworkCall
+from server_talk.exceptions import NetworkResourceNotFound
+
 from openrelay_resources.forms import ResourceForm
 from openrelay_resources.models import Resource, Version
 
@@ -24,10 +27,16 @@ def _get_object_or_404(model, *args, **kwargs):
 
 
 def resource_serve(request, uuid):
-    resource = _get_object_or_404(Resource, uuid=uuid)
+    try:
+        resource = Resource.objects.get(uuid=uuid)
+    except Resource.DoesNotExist:
+        network = NetworkCall()
+        try:
+            resource = network.find_resource(uuid)
+        except NetworkResourceNotFound:
+            raise Http404
 
-    response = HttpResponse(resource.content, mimetype=u';charset='.join(resource.mimetype))
-    return response
+    return HttpResponse(resource.content, mimetype=u';charset='.join(resource.mimetype))
 
 
 def resource_upload(request):
