@@ -12,7 +12,6 @@
 
 import urlparse
 import logging
-import socket
 
 import requests
 
@@ -24,7 +23,7 @@ from djangorestframework import status
 from openrelay_resources.models import Version
 
 from server_talk.models import LocalNode, Sibling, NetworkResourceVersion
-from server_talk.conf.settings import PORT
+from server_talk.conf.settings import PORT, IPADDRESS
 from server_talk.exceptions import (AnnounceClientError, NoSuchNode,
     HeartbeatError, InventoryHashError, ResourceListError,
     NetworkResourceNotFound, NetworkResourceDownloadError)
@@ -78,7 +77,7 @@ class RemoteCall(object):
         
     def get_id_package(self):
         return {
-            'ip_address': socket.gethostbyname(socket.gethostname()),
+            'ip_address': IPADDRESS,
             'port': PORT,
             'uuid': LocalNode.get().uuid,
         }
