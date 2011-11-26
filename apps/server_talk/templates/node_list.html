@@ -11,9 +11,9 @@
                 <th>{% trans 'IP address' %}</th>
                 <th>{% trans 'Port' %}</th>
                 <th>{% trans 'Last heartbeat' %}</th>
+                <th>{% trans 'Status' %}</th>
                 <th>{% trans 'CPU load' %}</th>
                 <th>{% trans 'Last inventory hash' %}</th>
-                <th>{% trans 'Inventory hash' %}</th>
             </tr>
         </thead>
         <tbody>
@@ -23,9 +23,9 @@
                     <td>{{ object.ip_address }}</td>
                     <td>{{ object.port }}</td>
                     <td>{{ object.last_heartbeat }}</td>
+                    <td>{{ object.get_status_display }}</td>
                     <td>{{ object.cpuload }}</td>
                     <td>{{ object.last_inventory_hash }}</td>
-                    <td>{{ object.inventory_hash }}</td>
                 </tr>
             {% endfor %}
         </tbody>
