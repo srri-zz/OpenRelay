@@ -9,6 +9,7 @@ from server_talk import models as server_talk_model
 from server_talk.tasks import heartbeat_check, inventory_hash_check
 from server_talk.conf.settings import (HEARTBEAT_QUERY_INTERVAL,
     INVENTORY_QUERY_INTERVAL)
+from server_talk.models import LocalNode
 
 logger = logging.getLogger(__name__)
 
