@@ -61,7 +61,7 @@ class OpenRelayAPI(View):
 
 
 class ResourceFileRoot(View):
-    def get(self, request):
+    def post(self, request):
         return [
             {
                 'uuid': resource.uuid,
@@ -72,7 +72,7 @@ class ResourceFileRoot(View):
     
 
 class ResourceFileObject(View):
-    def get(self, request, uuid):
+    def post(self, request, uuid):
         resource = get_object_or_404(Resource, uuid=uuid)
         return {
             'uuid': resource.uuid,
@@ -94,7 +94,7 @@ class ResourceFileObject(View):
 
    
 class VersionRoot(View):
-    def get(self, request):
+    def post(self, request):
         return [
             {
                 'uuid': version.full_uuid,
@@ -108,7 +108,7 @@ class VersionRoot(View):
 
 
 class VersionObject(View):
-    def get(self, request, uuid):
+    def post(self, request, uuid):
         version = Resource.objects.get(uuid=uuid)
         return {
             'uuid': version.full_uuid,
@@ -133,7 +133,7 @@ class VersionObject(View):
 
         
 class ResourceDownload(View):
-    def get(self, request, uuid):
+    def post(self, request, uuid):
         #logger.info('received resource download call from node: %s @ %s' % (node_uuid, request.META['REMOTE_ADDR']))
         try:
             resource = Resource.objects.get(uuid=uuid)
@@ -144,7 +144,7 @@ class ResourceDownload(View):
 
 
 class ResourceServe(View):
-    def get(self, request, uuid):
+    def post(self, request, uuid):
         #logger.info('received resource serve call from node: %s @ %s' % (node_uuid, request.META['REMOTE_ADDR']))
         try:
             resource = Resource.objects.get(uuid=uuid)
@@ -179,7 +179,7 @@ class Announce(View):
 
 
 class Heartbeat(View):
-    def get(self, request):
+    def post(self, request):
         uuid = request.GET.get('uuid')
         # TODO: Reject call from non verified nodes
         logger.info('received heartbeat call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
@@ -187,7 +187,7 @@ class Heartbeat(View):
 
 
 class InventoryHash(View):
-    def get(self, request):
+    def post(self, request):
         uuid = request.GET.get('uuid')
         # TODO: Reject call from non verified nodes
         logger.info('received inventory hash call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))

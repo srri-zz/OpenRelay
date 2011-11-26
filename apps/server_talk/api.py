@@ -117,7 +117,7 @@ class RemoteCall(object):
         url = self.get_service_url('service-heartbeat')
         try:
             logger.debug('calling heartbeat service on url: %s' % url)
-            response = requests.get(url, data=self.get_id_package())
+            response = requests.post(url, data=self.get_id_package())
             logger.debug('received heartbeat from url: %s' % url)
             return loads(response.content)
         except requests.ConnectionError:
@@ -131,7 +131,7 @@ class RemoteCall(object):
         url = self.get_service_url('service-inventory_hash')
         try:
             logger.debug('calling inventory_hash service on url: %s' % url)
-            response = requests.get(url, data=self.get_id_package())
+            response = requests.post(url, data=self.get_id_package())
             logger.debug('received inventory_hash from url: %s' % url)
             return loads(response.content)
         except requests.ConnectionError:
@@ -145,7 +145,7 @@ class RemoteCall(object):
         url = self.get_service_url('version-root')
         try:
             logger.debug('calling resource_list service on url: %s' % url)
-            response = requests.get(url, data=self.get_id_package())
+            response = requests.post(url, data=self.get_id_package())
             logger.debug('received resource_list from url: %s' % url)
             return loads(response.content)
         except requests.ConnectionError:
@@ -159,13 +159,12 @@ class RemoteCall(object):
         url = self.get_service_url('service-heartbeat')
         try:
             logger.debug('calling heartbeat service on url: %s' % url)
-            response = requests.get(url, data=self.get_id_package())
+            response = requests.post(url, data=self.get_id_package())
             logger.debug('received heartbeat from url: %s' % url)
             return loads(response.content)
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
             raise HeartbeatError('Unable to query node')          
-            
             
     def download_version(self, uuid):
         '''
@@ -174,7 +173,7 @@ class RemoteCall(object):
         url = self.get_service_url('version-download', args=[uuid])
         try:
             logger.debug('calling version download on url: %s' % url)
-            response = requests.get(url, data=self.get_id_package())
+            response = requests.post(url, data=self.get_id_package())
             logger.debug('received download from url: %s' % url)
             return response.content
         except requests.ConnectionError:
