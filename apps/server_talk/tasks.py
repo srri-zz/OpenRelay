@@ -8,6 +8,7 @@ from openrelay_resources.literals import TIMESTAMP_SEPARATOR
 from server_talk.exceptions import HeartbeatError, InventoryHashError
 from server_talk.api import RemoteCall
 from server_talk.models import LocalNode, Sibling, NetworkResourceVersion, ResourceHolder
+from server_talk.literals import NODE_STATUS_DOWN, NODE_STATUS_UP
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ def heartbeat_check():
     Find the node with the oldest hearbeat timestamp and query it
     '''
     logging.debug('DEBUG: heartbeat_check()')
-    siblings = Sibling.objects.all().order_by('last_heartbeat')
+    siblings = Sibling.objects.filter().order_by('last_heartbeat')
     if siblings:
         oldest = siblings[0]
         try:
@@ -26,21 +27,24 @@ def heartbeat_check():
             oldest.last_heartbeat = datetime.datetime.now()
             response = node.heartbeat()
             oldest.cpuload = int(float(response['cpuload']))
+            oldest.status = NODE_STATUS_UP
             oldest.save()
             lock.release()
         except LockError:
             pass
         except HeartbeatError:
+            oldest.status = NODE_STATUS_DOWN
+            oldest.save()
             lock.release()
 
-# TODO: move DB logic to api.py
 
+# TODO: move DB logic to api.py
 def inventory_hash_check():
     '''
     Find the node with the oldest inventory timestamp and query it
     '''
     logging.debug('DEBUG: inventory_hash_check()')
-    siblings = Sibling.objects.all().order_by('last_inventory_hash')
+    siblings = Sibling.objects.filter(status=NODE_STATUS_UP).order_by('last_inventory_hash')
     if siblings:
         oldest = siblings[0]
         try:
