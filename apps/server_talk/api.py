@@ -40,8 +40,8 @@ class NetworkCall(object):
             # Get the holder with the lowest CPU load and that are alive
             resource_holder = network_resource_version.resourceholder_set.filter(node__status=NODE_STATUS_UP).order_by('-node__cpuload')[0].node
             node = RemoteCall(uuid=resource_holder.uuid)
-            resource_raw = node.download_version(uuid)
-            remote_resource = Version.create(resource_raw)
+            resource_raw_data = node.download_version(uuid)
+            remote_resource = Version.create_from_raw(resource_raw_data)
             return remote_resource
 
         except (NetworkResourceVersion.DoesNotExist, IndexError, ORInvalidResourceFile, NetworkResourceDownloadError), msg:
