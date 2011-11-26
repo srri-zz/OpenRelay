@@ -5,8 +5,10 @@ from django.template import RequestContext
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 
+from server_talk.api import NetworkCall
+
 from django_gpg import Key
-from django_gpg.forms import NewKeyForm
+from django_gpg.forms import NewKeyForm, KeySelectionForm
 
 from core.runtime import gpg
 
@@ -68,3 +70,25 @@ def key_delete(request, fingerprint, key_type):
         'title': _(u'Delete key'),
         'message': _(u'Are you sure you wish to delete key:%s?  If you try to delete a public key that is part of a public/private pair the private key will be deleted as well.') % Key.get(gpg, fingerprint)
     }, context_instance=RequestContext(request))
+
+    
+def key_publish(request):
+    if request.method == 'POST':
+        form = KeySelectionForm(request.POST)
+        if form.is_valid():
+            try:
+                network = NetworkCall()
+                key = Key.get(gpg, form.cleaned_data['key'])
+                network.publish_key(key)
+                messages.success(request, _(u'Key publish request for key: %s, has been sent') % key)
+                return HttpResponseRedirect(reverse('home_view'))
+            except AnnounceClientError:
+                messages.error(request, _(u'Unable to send key publish call'))
+                return HttpResponseRedirect(reverse('key_publish'))
+    else:
+        form = KeySelectionForm()
+
+    return render_to_response('generic_form.html', {
+        'form': form,
+        'title': _(u'Publish a key to the OpenRelay network'),
+    }, context_instance=RequestContext(request))       

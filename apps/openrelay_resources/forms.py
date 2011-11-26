@@ -31,7 +31,7 @@ class ResourceForm(forms.Form):
     )
 
     key = forms.ChoiceField(
-        choices=[(key.fingerprint, key) for key in Key.get_all(gpg, secret=True)],
+        choices=[],
         label=_(u'Key'),
         help_text=_(u'The private key that will be used to sign the file.'),
     )
@@ -41,3 +41,9 @@ class ResourceForm(forms.Form):
         help_text=_(u'Automatically convert relative references to images, links, CSS and Javascript.'),
         initial=True
     )
+
+
+    def __init__(self, *args, **kwargs):
+        super(ResourceForm, self).__init__(*args, **kwargs)
+        self.fields['key'].choices = [(key.fingerprint, key) for key in Key.get_all(gpg, secret=True)]
+        self.fields['key'].widget.attrs = {'style': 'width: auto;'}

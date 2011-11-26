@@ -20,7 +20,8 @@ from django.core.urlresolvers import reverse
 
 from djangorestframework import status
 
-from openrelay_resources.models import Version
+from openrelay_resources.models import Resource, Version
+from openrelay_resources.exceptions import ORInvalidResourceFile
 
 from server_talk.models import LocalNode, Sibling, NetworkResourceVersion
 from server_talk.conf.settings import PORT, IPADDRESS
@@ -40,17 +41,15 @@ class NetworkCall(object):
             resource_holder = network_resource_version.resourceholder_set.filter(node__status=NODE_STATUS_UP).order_by('-node__cpuload')[0].node
             node = RemoteCall(uuid=resource_holder.uuid)
             resource_raw = node.download_version(uuid)
-            resource = Version.create(resource_raw)
+            remote_resource = Version.create(resource_raw)
+            return remote_resource
 
-            # TODO: Verify resource
-            # TODO: Add resource to local cache
-            return resource
-
-        except (NetworkResourceVersion.DoesNotExist, IndexError):
-            raise NetworkResourceNotFound
-
-        except NetworkResourceDownloadError:
-            raise NetworkResourceNotFound
+        except (NetworkResourceVersion.DoesNotExist, IndexError, ORInvalidResourceFile, NetworkResourceDownloadError), msg:
+            raise NetworkResourceNotFound(msg)
+            
+    def publish_key(self, key):
+        # For now publishes key to http://peer.to keyserver
+        response = requests.post(u'http://peer.to:11371/pks/add', data={'keytext': key.data})
 
 
 class RemoteCall(object):

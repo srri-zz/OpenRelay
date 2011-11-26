@@ -150,7 +150,14 @@ class Version(VersionBase):
     def create(cls, data):
         version = cls()
         version._raw = data
-        return version
+        version._refresh_signature_properties()
+        # TODO: better verification method
+        # TODO: pass exceptions to caller
+        if version.verify:
+            version.save(new=False)
+            return version
+        else:
+            raise ORInvalidResourceFile('Remote resource failed verification')
 
     def __init__(self, *args, **kwargs):
         super(Version, self).__init__(*args, **kwargs)
@@ -159,50 +166,54 @@ class Version(VersionBase):
         self._content = None
         self._raw = None
 
-    def save(self, key, *args, **kwargs):
+    def save(self, key=None, new=True, *args, **kwargs):
         if self.pk:
             raise NotImplemented('Cannot update an existing resource, create a new version from the same content instead.')
 
-        name = kwargs.pop('name', None)
-        if not name:
-            name = self.file.name
+        if new:
+            name = kwargs.pop('name', None)
+            if not name:
+                name = self.file.name
 
-        metadata = {
-            'name': name,
-        }
+            self._metadata = {
+                'name': name,
+            }
 
-        label = kwargs.pop('label')
-        if label:
-            metadata['label'] = label
+            label = kwargs.pop('label')
+            if label:
+                self._metadata['label'] = label
 
-        description = kwargs.pop('description')
-        if description:
-            metadata['description'] = description
+            description = kwargs.pop('description')
+            if description:
+                self._metadata['description'] = description
 
-        container = StringIO()
-        container.write(MAGIC_NUMBER)
-        container.write(r'%c' % BINARY_DELIMITER)
-        container.write(MAGIC_VERSION)
-        container.write(r'%c' % BINARY_DELIMITER)
-        container.write(Version.encode_metadata(metadata))
-        if kwargs.pop('filter_html'):
-            try:
-                container.write(FilteredHTML(self.file.file.read(), url_filter=lambda x: Version.prepare_resource_url(key, x)))
-            except FilterError:
-                self.file.file.seek(0)
+            container = StringIO()
+            container.write(MAGIC_NUMBER)
+            container.write(r'%c' % BINARY_DELIMITER)
+            container.write(MAGIC_VERSION)
+            container.write(r'%c' % BINARY_DELIMITER)
+            container.write(Version.encode_metadata(self._metadata))
+
+            if kwargs.pop('filter_html'):
+                try:
+                    container.write(FilteredHTML(self.file.file.read(), url_filter=lambda x: Version.prepare_resource_url(key, x)))
+                except FilterError:
+                    self.file.file.seek(0)
+                    container.write(self.file.file.read())
+            else:
                 container.write(self.file.file.read())
+
+            container.seek(0)
+            signature = gpg.sign_file(container, key)
+            container.close()
+            self.timestamp = int(signature.timestamp)
+            self.file.file = ContentFile(signature.data)
+            # Add slugify to sanitize the final filename
+            self.file.field.generate_filename = Version.get_fake_upload_to(slugify(Version.prepare_full_resource_name(self.resource.uuid, signature.timestamp)))
         else:
-            container.write(self.file.file.read())
-        container.seek(0)
+            self.file.file = ContentFile(self._raw)
+            self.file.field.generate_filename = Version.get_fake_upload_to(slugify(Version.prepare_full_resource_name(self.verified_uuid, signature.timestamp)))
 
-        signature = gpg.sign_file(container, key)
-        self.file.file = ContentFile(signature.data)
-
-        # Added slugify to sanitize the final filename
-        self.file.field.generate_filename = Version.get_fake_upload_to(slugify(Version.prepare_full_resource_name(self.resource.uuid, signature.timestamp)))
-        self.timestamp = int(signature.timestamp)
-
-        container.close()
         super(Version, self).save(*args, **kwargs)
 
     def exists(self):
@@ -260,7 +271,7 @@ class Version(VersionBase):
             ORInvalidResourceFile('UUID verification error')
 
     def _verify(self):
-        if not self.file.name:
+        if not self.file.name and not self._raw:
             return False
 
         try:
@@ -282,6 +293,7 @@ class Version(VersionBase):
         if not self._signature_properties:
             try:
                 verify = self._verify()
+                self.verify = verify
                 if verify:
                     self._signature_properties = {
                         'signature_status': verify.status,
@@ -291,7 +303,7 @@ class Version(VersionBase):
                         'fingerprint': verify.fingerprint,
                         'is_valid': True,
                         'raw_timestamp': verify.sig_timestamp,
-                        'timestamp': datetime.fromtimestamp(int(verify.sig_timestamp)),
+                        'timestamp_display': datetime.fromtimestamp(int(verify.sig_timestamp)),
                     }
                 else:
                     self._signature_properties = {
@@ -302,7 +314,7 @@ class Version(VersionBase):
                         'fingerprint': None,
                         'is_valid': False,
                         'raw_timestamp': None,
-                        'timestamp': None,
+                        'timestamp_display': None,
                     }
             except GPGVerificationError, msg:
                 self._signature_properties = {
@@ -313,11 +325,11 @@ class Version(VersionBase):
                     'fingerprint': None,
                     'is_valid': False,
                     'raw_timestamp': None,
-                    'timestamp': None,
+                    'timestamp_display': None,
                 }
 
     def __getattr__(self, name):
-        signature_properties_list = ['is_valid', 'signature_status', 'username', 'signature_id', 'raw_timestamp', 'timestamp', 'fingerprint', 'key_id']
+        signature_properties_list = ['is_valid', 'signature_status', 'username', 'signature_id', 'raw_timestamp', 'timestamp_display', 'fingerprint', 'key_id']
         metadata_attributes_list = ['name', 'label', 'description']
         
         if name in signature_properties_list:
