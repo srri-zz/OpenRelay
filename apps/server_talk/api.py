@@ -27,6 +27,7 @@ from server_talk.conf.settings import PORT, IPADDRESS
 from server_talk.exceptions import (AnnounceClientError, NoSuchNode,
     HeartbeatError, InventoryHashError, ResourceListError,
     NetworkResourceNotFound, NetworkResourceDownloadError)
+from server_talk.literals import NODE_STATUS_UP
 
 logger = logging.getLogger(__name__)
 
@@ -35,10 +36,8 @@ class NetworkCall(object):
     def find_resource(self, uuid):
         try:
             network_resource_version = NetworkResourceVersion.objects.get(uuid=uuid)
-            # Get the holder with the lowest CPU load
-            # TODO: take into account the how stale is the CPU load based on the last query datetime
-            resource_holders = network_resource_version.resourceholder_set.values_list('node', flat=True)
-            resource_holder = Sibling.objects.filter(pk__in=resource_holders).order_by('-cpuload')[0]
+            # Get the holder with the lowest CPU load and that are alive
+            resource_holder = network_resource_version.resourceholder_set.filter(node__status=NODE_STATUS_UP).order_by('-node__cpuload')[0].node
             node = RemoteCall(uuid=resource_holder.uuid)
             resource_raw = node.download_version(uuid)
             resource = Version.create(resource_raw)
