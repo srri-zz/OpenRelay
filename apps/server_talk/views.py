@@ -41,13 +41,8 @@ def _get_object_or_404(model, *args, **kwargs):
 
 # API views
 class OpenRelayAPI(View):
-    """This is the REST API for OpenRelay (https://github.com/Captainkrtek/OpenRelay).
-
-    All the API calls allow anonymous access, and can be navigated either through the browser or from the command line...
-
-        bash: curl -X GET http://127.0.0.1:8000/api/                           # (Use default renderer)
-        bash: curl -X GET http://127.0.0.1:8000/api/ -H 'Accept: text/plain'   # (Use plaintext documentation renderer)
-
+    """
+    This is the REST API for OpenRelay (https://github.com/Captainkrtek/OpenRelay).
     """
 
     def get(self, request):
