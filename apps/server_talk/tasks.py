@@ -9,6 +9,7 @@ from server_talk.exceptions import HeartbeatError, InventoryHashError
 from server_talk.api import RemoteCall
 from server_talk.models import LocalNode, Sibling, NetworkResourceVersion, ResourceHolder
 from server_talk.literals import NODE_STATUS_DOWN, NODE_STATUS_UP
+from server_talk.conf.settings import HEARTBEAT_FAILURE_THRESHOLD
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,9 @@ def heartbeat_check():
             oldest.status = NODE_STATUS_DOWN
             oldest.failure_count += 1
             oldest.save()
+            if oldest.failure_count > HEARTBEAT_FAILURE_THRESHOLD:
+                oldest.delete()
+
             lock.release()
 
 
