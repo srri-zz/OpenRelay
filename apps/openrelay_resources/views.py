@@ -33,8 +33,8 @@ def resource_serve(request, uuid):
         network = NetworkCall()
         try:
             resource = network.find_resource(uuid)
-        except NetworkResourceNotFound:
-            raise Http404
+        except NetworkResourceNotFound, msg:
+            raise Http404(msg)
 
     return HttpResponse(resource.content, mimetype=u';charset='.join(resource.mimetype))
 
