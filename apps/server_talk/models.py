@@ -8,6 +8,7 @@ from openrelay_resources.models import ResourceBase, VersionBase
 from openrelay_resources.literals import TIMESTAMP_SEPARATOR
 
 from server_talk.conf.settings import PORT
+from server_talk.literals import NODE_STATUS_DOWN, NODE_STATUS_CHOICES
 
 
 class Nodebase(models.Model):
@@ -53,12 +54,14 @@ class LocalNode(Nodebase):
         verbose_name_plural = _(u'local node')
 
 
+
 class Sibling(Nodebase):
     ip_address = models.IPAddressField(verbose_name=_(u'URL'))
     port = models.PositiveIntegerField(blank=True, verbose_name=_(u'port'))
     #verified = models.BooleanField(verbose_name=_(u'verified'))  #GPG Key verified?
     last_heartbeat = models.DateTimeField(blank=True, default=datetime.datetime.now(), verbose_name=_(u'last heartbeat check'))
     cpuload = models.PositiveIntegerField(blank=True, default=0, verbose_name=_(u'cpu load'))
+    status = models.PositiveIntegerField(choices=NODE_STATUS_CHOICES, default=NODE_STATUS_DOWN, verbose_name=_(u'status'))
     last_inventory_hash = models.DateTimeField(blank=True, default=datetime.datetime.now(), verbose_name=_(u'last inventory check'))
     inventory_hash = models.CharField(max_length=64, blank=True, verbose_name=_(u'inventory hash'))
 
