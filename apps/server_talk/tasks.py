@@ -28,12 +28,14 @@ def heartbeat_check():
             response = node.heartbeat()
             oldest.cpuload = int(float(response['cpuload']))
             oldest.status = NODE_STATUS_UP
+            oldest.failure_count = 0
             oldest.save()
             lock.release()
         except LockError:
             pass
         except HeartbeatError:
             oldest.status = NODE_STATUS_DOWN
+            oldest.failure_count += 1
             oldest.save()
             lock.release()
 

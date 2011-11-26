@@ -62,6 +62,7 @@ class Sibling(Nodebase):
     last_heartbeat = models.DateTimeField(blank=True, default=datetime.datetime.now(), verbose_name=_(u'last heartbeat check'))
     cpuload = models.PositiveIntegerField(blank=True, default=0, verbose_name=_(u'cpu load'))
     status = models.PositiveIntegerField(choices=NODE_STATUS_CHOICES, default=NODE_STATUS_DOWN, verbose_name=_(u'status'))
+    failure_count = models.PositiveIntegerField(default=0, verbose_name=_('failure count'))
     last_inventory_hash = models.DateTimeField(blank=True, default=datetime.datetime.now(), verbose_name=_(u'last inventory check'))
     inventory_hash = models.CharField(max_length=64, blank=True, verbose_name=_(u'inventory hash'))
 
