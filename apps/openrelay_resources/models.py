@@ -84,7 +84,6 @@ class VersionBase(models.Model):
         ordering = ('-timestamp',)
 
 
-
 class Resource(ResourceBase):
     resource_version_model_name = u'Version'
 
@@ -97,17 +96,22 @@ class Resource(ResourceBase):
         return ('resource_serve', [self.uuid])
         
     def save(self, *args, **kwargs):
-        key = kwargs.pop('key')
-        file = kwargs.pop('file')
-        label = kwargs.pop('label')
-        description = kwargs.pop('description')
-        filter_html= kwargs.pop('filter_html')
-        
-        name = kwargs.pop('name', None)
-        if not name:
-            name = file.name
+        version = kwargs.pop('raw_data_version', None)
+        if not version:
+            key = kwargs.pop('key')
+            file = kwargs.pop('file')
+            label = kwargs.pop('label')
+            description = kwargs.pop('description')
+            filter_html= kwargs.pop('filter_html')
+            
+            name = kwargs.pop('name', None)
+            if not name:
+                name = file.name
                     
-        uuid = Resource.prepare_resource_uuid(key, name)
+            uuid = Resource.prepare_resource_uuid(key, name)
+        else:
+            uuid = version.verified_uuid
+
         try:
             resource = Resource.objects.get(uuid=uuid)
             self.pk = resource.pk
@@ -118,8 +122,12 @@ class Resource(ResourceBase):
             super(Resource, self).save(*args , **kwargs)
             resource = self
         
-        version = Version(resource=resource, file=file)
-        version.save(key=key, name=name, label=label, description=description, filter_html=filter_html)
+        if version:
+            version.resource = resource
+            version.save()
+        else:
+            version = Version(resource=resource, file=file)
+            version.save(key=key, name=name, label=label, description=description, filter_html=filter_html)
     
     class Meta(ResourceBase.Meta):
         verbose_name = _(u'resource')
@@ -147,14 +155,15 @@ class Version(VersionBase):
         return lambda instance, filename: unicode(return_value)
 
     @classmethod
-    def create(cls, data):
+    def create_from_raw(cls, data):
         version = cls()
         version._raw = data
         version._refresh_signature_properties()
         # TODO: better verification method
         # TODO: pass exceptions to caller
         if version.verify:
-            version.save(new=False)
+            resource = Resource()
+            resource.save(raw_data_version=version)
             return version
         else:
             raise ORInvalidResourceFile('Remote resource failed verification')
@@ -166,11 +175,11 @@ class Version(VersionBase):
         self._content = None
         self._raw = None
 
-    def save(self, key=None, new=True, *args, **kwargs):
+    def save(self, key=None, *args, **kwargs):
         if self.pk:
             raise NotImplemented('Cannot update an existing resource, create a new version from the same content instead.')
 
-        if new:
+        if not self._raw:
             name = kwargs.pop('name', None)
             if not name:
                 name = self.file.name
@@ -211,8 +220,9 @@ class Version(VersionBase):
             # Add slugify to sanitize the final filename
             self.file.field.generate_filename = Version.get_fake_upload_to(slugify(Version.prepare_full_resource_name(self.resource.uuid, signature.timestamp)))
         else:
-            self.file.file = ContentFile(self._raw)
-            self.file.field.generate_filename = Version.get_fake_upload_to(slugify(Version.prepare_full_resource_name(self.verified_uuid, signature.timestamp)))
+            self.file.field.generate_filename = Version.get_fake_upload_to(slugify(Version.prepare_full_resource_name(self.verified_uuid, self.raw_timestamp)))
+            self.file.save(self.verified_uuid, ContentFile(self._raw.encode('UTF-8')), save=False)
+            self.timestamp = self.raw_timestamp
 
         super(Version, self).save(*args, **kwargs)
 
