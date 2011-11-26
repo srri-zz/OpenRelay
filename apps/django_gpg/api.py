@@ -203,15 +203,10 @@ class GPG(object):
         elif status != 'ok':
             raise KeyDeleteError('Unable to delete key')
 
-    def receive_key(self, fingerprint):
-        result = None
+    def receive_key(self, key_id):
         for keyserver in self.keyservers:
-            import_result = self.gpg.recv_keys(keyserver, fingerprint)
+            import_result = self.gpg.recv_keys(keyserver, key_id)
             if import_result:
-                result = import_result
-                break
+                return Key.get(self, import_result.fingerprints[0], secret=False)
 
-        if not result:
-            raise KeyFetchingError()
-
-        return Key.get(self, result[0]['fingerprint'], secret=False)
+        raise KeyFetchingError()
