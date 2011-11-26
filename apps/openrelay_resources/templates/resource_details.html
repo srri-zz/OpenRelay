@@ -40,7 +40,7 @@
         <tbody>
             {% for version in resource.version_set.all %}
                 <tr>
-                    <td>{{ version.timestamp }}</td>
+                    <td>{{ version.timestamp_display }}</td>
                     <td>{{ version.raw_timestamp }}</td>
                     <td>
                         <table class="bordered-table zebra-striped">
