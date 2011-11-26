@@ -2,6 +2,20 @@
 Installation
 ============
 
+Requirements:
+
+To get started, you will need to install virtualenv, git, and pip. 
+
+in Ubuntu/Debian::
+
+    $ sudo apt-get install python-virtualenv python-pip git-core
+
+and in Fedora/RedHat::
+ 
+    $ sudo yum install git-core 
+    $ sudo yum install python-virtualenv.noarch
+    $ sudo yum install pyton-pip.noarch
+
 Initialize a ``virtualenv`` to deploy the project::
 
     $ virtualenv --no-site-packages OpenRelay
