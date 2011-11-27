@@ -1,0 +1,62 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-11-26 22:07-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: templates/about.html:3
+msgid "About this program"
+msgstr ""
+
+#: templates/about.html:5
+msgid "OpenRelay"
+msgstr ""
+
+#: templates/about.html:5
+#, python-format
+msgid "(Version %(version)s)"
+msgstr ""
+
+#: templates/about.html:6
+msgid ""
+"OpenRelay is a p2p (peer to peer) based web hosting solution. It takes "
+"advantage of Bittorrent to send files between the hosts as well as Dynamic "
+"DNS for updating nodes."
+msgstr ""
+
+#: templates/about.html:7
+msgid "Web site: "
+msgstr ""
+
+#: templates/about.html:8
+msgid "Source code:"
+msgstr ""
+
+#: templates/about.html:9
+msgid "OpenRelay is developed by:"
+msgstr ""
+
+#: templates/about.html:27
+msgid "OpenRelay is licensed under the GNU GPL v3"
+msgstr ""
+
+#: templates/about.html:32 templates/home.html:12
+msgid "Copyright &copy; 2011 Steven Richards, Roberto Rosario"
+msgstr ""
+
+#: templates/home.html:7
+msgid "Peer to peer based web hosting solution"
+msgstr ""
