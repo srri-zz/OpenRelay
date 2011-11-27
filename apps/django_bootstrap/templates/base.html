@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load custom_i18n %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
   <head>
@@ -120,7 +121,7 @@
                 <form action="{% url set_language %}" method="post">{% csrf_token %}
                     <select name="language" onchange="this.form.submit()">
                         {% for lang in LANGUAGES %}
-                            <option value="{{ lang.0 }}" {% if lang.0 == LANGUAGE_CODE %}selected="selected"{% endif %}>{{ lang.0|language_name_local|capfirst }}</option>
+                            <option value="{{ lang.0 }}" {% if lang.0 == LANGUAGE_CODE %}selected="selected"{% endif %}>{{ lang.0|custom_language_name_local|capfirst }}</option>
                         {% endfor %}
                     </select>
                 </form>
@@ -161,8 +162,6 @@
         <div class="page-header">
           <h1>{% block title %}{% endblock %}<small>{% block subtitle %}{% endblock %}</small></h1>
         </div>
-        
-                
         <div class="row">
           <div class="span16">
             {% block content %}{% endblock %}
