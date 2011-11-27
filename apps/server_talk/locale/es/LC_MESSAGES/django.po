@@ -1,0 +1,220 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-11-26 20:26-0400\n"
+"PO-Revision-Date: 2011-11-26 18:31\n"
+"Last-Translator:   <admin@admin.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"X-Translated-Using: django-rosetta 0.6.2\n"
+
+#: forms.py:7
+msgid "Remote node address"
+msgstr "Dirección del nodo remoto"
+
+#: forms.py:8
+msgid "The IP address of the remote server, example: 192.168.1.1"
+msgstr "La dirección IP del servidor remoto, ejemplo: 192.168.1.1"
+
+#: forms.py:12
+msgid "Remote node port"
+msgstr "Puerto de nodo remoto "
+
+#: forms.py:13
+msgid "The port of the remote server, example: 8000"
+msgstr "El puerto del servidor remoto, ejemplo: 8000"
+
+#: literals.py:6
+msgid "Down"
+msgstr "Abajo"
+
+#: literals.py:7
+msgid "Up"
+msgstr "Arriba"
+
+#: models.py:15 models.py:87 templates/node_list.html:10
+msgid "UUID"
+msgstr "UUID"
+
+#: models.py:22
+msgid "node"
+msgstr "nodo"
+
+#: models.py:23
+msgid "nodes"
+msgstr "nodos"
+
+#: models.py:31
+msgid "lock field"
+msgstr "campo de bloqueo"
+
+#: models.py:53 models.py:54
+msgid "local node"
+msgstr "nodo local"
+
+#: models.py:59
+msgid "URL"
+msgstr ""
+
+#: models.py:60
+msgid "port"
+msgstr "puerto"
+
+#: models.py:62
+msgid "last heartbeat check"
+msgstr "última comprobación de latido"
+
+#: models.py:63
+msgid "cpu load"
+msgstr "carga del CPU"
+
+#: models.py:64
+msgid "status"
+msgstr "estado"
+
+#: models.py:65
+msgid "failure count"
+msgstr "conteo de fallas"
+
+#: models.py:66
+msgid "last inventory check"
+msgstr "ultima verificación de inventario"
+
+#: models.py:67
+msgid "inventory hash"
+msgstr ""
+
+#: models.py:70
+msgid "sibling node"
+msgstr "nodo hermano"
+
+#: models.py:71
+msgid "sibling nodes"
+msgstr "nodos hermanos"
+
+#: models.py:88
+msgid "timestamp"
+msgstr "fecha y hora"
+
+#: models.py:89
+msgid "name"
+msgstr "nombre"
+
+#: models.py:90
+msgid "label"
+msgstr "etiqueta"
+
+#: models.py:91
+msgid "description"
+msgstr "descripción"
+
+#: models.py:106
+msgid "network resource version"
+msgstr "versión del recurso de la red"
+
+#: models.py:107
+msgid "network resource versions"
+msgstr "versiones los recursos de la red"
+
+#: models.py:111
+msgid "resource version"
+msgstr "versión del recurso"
+
+#: models.py:112
+msgid "Sibling"
+msgstr "Hermano"
+
+#: models.py:118
+msgid "resource holder"
+msgstr "titular de recurso"
+
+#: models.py:119
+msgid "resource holders"
+msgstr "titulares de recursos"
+
+#: views.py:203
+msgid "Join request sent"
+msgstr "Solicitud de ingreso enviada"
+
+#: views.py:206
+msgid "Unable to join network"
+msgstr "No es posible unirse a la red"
+
+#: views.py:213
+msgid "Join the OpenRelay network via a remote node"
+msgstr "Únirse a la red OpenRelay a través de un nodo remoto"
+
+#: views.py:220
+msgid "Network node list"
+msgstr "Lista de nodos de la red"
+
+#: views.py:227
+msgid "Local node information"
+msgstr "Información del nodo local"
+
+#: views.py:234
+msgid "Network resource list"
+msgstr "Lista de recursos de la red"
+
+#: templates/network_resource_list.html:10
+msgid "Name"
+msgstr "Nombre"
+
+#: templates/network_resource_list.html:11
+msgid "Label"
+msgstr "Etiqueta"
+
+#: templates/network_resource_list.html:12
+msgid "Description"
+msgstr "Descripción"
+
+#: templates/network_resource_list.html:13
+msgid "Timestamp"
+msgstr "Fecha y hora"
+
+#: templates/network_resource_list.html:14
+msgid "Links"
+msgstr "Enlaces"
+
+#: templates/network_resource_list.html:24
+msgid "Serve"
+msgstr "Servir"
+
+#: templates/node_list.html:11
+msgid "IP address"
+msgstr "Dirección IP"
+
+#: templates/node_list.html:12
+msgid "Port"
+msgstr "Puerto"
+
+#: templates/node_list.html:13
+msgid "Last heartbeat"
+msgstr "Último latido"
+
+#: templates/node_list.html:14
+msgid "CPU load"
+msgstr "Carga del CPU"
+
+#: templates/node_list.html:15
+msgid "Status"
+msgstr "Estado"
+
+#: templates/node_list.html:16
+msgid "Failure count"
+msgstr "Conteo de fallas"
+
+#: templates/node_list.html:17
+msgid "Last inventory hash"
+msgstr ""
