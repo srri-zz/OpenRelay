@@ -26,7 +26,7 @@ Git branch structure
     The "next release" branch, likely unstable.
 ``master``
     Current production release (|version|).
-``feature/``
+``feature/<feature-name>``
     Unfinished/ummerged feature.
 
 
@@ -67,8 +67,15 @@ Then, to build an HTML version of the documentation, simply run the following fr
 
 Your ``docs/_build/html`` directory will then contain an HTML version of the documentation, ready for publication on most web servers.
 
+You can also do a recursive wget of http://peer.to/docs to obtain the latest documentation build of OpenRelay ::
+
+	$ wget -r http://peer.to/git/docs/_build/html/
+
+Then navigate to the _build/html directory and open index.html in your browser to browse the documentation.
+
 You can also generate the documentation in format other than HTML.
 
 .. _`reStructured Text`: http://docutils.sourceforge.net/rst.html
 .. _Sphinx: http://sphinx.pocoo.org
+
 

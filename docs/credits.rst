@@ -2,6 +2,11 @@
 Credits
 =======
 
+* OpenRelay
+
+    * Copyright (c) 2011 Steven Richards & Roberto Rosario
+    * Site designed by Dustin Cogburn, with use of Twitter's Bootstrap
+
 * Python
 
     * Copyright (c) 2001-2010 Python Software Foundation.
