@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OpenRelay\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-11-26 19:46-0400\n"
-"PO-Revision-Date: 2011-11-27 03:00+0000\n"
+"PO-Revision-Date: 2011-11-27 05:37+0000\n"
 "Last-Translator: tesseraktik <felixm@kth.se>\n"
 "Language-Team: Klingon (http://www.transifex.net/projects/p/openrelay/team/tlh/)\n"
 "MIME-Version: 1.0\n"
@@ -51,15 +51,15 @@ msgstr "Supvam Delqu'bogh De''e'."
 
 #: forms.py:35
 msgid "Key"
-msgstr ""
+msgstr "naw' ngoq"
 
 #: forms.py:36
 msgid "The private key that will be used to sign the file."
-msgstr ""
+msgstr "De'ghom qI'lu'meH naw' ngoqvam pegh lo'lu'."
 
 #: forms.py:40
 msgid "Filter HTML?"
-msgstr ""
+msgstr "HTML chevlu' DaneH'a'."
 
 #: forms.py:41
 msgid ""
@@ -110,7 +110,7 @@ msgstr "Sup De'"
 
 #: templates/resource_details.html:10
 msgid "UUID (database)"
-msgstr ""
+msgstr "UUID (qawHaq)"
 
 #: templates/resource_details.html:11
 msgid "UUID (verified)"
@@ -130,7 +130,7 @@ msgstr "poH"
 
 #: templates/resource_details.html:30
 msgid "Timestamp (raw)"
-msgstr ""
+msgstr "poH (tlhol)"
 
 #: templates/resource_details.html:31
 msgid "Metadata"
@@ -138,23 +138,23 @@ msgstr "De' bopbogh De''e'"
 
 #: templates/resource_details.html:32
 msgid "Exists in storage"
-msgstr ""
+msgstr "qawHaqDaq tu'lu'"
 
 #: templates/resource_details.html:33
 msgid "Is valid?"
-msgstr ""
+msgstr "De'vam DalajlaH'a'."
 
 #: templates/resource_details.html:34
 msgid "Signature status"
-msgstr ""
+msgstr "qI'meH Dotlh"
 
 #: templates/resource_details.html:35
 msgid "MIME type"
-msgstr ""
+msgstr "MIME Segh"
 
 #: templates/resource_details.html:36
 msgid "Encoding"
-msgstr ""
+msgstr "peghmoHghach"
 
 #: templates/resource_details.html:37 templates/resource_list.html:14
 msgid "Links"
@@ -162,15 +162,15 @@ msgstr "Hemey"
 
 #: templates/resource_details.html:57 templates/resource_list.html:25
 msgid "Serve"
-msgstr ""
+msgstr "lab"
 
 #: templates/resource_list.html:4
 msgid "Locally available resources"
-msgstr ""
+msgstr "naDev jo naw'lu'bogh"
 
 #: templates/resource_list.html:10
 msgid "Publisher"
-msgstr ""
+msgstr "chenmoHwI'"
 
 #: templates/resource_list.html:26
 msgid "Details"
