@@ -3,103 +3,102 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Roberto Rosario <roberto.rosario.gonzalez@gmail.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenRelay\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-11-26 20:19-0400\n"
-"PO-Revision-Date: 2011-11-27 05:02+0000\n"
+"PO-Revision-Date: 2011-11-27 02:09+0000\n"
 "Last-Translator: rosarior <roberto.rosario.gonzalez@gmail.com>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language-Team: Czech (Czech Republic) (http://www.transifex.net/projects/p/openrelay/team/cs_CZ/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: es\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Language: cs_CZ\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
 
 #: templates/base.html:90
 msgid "Key management"
-msgstr "Manejo de llaves"
+msgstr ""
 
 #: templates/base.html:92
 msgid "Create new key pair"
-msgstr "Crear nuevo par de llaves"
+msgstr ""
 
 #: templates/base.html:93
 msgid "Private key list"
-msgstr "Lista de llaves privadas"
+msgstr ""
 
 #: templates/base.html:94
 msgid "Public key list"
-msgstr "Lista de llaves públicas"
+msgstr ""
 
 #: templates/base.html:95
 msgid "Publish public key"
-msgstr "Publicar llave pública"
+msgstr ""
 
 #: templates/base.html:99
 msgid "Resources"
-msgstr "Recursos"
+msgstr ""
 
 #: templates/base.html:101
 msgid "Upload"
-msgstr "Subir"
+msgstr ""
 
 #: templates/base.html:102
 msgid "List"
-msgstr "Lista"
+msgstr ""
 
 #: templates/base.html:107
 msgid "Network"
-msgstr "Red"
+msgstr ""
 
 #: templates/base.html:109
 msgid "Join"
-msgstr "Unirse"
+msgstr ""
 
 #: templates/base.html:110
 msgid "Node list"
-msgstr "Lista de nodos"
+msgstr ""
 
 #: templates/base.html:111
 msgid "Local node info"
-msgstr "Información del nodo local"
+msgstr ""
 
 #: templates/base.html:112
 msgid "Resource list"
-msgstr "Lista de recursos"
+msgstr ""
 
 #: templates/base.html:116
 msgid "Settings"
-msgstr "Configuración"
+msgstr ""
 
 #: templates/base.html:117
 msgid "API"
-msgstr "API"
+msgstr ""
 
 #: templates/base.html:118
 msgid "About"
-msgstr "Sobre"
+msgstr ""
 
 #: templates/base.html:132
 msgid "Username"
-msgstr "Usuario"
+msgstr ""
 
 #: templates/base.html:133
 msgid "Password"
-msgstr "Contraseña"
+msgstr ""
 
 #: templates/base.html:134
 msgid "Sign in"
-msgstr "Ingresar"
+msgstr ""
 
 #: templates/base.html:137
 msgid "Logged in as"
-msgstr "Conectado como"
+msgstr ""
 
 #: templates/base.html:140
 msgid "Logout"
-msgstr "Cerrar sesión"
+msgstr ""
 
 

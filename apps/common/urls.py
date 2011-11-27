@@ -7,9 +7,9 @@ urlpatterns = patterns('common.views',
 
     url(r'^login/$', 'login_view', (), name='login_view'),
     url(r'^settings/$', 'settings_list', (), name='settings_list'),
+    url(r'^set_language/$', 'set_language', (), name='set_language'),
 )
 
 urlpatterns += patterns('',
     url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/'}, name='logout_view'),
-    url(r'^set_language/$', 'django.views.i18n.set_language', name='set_language'),
 )

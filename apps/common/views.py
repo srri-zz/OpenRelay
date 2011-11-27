@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.utils.translation import ugettext_lazy as _
 from django.contrib import messages
 from django.utils.importlib import import_module
+from django.utils.translation import activate
 
 # Avoid shadowing the login() and logout() views below.
 from django.contrib.auth import REDIRECT_FIELD_NAME, login as auth_login, logout as auth_logout
@@ -104,3 +105,25 @@ def settings_list(request):
 
     return render_to_response('settings_list.html', {'object_list': object_list},
         context_instance=RequestContext(request))
+
+
+def set_language(request):
+    '''
+    Custom language switching code, becuase the default language code
+    used check_for_language() which fails for 'tlh' and 'cs_CZ'
+    '''
+    next = request.REQUEST.get('next', None)
+    if not next:
+        next = request.META.get('HTTP_REFERER', None)
+    if not next:
+        next = '/'
+    response = HttpResponseRedirect(next)
+    if request.method == 'POST':
+        lang_code = request.POST.get('language', None)
+        if lang_code:
+            activate(lang_code)
+            if hasattr(request, 'session'):
+                request.session['django_language'] = lang_code
+            else:
+                response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang_code)
+    return response

@@ -5,23 +5,40 @@ host = https://www.transifex.net
 source_file = apps/common/locale/en/LC_MESSAGES/django.po
 source_lang = en
 trans.es = apps/common/locale/es/LC_MESSAGES/django.po
+trans.cs_CZ = apps/common/locale/cs_CZ/LC_MESSAGES/django.po
+trans.tlh = apps/common/locale/tlh/LC_MESSAGES/django.po
 
 [openrelay.apps-core]
 source_file = apps/core/locale/en/LC_MESSAGES/django.po
 source_lang = en
 trans.es = apps/core/locale/es/LC_MESSAGES/django.po
+trans.cs_CZ = apps/core/locale/cs_CZ/LC_MESSAGES/django.po
+trans.tlh = apps/core/locale/tlh/LC_MESSAGES/django.po
 
 [openrelay.apps-django_gpg]
 source_file = apps/django_gpg/locale/en/LC_MESSAGES/django.po
 source_lang = en
 trans.es = apps/django_gpg/locale/es/LC_MESSAGES/django.po
+trans.cs_CZ = apps/django_gpg/locale/cs_CZ/LC_MESSAGES/django.po
+trans.tlh = apps/django_gpg/locale/tlh/LC_MESSAGES/django.po
+
+[openrelay.apps-django_bootstrap]
+source_file = apps/django_bootstrap/locale/en/LC_MESSAGES/django.po
+source_lang = en
+trans.es = apps/django_bootstrap/locale/es/LC_MESSAGES/django.po
+trans.cs_CZ = apps/django_bootstrap/locale/cs_CZ/LC_MESSAGES/django.po
+trans.tlh = apps/django_bootstrap/locale/tlh/LC_MESSAGES/django.po
 
 [openrelay.apps-openrelay_resources]
 source_file = apps/openrelay_resources/locale/en/LC_MESSAGES/django.po
 source_lang = en
 trans.es = apps/openrelay_resources/locale/es/LC_MESSAGES/django.po
+trans.cs_CZ = apps/openrelay_resources/locale/cs_CZ/LC_MESSAGES/django.po
+trans.tlh = apps/openrelay_resources/locale/tlh/LC_MESSAGES/django.po
 
 [openrelay.apps-server_talk]
 source_file = apps/server_talk/locale/en/LC_MESSAGES/django.po
 source_lang = en
 trans.es = apps/server_talk/locale/es/LC_MESSAGES/django.po
+trans.cs_CZ = apps/server_talk/locale/cs_CZ/LC_MESSAGES/django.po
+trans.tlh = apps/server_talk/locale/tlh/LC_MESSAGES/django.po

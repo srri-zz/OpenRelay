@@ -3,24 +3,24 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Roberto Rosario <roberto.rosario.gonzalez@gmail.com>, 2011.
+#   <felixm@kth.se>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenRelay\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-11-26 20:32-0400\n"
-"PO-Revision-Date: 2011-11-27 05:14+0000\n"
-"Last-Translator: rosarior <roberto.rosario.gonzalez@gmail.com>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2011-11-27 03:05+0000\n"
+"Last-Translator: tesseraktik <felixm@kth.se>\n"
+"Language-Team: Klingon (http://www.transifex.net/projects/p/openrelay/team/tlh/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: es\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Language: tlh\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 
 #: templates/about.html:3
 msgid "About this program"
-msgstr "Acerca de este programa"
+msgstr "patvam De'"
 
 #: templates/about.html:5
 msgid "OpenRelay"
@@ -29,7 +29,7 @@ msgstr "OpenRelay"
 #: templates/about.html:5
 #, python-format
 msgid "(Version %(version)s)"
-msgstr "(Versión %(version)s )"
+msgstr "(chovnatlh %(version)s)"
 
 #: templates/about.html:6
 msgid ""
@@ -37,31 +37,29 @@ msgid ""
 "advantage of Bittorrent to send files between the hosts as well as Dynamic "
 "DNS for updating nodes."
 msgstr ""
-"OpenRelay es una solución de servicios y alojamiento distribuido de páginas "
-"web.  Utilza actializacion dinamic de DNS para encontras sus nodos."
 
 #: templates/about.html:7
 msgid "Web site: "
-msgstr "Sitio web:"
+msgstr "much:"
 
 #: templates/about.html:8
 msgid "Source code:"
-msgstr "Código fuente:"
+msgstr "ghunmeH ghItlh:"
 
 #: templates/about.html:9
 msgid "OpenRelay is developed by:"
-msgstr "OpenRelay es desarrollado por:"
+msgstr "OpenRelay ghunta':"
 
 #: templates/about.html:27
 msgid "OpenRelay is licensed under the GNU GPL v3"
-msgstr "OpenRelay está licenciado bajo la GNU GPL v3"
+msgstr "GNU GPL v3 lupab OpenRelay SeHmeH DIbmey, malja' permey je"
 
 #: templates/about.html:32 templates/home.html:12
 msgid "Copyright &copy; 2011 Steven Richards, Roberto Rosario"
-msgstr "Copyright © 2011 Steven Richards, Roberto Rosario"
+msgstr "SeHmeH DIbmey &copy; 2011 Steven Richards, Roberto Rosario"
 
 #: templates/home.html:7
 msgid "Peer to peer based web hosting solution"
-msgstr "Servicio y almacenamiento distribuido de páginas web"
+msgstr ""
 
 

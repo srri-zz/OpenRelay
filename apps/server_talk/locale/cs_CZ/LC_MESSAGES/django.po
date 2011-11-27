@@ -3,219 +3,218 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Roberto Rosario <roberto.rosario.gonzalez@gmail.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenRelay\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-11-26 20:26-0400\n"
-"PO-Revision-Date: 2011-11-27 05:06+0000\n"
-"Last-Translator: rosarior <roberto.rosario.gonzalez@gmail.com>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2011-11-27 00:42+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Czech (Czech Republic) (http://www.transifex.net/projects/p/openrelay/team/cs_CZ/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: es\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Language: cs_CZ\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
 
 #: forms.py:7
 msgid "Remote node address"
-msgstr "Dirección del nodo remoto"
+msgstr ""
 
 #: forms.py:8
 msgid "The IP address of the remote server, example: 192.168.1.1"
-msgstr "La dirección IP del servidor remoto, ejemplo: 192.168.1.1"
+msgstr ""
 
 #: forms.py:12
 msgid "Remote node port"
-msgstr "Puerto de nodo remoto "
+msgstr ""
 
 #: forms.py:13
 msgid "The port of the remote server, example: 8000"
-msgstr "El puerto del servidor remoto, ejemplo: 8000"
+msgstr ""
 
 #: literals.py:6
 msgid "Down"
-msgstr "Abajo"
+msgstr ""
 
 #: literals.py:7
 msgid "Up"
-msgstr "Arriba"
+msgstr ""
 
 #: models.py:15 models.py:87 templates/node_list.html:10
 msgid "UUID"
-msgstr "UUID"
+msgstr ""
 
 #: models.py:22
 msgid "node"
-msgstr "nodo"
+msgstr ""
 
 #: models.py:23
 msgid "nodes"
-msgstr "nodos"
+msgstr ""
 
 #: models.py:31
 msgid "lock field"
-msgstr "campo de bloqueo"
+msgstr ""
 
 #: models.py:53 models.py:54
 msgid "local node"
-msgstr "nodo local"
+msgstr ""
 
 #: models.py:59
 msgid "URL"
-msgstr "URL"
+msgstr ""
 
 #: models.py:60
 msgid "port"
-msgstr "puerto"
+msgstr ""
 
 #: models.py:62
 msgid "last heartbeat check"
-msgstr "última comprobación de latido"
+msgstr ""
 
 #: models.py:63
 msgid "cpu load"
-msgstr "carga del CPU"
+msgstr ""
 
 #: models.py:64
 msgid "status"
-msgstr "estado"
+msgstr ""
 
 #: models.py:65
 msgid "failure count"
-msgstr "conteo de fallas"
+msgstr ""
 
 #: models.py:66
 msgid "last inventory check"
-msgstr "ultima verificación de inventario"
+msgstr ""
 
 #: models.py:67
 msgid "inventory hash"
-msgstr "identificador de inventario"
+msgstr ""
 
 #: models.py:70
 msgid "sibling node"
-msgstr "nodo hermano"
+msgstr ""
 
 #: models.py:71
 msgid "sibling nodes"
-msgstr "nodos hermanos"
+msgstr ""
 
 #: models.py:88
 msgid "timestamp"
-msgstr "fecha y hora"
+msgstr ""
 
 #: models.py:89
 msgid "name"
-msgstr "nombre"
+msgstr ""
 
 #: models.py:90
 msgid "label"
-msgstr "etiqueta"
+msgstr ""
 
 #: models.py:91
 msgid "description"
-msgstr "descripción"
+msgstr ""
 
 #: models.py:106
 msgid "network resource version"
-msgstr "versión del recurso de la red"
+msgstr ""
 
 #: models.py:107
 msgid "network resource versions"
-msgstr "versiones los recursos de la red"
+msgstr ""
 
 #: models.py:111
 msgid "resource version"
-msgstr "versión del recurso"
+msgstr ""
 
 #: models.py:112
 msgid "Sibling"
-msgstr "Hermano"
+msgstr ""
 
 #: models.py:118
 msgid "resource holder"
-msgstr "titular de recurso"
+msgstr ""
 
 #: models.py:119
 msgid "resource holders"
-msgstr "titulares de recursos"
+msgstr ""
 
 #: views.py:203
 msgid "Join request sent"
-msgstr "Solicitud de ingreso enviada"
+msgstr ""
 
 #: views.py:206
 msgid "Unable to join network"
-msgstr "No es posible unirse a la red"
+msgstr ""
 
 #: views.py:213
 msgid "Join the OpenRelay network via a remote node"
-msgstr "Únirse a la red OpenRelay a través de un nodo remoto"
+msgstr ""
 
 #: views.py:220
 msgid "Network node list"
-msgstr "Lista de nodos de la red"
+msgstr ""
 
 #: views.py:227
 msgid "Local node information"
-msgstr "Información del nodo local"
+msgstr ""
 
 #: views.py:234
 msgid "Network resource list"
-msgstr "Lista de recursos de la red"
+msgstr ""
 
 #: templates/network_resource_list.html:10
 msgid "Name"
-msgstr "Nombre"
+msgstr ""
 
 #: templates/network_resource_list.html:11
 msgid "Label"
-msgstr "Etiqueta"
+msgstr ""
 
 #: templates/network_resource_list.html:12
 msgid "Description"
-msgstr "Descripción"
+msgstr ""
 
 #: templates/network_resource_list.html:13
 msgid "Timestamp"
-msgstr "Fecha y hora"
+msgstr ""
 
 #: templates/network_resource_list.html:14
 msgid "Links"
-msgstr "Enlaces"
+msgstr ""
 
 #: templates/network_resource_list.html:24
 msgid "Serve"
-msgstr "Servir"
+msgstr ""
 
 #: templates/node_list.html:11
 msgid "IP address"
-msgstr "Dirección IP"
+msgstr ""
 
 #: templates/node_list.html:12
 msgid "Port"
-msgstr "Puerto"
+msgstr ""
 
 #: templates/node_list.html:13
 msgid "Last heartbeat"
-msgstr "Último latido"
+msgstr ""
 
 #: templates/node_list.html:14
 msgid "CPU load"
-msgstr "Carga del CPU"
+msgstr ""
 
 #: templates/node_list.html:15
 msgid "Status"
-msgstr "Estado"
+msgstr ""
 
 #: templates/node_list.html:16
 msgid "Failure count"
-msgstr "Conteo de fallas"
+msgstr ""
 
 #: templates/node_list.html:17
 msgid "Last inventory hash"
-msgstr "Ultimo identificador de inventario"
+msgstr ""
 
 
