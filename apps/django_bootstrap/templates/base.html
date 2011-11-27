@@ -88,6 +88,19 @@
 
           <ul class="nav">
             <li class="dropdown" data-dropdown="dropdown">
+              <a class="dropdown-toggle" href="#">{% trans 'Network' %}</a>
+              <ul class="dropdown-menu">
+                    <li><a href="{% url join %}">{% trans 'Join' %}</a></li>
+                    <li><a href="{% url resource_upload %}">{% trans 'Upload content' %}</a></li>
+                    <li><a href="{% url node_list %}">{% trans 'Node list' %}</a></li>
+                    <li><a href="{% url node_info %}">{% trans 'Local node info' %}</a></li>
+                    <li><a href="{% url resource_publishers %}">{% trans 'Resource publishers' %}</a></li>
+                    <li><a href="{% url network_resource_list %}">{% trans 'Resource list' %}</a></li>
+                    <li><a href="{% url resource_list %}">{% trans 'Resource list (local only)' %}</a></li>  
+              </ul>
+            </li>            
+
+            <li class="dropdown" data-dropdown="dropdown">
               <a class="dropdown-toggle" href="#">{% trans 'Key management' %}</a>
               <ul class="dropdown-menu">
                     <li><a href="{% url key_create %}">{% trans 'Create new key pair' %}</a></li>  
@@ -95,27 +108,9 @@
                     <li><a href="{% url key_public_list %}">{% trans 'Public key list' %}</a></li>  
                     <li><a href="{% url key_publish %}">{% trans 'Publish public key' %}</a></li>  
               </ul>
-            </li>            
-            <li class="dropdown" data-dropdown="dropdown">
-              <a class="dropdown-toggle" href="#">{% trans 'Resources' %}</a>
-              <ul class="dropdown-menu">
-                    <li><a href="{% url resource_upload %}">{% trans 'Upload' %}</a></li>
-                    <li><a href="{% url resource_list %}">{% trans 'List' %}</a></li>  
-              </ul>
-            </li>            
-
-            <li class="dropdown" data-dropdown="dropdown">
-              <a class="dropdown-toggle" href="#">{% trans 'Network' %}</a>
-              <ul class="dropdown-menu">
-                    <li><a href="{% url join %}">{% trans 'Join' %}</a></li>
-                    <li><a href="{% url node_list %}">{% trans 'Node list' %}</a></li>
-                    <li><a href="{% url node_info %}">{% trans 'Local node info' %}</a></li>
-                    <li><a href="{% url network_resource_list %}">{% trans 'Resource list' %}</a></li>
-              </ul>
-            </li>            
+            </li>
 
             <li><a href="{% url settings_list %}">{% trans 'Settings' %}</a></li>
-            <li><a href="{% url api-root %}">{% trans 'API' %}</a></li>
             <li><a href="{% url about_view %}">{% trans 'About' %}</a></li>
             <li>
                 <form action="{% url set_language %}" method="post">{% csrf_token %}
