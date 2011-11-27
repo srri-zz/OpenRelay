@@ -1,6 +1,8 @@
 import datetime
 import logging
 
+from django.utils.simplejson import dumps
+
 from lock_manager.models import Lock
 from lock_manager.exceptions import LockError
 from openrelay_resources.literals import TIMESTAMP_SEPARATOR
@@ -71,6 +73,8 @@ def inventory_hash_check():
                             'name': resource_item.get('name'),
                             'label': resource_item.get('label'),
                             'description': resource_item.get('description'),
+                            'metadata': dumps(resource_item.get('metadata')),
+                            'username': resource_item.get('username'),
                         }
                     )
                     resource.resourceholder_set.get_or_create(node=oldest)

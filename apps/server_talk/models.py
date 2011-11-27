@@ -89,6 +89,8 @@ class NetworkResourceVersion(models.Model):
     name = models.CharField(max_length=255, verbose_name=_(u'name'), editable=False)
     label = models.CharField(blank=True, max_length=255, verbose_name=_(u'label'), editable=False)
     description = models.TextField(blank=True, verbose_name=_(u'description'), editable=False)
+    metadata = models.TextField(blank=True, verbose_name=_(u'metadata'), editable=False)
+    username = models.CharField(max_length=255, verbose_name=_(u'username'), editable=False)
     
     objects = NetworkResourceVersionManager()
 
