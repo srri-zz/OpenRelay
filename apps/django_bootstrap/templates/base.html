@@ -116,8 +116,16 @@
             <li><a href="{% url settings_list %}">{% trans 'Settings' %}</a></li>
             <li><a href="{% url api-root %}">{% trans 'API' %}</a></li>
             <li><a href="{% url about_view %}">{% trans 'About' %}</a></li>
+            <li>
+                <form action="{% url set_language %}" method="post">{% csrf_token %}
+                    <select name="language" onchange="this.form.submit()">
+                        {% for lang in LANGUAGES %}
+                            <option value="{{ lang.0 }}" {% if lang.0 == LANGUAGE_CODE %}selected="selected"{% endif %}>{{ lang.0|language_name_local|capfirst }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </li>
           </ul>
-          
           {% if user.is_anonymous %}
               <form action="{% url login_view %}" class="pull-right" method="post">
                 {% csrf_token %}
