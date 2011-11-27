@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OpenRelay\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-11-26 20:21-0400\n"
-"PO-Revision-Date: 2011-11-27 02:49+0000\n"
+"PO-Revision-Date: 2011-11-27 05:47+0000\n"
 "Last-Translator: tesseraktik <felixm@kth.se>\n"
 "Language-Team: Klingon (http://www.transifex.net/projects/p/openrelay/team/tlh/)\n"
 "MIME-Version: 1.0\n"
@@ -20,7 +20,7 @@ msgstr ""
 
 #: api.py:14
 msgid "Public"
-msgstr ""
+msgstr "peghbe'"
 
 #: api.py:15
 msgid "Secret"
@@ -28,7 +28,7 @@ msgstr "pegh"
 
 #: api.py:71
 msgid "unknown"
-msgstr ""
+msgstr "Sovbe'lu'"
 
 #: forms.py:11
 msgid "Real name"
@@ -44,7 +44,7 @@ msgstr "QInHom"
 
 #: forms.py:18
 msgid "A comment or a note to help identify this key."
-msgstr ""
+msgstr "naw' ngoqvam ngu'meH QInHom"
 
 #: forms.py:22
 msgid "Email"
@@ -64,7 +64,7 @@ msgstr ""
 
 #: forms.py:47
 msgid "Key"
-msgstr ""
+msgstr "naw' ngoq"
 
 #: forms.py:48
 msgid "Key to be published, only the public part of the key will be sent."
@@ -72,20 +72,20 @@ msgstr ""
 
 #: views.py:19
 msgid "Private key list"
-msgstr ""
+msgstr "naw' ngoq pegh tetlh"
 
 #: views.py:22
 msgid "Public key list"
-msgstr ""
+msgstr "peghbe'bogh naw' ngoq tetlh"
 
 #: views.py:42
 #, python-format
 msgid "Key pair: %s, created successfully."
-msgstr ""
+msgstr "naw' ngoq chang'eng: %s, chenmoHlu'ta'"
 
 #: views.py:52
 msgid "Create a new key"
-msgstr ""
+msgstr "naw' ngoq chu' yIchenmoH"
 
 #: views.py:53
 msgid ""
@@ -100,7 +100,7 @@ msgstr ""
 
 #: views.py:70
 msgid "Delete key"
-msgstr ""
+msgstr "naw' ngoq yIteq"
 
 #: views.py:71
 #, python-format

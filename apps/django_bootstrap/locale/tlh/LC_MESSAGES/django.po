@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OpenRelay\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-11-26 20:19-0400\n"
-"PO-Revision-Date: 2011-11-27 02:13+0000\n"
+"PO-Revision-Date: 2011-11-27 05:43+0000\n"
 "Last-Translator: tesseraktik <felixm@kth.se>\n"
 "Language-Team: Klingon (http://www.transifex.net/projects/p/openrelay/team/tlh/)\n"
 "MIME-Version: 1.0\n"
@@ -20,39 +20,39 @@ msgstr ""
 
 #: templates/base.html:90
 msgid "Key management"
-msgstr ""
+msgstr "naw' ngoq SeHlaw"
 
 #: templates/base.html:92
 msgid "Create new key pair"
-msgstr ""
+msgstr "naw' ngoq chang'eng chu' yIchenmoH"
 
 #: templates/base.html:93
 msgid "Private key list"
-msgstr ""
+msgstr "naw' ngoq pegh tetlh"
 
 #: templates/base.html:94
 msgid "Public key list"
-msgstr ""
+msgstr "peghbe'bogh naw' ngoq tetlh"
 
 #: templates/base.html:95
 msgid "Publish public key"
-msgstr ""
+msgstr "peghbe'bogh naw' ngoq yIlab"
 
 #: templates/base.html:99
 msgid "Resources"
-msgstr ""
+msgstr "jo"
 
 #: templates/base.html:101
 msgid "Upload"
-msgstr ""
+msgstr "lab"
 
 #: templates/base.html:102
 msgid "List"
-msgstr ""
+msgstr "tetlh"
 
 #: templates/base.html:107
 msgid "Network"
-msgstr ""
+msgstr "De'wI'ghom"
 
 #: templates/base.html:109
 msgid "Join"
@@ -60,23 +60,23 @@ msgstr "jImuv"
 
 #: templates/base.html:110
 msgid "Node list"
-msgstr ""
+msgstr "Daq tetlh"
 
 #: templates/base.html:111
 msgid "Local node info"
-msgstr ""
+msgstr "Daqvam De'"
 
 #: templates/base.html:112
 msgid "Resource list"
-msgstr ""
+msgstr "Sup tetlh"
 
 #: templates/base.html:116
 msgid "Settings"
-msgstr ""
+msgstr "DuHmey"
 
 #: templates/base.html:117
 msgid "API"
-msgstr ""
+msgstr "API"
 
 #: templates/base.html:118
 msgid "About"
