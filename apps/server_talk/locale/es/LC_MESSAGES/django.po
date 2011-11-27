@@ -3,12 +3,13 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
+# Roberto Rosario <roberto.rosario.gonzalez@gmail.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenRelay\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-11-26 20:26-0400\n"
-"PO-Revision-Date: 2011-11-27 00:43+0000\n"
+"PO-Revision-Date: 2011-11-27 05:06+0000\n"
 "Last-Translator: rosarior <roberto.rosario.gonzalez@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -63,7 +64,7 @@ msgstr "nodo local"
 
 #: models.py:59
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: models.py:60
 msgid "port"
@@ -91,7 +92,7 @@ msgstr "ultima verificación de inventario"
 
 #: models.py:67
 msgid "inventory hash"
-msgstr ""
+msgstr "identificador de inventario"
 
 #: models.py:70
 msgid "sibling node"
@@ -215,6 +216,6 @@ msgstr "Conteo de fallas"
 
 #: templates/node_list.html:17
 msgid "Last inventory hash"
-msgstr ""
+msgstr "Ultimo identificador de inventario"
 
 

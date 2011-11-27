@@ -3,12 +3,13 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
+# Roberto Rosario <roberto.rosario.gonzalez@gmail.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenRelay\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-11-26 20:32-0400\n"
-"PO-Revision-Date: 2011-11-27 00:42+0000\n"
+"PO-Revision-Date: 2011-11-27 05:14+0000\n"
 "Last-Translator: rosarior <roberto.rosario.gonzalez@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -36,6 +37,8 @@ msgid ""
 "advantage of Bittorrent to send files between the hosts as well as Dynamic "
 "DNS for updating nodes."
 msgstr ""
+"OpenRelay es una solución de servicios y alojamiento distribuido de páginas "
+"web.  Utilza actializacion dinamic de DNS para encontras sus nodos."
 
 #: templates/about.html:7
 msgid "Web site: "
@@ -55,10 +58,10 @@ msgstr "OpenRelay está licenciado bajo la GNU GPL v3"
 
 #: templates/about.html:32 templates/home.html:12
 msgid "Copyright &copy; 2011 Steven Richards, Roberto Rosario"
-msgstr ""
+msgstr "Copyright © 2011 Steven Richards, Roberto Rosario"
 
 #: templates/home.html:7
 msgid "Peer to peer based web hosting solution"
-msgstr ""
+msgstr "Servicio y almacenamiento distribuido de páginas web"
 
 
