@@ -1,0 +1,179 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# 
+# Translators:
+#   <felixm@kth.se>, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: OpenRelay\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-11-26 19:46-0400\n"
+"PO-Revision-Date: 2011-11-27 03:00+0000\n"
+"Last-Translator: tesseraktik <felixm@kth.se>\n"
+"Language-Team: Klingon (http://www.transifex.net/projects/p/openrelay/team/tlh/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: tlh\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+
+#: forms.py:15 templates/resource_list.html:11
+msgid "Name"
+msgstr "pong"
+
+#: forms.py:16
+msgid ""
+"An internal name that uniquely identifies this resource, if left blank the "
+"filename is used instead."
+msgstr ""
+"Sup ngu'chu'bogh pong'e'. pong ghItlhlu'be'chugh, De'ghom pong lo'lu'."
+
+#: forms.py:21 templates/resource_list.html:12
+msgid "Label"
+msgstr "pet"
+
+#: forms.py:22
+msgid ""
+"A human readable name that describes the resource to the users, if left "
+"blank the filename is used instead."
+msgstr ""
+"pongvam laDlaH ghot net poQ. lo'wI'pu'vaD Sup Del pongvam. pong "
+"ghItlhlu'be'chugh, De'ghom pong lo'lu'."
+
+#: forms.py:27 templates/resource_list.html:13
+msgid "Description"
+msgstr "DelmeH De'"
+
+#: forms.py:29
+msgid "A more detailed description of this resource."
+msgstr "Supvam Delqu'bogh De''e'."
+
+#: forms.py:35
+msgid "Key"
+msgstr ""
+
+#: forms.py:36
+msgid "The private key that will be used to sign the file."
+msgstr ""
+
+#: forms.py:40
+msgid "Filter HTML?"
+msgstr ""
+
+#: forms.py:41
+msgid ""
+"Automatically convert relative references to images, links, CSS and "
+"Javascript."
+msgstr ""
+
+#: models.py:28
+msgid "UUID"
+msgstr "UUID"
+
+#: models.py:68
+msgid "timestamp"
+msgstr "poH"
+
+#: models.py:133 models.py:140
+msgid "resource"
+msgstr "Sup"
+
+#: models.py:134
+msgid "resources"
+msgstr "jo"
+
+#: models.py:141
+msgid "file"
+msgstr "De'ghom"
+
+#: models.py:402
+msgid "version"
+msgstr "chovnatlh"
+
+#: models.py:403
+msgid "versions"
+msgstr "chovnatlhmey"
+
+#: views.py:56
+#, python-format
+msgid "Resource: %s, created successfully."
+msgstr "Sup: %s chenmoHlu'ta'"
+
+#: views.py:66
+msgid "Create a new resource"
+msgstr "Sup chu' yIchenmoH"
+
+#: templates/resource_details.html:4
+msgid "Resource details"
+msgstr "Sup De'"
+
+#: templates/resource_details.html:10
+msgid "UUID (database)"
+msgstr ""
+
+#: templates/resource_details.html:11
+msgid "UUID (verified)"
+msgstr "UUID ('ollu'bogh)"
+
+#: templates/resource_details.html:12
+msgid "Signee"
+msgstr "qI'wI'"
+
+#: templates/resource_details.html:24
+msgid "Versions (newest to oldest)"
+msgstr "chovnatlhmey (ngo'wI'mey nung chu'wI'mey)"
+
+#: templates/resource_details.html:29
+msgid "Timestamp"
+msgstr "poH"
+
+#: templates/resource_details.html:30
+msgid "Timestamp (raw)"
+msgstr ""
+
+#: templates/resource_details.html:31
+msgid "Metadata"
+msgstr "De' bopbogh De''e'"
+
+#: templates/resource_details.html:32
+msgid "Exists in storage"
+msgstr ""
+
+#: templates/resource_details.html:33
+msgid "Is valid?"
+msgstr ""
+
+#: templates/resource_details.html:34
+msgid "Signature status"
+msgstr ""
+
+#: templates/resource_details.html:35
+msgid "MIME type"
+msgstr ""
+
+#: templates/resource_details.html:36
+msgid "Encoding"
+msgstr ""
+
+#: templates/resource_details.html:37 templates/resource_list.html:14
+msgid "Links"
+msgstr "Hemey"
+
+#: templates/resource_details.html:57 templates/resource_list.html:25
+msgid "Serve"
+msgstr ""
+
+#: templates/resource_list.html:4
+msgid "Locally available resources"
+msgstr ""
+
+#: templates/resource_list.html:10
+msgid "Publisher"
+msgstr ""
+
+#: templates/resource_list.html:26
+msgid "Details"
+msgstr "DelmeH De'"
+
+
