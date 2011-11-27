@@ -235,7 +235,10 @@ def resource_list(request, fingerprint=None):
     if fingerprint:
         network_resources = [NetworkResourceVersion.objects.get(uuid=resource['uuid']) for resource in NetworkResourceVersion.objects.filter(uuid__startswith=fingerprint).values('uuid').distinct().order_by()]
         local_resources = Resource.objects.filter(uuid__startswith=fingerprint)
-        title = _(u'Resource from: %s') % local_resources[0].username
+        if network_resources:
+            title = _(u'Resource from: %s') % network_resources[0].username
+        elif local_resources:
+            title = _(u'Resource from: %s') % local_resources[0].username
     else:
         network_resources = [NetworkResourceVersion.objects.get(uuid=resource['uuid']) for resource in NetworkResourceVersion.objects.values('uuid').distinct().order_by()]
         local_resources = Resource.objects.all()
