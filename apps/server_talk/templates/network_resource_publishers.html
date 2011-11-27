@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <table class="bordered-table zebra-striped">
+        <thead>
+            <tr>
+                <th>{% trans 'Publisher' %}</th>
+                <th>{% trans 'Links' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for publisher, data in publishers.items %}
+                <tr>
+                    <td>{{ publisher }}</td>
+                    <td><a href="{% url network_resource_list data.fingerprint %}">{% trans 'Resources' %}</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

@@ -10,18 +10,16 @@
                 <th>{% trans 'Name' %}</th>
                 <th>{% trans 'Label' %}</th>
                 <th>{% trans 'Description' %}</th>
-                <th>{% trans 'Timestamp' %}</th>
                 <th>{% trans 'Links' %}</th>
             </tr>
         </thead>
         <tbody>
-            {% for object in object_list %}
+            {% for uuid, object in object_list.items %}
                 <tr>
                     <td>{{ object.name }}</td>
                     <td>{{ object.label }}</td>
                     <td>{{ object.description }}</td>
-                    <td>{{ object.formated_timestamp }}</td>
-                    <td><a href="{% url resource_serve object.full_uuid %}">{% trans 'Serve' %}</a></td>
+                    <td><a href="{% url resource_serve object.uuid %}">{% trans 'Serve' %}</a></td>
                 </tr>
             {% endfor %}
         </tbody>

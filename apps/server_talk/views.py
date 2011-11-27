@@ -97,6 +97,8 @@ class VersionRoot(View):
                 'name': version.name,
                 'label': version.label,
                 'description': version.description,                
+                'metadata': version.metadata,
+                'username': version.username,
             }
             for version in Version.objects.all()
         ]    
@@ -228,8 +230,45 @@ def node_info(request):
     }, context_instance=RequestContext(request))
 
 
-def resource_list(request):
+def resource_list(request, fingerprint=None):
+    resource_list = {}
+    if fingerprint:
+        network_resources = [NetworkResourceVersion.objects.get(uuid=resource['uuid']) for resource in NetworkResourceVersion.objects.filter(uuid__startswith=fingerprint).values('uuid').distinct().order_by()]
+        local_resources = Resource.objects.filter(uuid__startswith=fingerprint)
+        title = _(u'Resource from: %s') % local_resources[0].username
+    else:
+        network_resources = [NetworkResourceVersion.objects.get(uuid=resource['uuid']) for resource in NetworkResourceVersion.objects.values('uuid').distinct().order_by()]
+        local_resources = Resource.objects.all()
+        title = _(u'Resource list')
+        
+    for network_resource in network_resources:
+        # TODO: remove magic ;[0]
+        resource_list[network_resource.uuid.split(';')[0]] = network_resource
+
+    for resource in local_resources:
+        resource_list[resource.uuid] = resource
+
     return render_to_response('network_resource_list.html', {
-        'object_list': [NetworkResourceVersion.objects.get(uuid=resource['uuid']) for resource in NetworkResourceVersion.objects.values('uuid').distinct().order_by()],
-        'title': _(u'Network resource list'),
+        'object_list': resource_list,
+        'title': title,
+    }, context_instance=RequestContext(request))
+
+
+def resource_publishers(request):
+    publishers = {}
+    network_resources = [NetworkResourceVersion.objects.get(uuid=resource['uuid']) for resource in NetworkResourceVersion.objects.values('uuid').distinct().order_by()]
+    for network_resource in network_resources:
+        if network_resource.username:
+            username_dict = publishers.setdefault(network_resource.username, {})
+            # TODO: remove magivc [16:]
+            username_dict['fingerprint'] = network_resource.uuid[16:]
+
+    for resource in Resource.objects.all():
+        username_dict = publishers.setdefault(resource.username, {})
+        username_dict['fingerprint'] = resource.fingerprint
+
+
+    return render_to_response('network_resource_publishers.html', {
+        'publishers': publishers,
+        'title': _(u'Resources by publisher'),
     }, context_instance=RequestContext(request))
