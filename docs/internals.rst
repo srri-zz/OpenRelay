@@ -45,24 +45,3 @@ Advantages
 ==========
 
 |advantages|
-
-
-Resource reference
-==================
-
-Literals
---------
-.. automodule:: openrelay_resources.literals
-    :members: BINARY_DELIMITER
-
-Exceptions
-----------
-.. module:: openrelay_resources.exceptions
-.. autoexception:: ORInvalidResourceFile
-
-Classes
--------
-.. module:: openrelay_resources.models
-.. autoclass:: ResourceBase
-.. autoclass:: Resource
-
