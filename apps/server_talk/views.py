@@ -167,10 +167,14 @@ class Announce(View):
                 sibling.ip_address = sibling_data['ip_address']
                 sibling.port = sibling_data['port']
                 sibling.save()
+            local_node = LocalNode.get()
             local_node_info = {
                 'ip_address': socket.gethostbyname(socket.gethostname()),
                 'port': PORT,
-                'uuid': LocalNode.get().uuid,
+                'uuid': local_node.uuid,
+                'name': local_node.name,
+                'email': local_node.email,
+                'comment': local_node.comment,
             }
             return local_node_info
         else:
