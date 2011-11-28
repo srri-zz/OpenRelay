@@ -1,19 +1,37 @@
 import types
 from StringIO import StringIO
+from pickle import dumps
 
 import gnupg
 
 from django.core.files.base import File
 from django.utils.translation import ugettext_lazy as _
 
+from queue_manager import Queue, QueuePushError
+
 from django_gpg.exceptions import GPGVerificationError, GPGSigningError, \
     GPGDecryptionError, KeyDeleteError, KeyGenerationError, \
     KeyFetchingError
+
 
 KEY_TYPES = {
     'pub': _(u'Public'),
     'sec': _(u'Secret'),
 }
+
+KEY_CLASS_RSA = 'RSA'
+KEY_CLASS_DSA = 'DSA'
+KEY_CLASS_ELG = 'ELG-E'
+
+KEY_PRIMARY_CLASSES = (
+    ((KEY_CLASS_RSA), _(u'RSA')),
+    ((KEY_CLASS_DSA), _(u'DSA')),
+)
+
+KEY_SECONDARY_CLASSES = (
+    ((KEY_CLASS_RSA), _(u'RSA')),
+    ((KEY_CLASS_ELG), _(u'Elgamal')),
+)
 
 
 class Key(object):
@@ -184,6 +202,24 @@ class GPG(object):
 
         return result
 
+    def create_key_background(self, *args, **kwargs):
+        try:
+            kwargs['gpg'] = dumps(self)
+            queue = Queue(queue_name='gpg_key_gen', unique_names=True)
+            queue.push(
+                name=u''.join(
+                    [
+                        kwargs.get('name_real'),
+                        kwargs.get('name_comment'),
+                        kwargs.get('name_email'),
+                    ]
+                ),
+                data=kwargs
+            )
+            return
+        except QueuePushError:
+            raise KeyGenerationError('A key with these same parameters is queued for creation')
+        
     def create_key(self, *args, **kwargs):
         if kwargs.get('passphrase') == u'':
             kwargs.pop('passphrase')

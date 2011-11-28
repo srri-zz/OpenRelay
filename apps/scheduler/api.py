@@ -1,4 +1,4 @@
-from core.runtime import scheduler
+from scheduler.runtime import backend_scheduler
 
 registered_jobs = {}
 
@@ -14,7 +14,7 @@ def register_interval_job(name, func, weeks=0, days=0, hours=0, minutes=0,
     if name in registered_jobs:
         raise AlreadyScheduled
 
-    job = scheduler.add_interval_job(func=func, weeks=weeks, days=days,
+    job = backend_scheduler.add_interval_job(func=func, weeks=weeks, days=days,
         hours=hours, minutes=minutes, seconds=seconds,
         start_date=start_date, args=args, kwargs=kwargs, **options)
 
@@ -23,5 +23,5 @@ def register_interval_job(name, func, weeks=0, days=0, hours=0, minutes=0,
 
 def remove_job(name):
     if name in registered_jobs:
-        scheduler.unschedule_job(registered_jobs[name]['job'])
+        backend_scheduler.unschedule_job(registered_jobs[name]['job'])
         registered_jobs.pop(name)

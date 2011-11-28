@@ -19,7 +19,7 @@ class Lock(models.Model):
         
     def save(self, *args, **kwargs):
         self.creation_datetime = datetime.datetime.now()
-        if not self.timeout and not kwarget.get('timeout'):
+        if not self.timeout and not kwargs.get('timeout'):
             self.timeout = DEFAULT_LOCK_TIMEOUT
             
         super(Lock, self).save(*args, **kwargs)
