@@ -13,4 +13,8 @@ class Queue(object):
                 'unique_names': unique_names
             }
         )
+        if not created:
+            queue.label = label
+            queue.unique_names = unique_names
+            queue.save()
         return queue
