@@ -382,6 +382,11 @@ class Version(VersionBase):
         return self._metadata
 
     @property
+    def signature_properties(self):
+        self._refresh_signature_properties()
+        return self._signature_properties
+
+    @property
     def mimetype(self):
         magic_mime = magic.Magic(mime=True)
         magic_encoding = magic.Magic(mime_encoding=True)

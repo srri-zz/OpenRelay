@@ -16,6 +16,7 @@ from djangorestframework import status
 from djangorestframework.response import Response
 
 from openrelay_resources.models import Resource, Version
+from openrelay_resources.literals import TIMESTAMP_SEPARATOR
 
 from server_talk.models import LocalNode, Sibling, NetworkResourceVersion
 from server_talk.forms import JoinForm
@@ -98,7 +99,7 @@ class VersionRoot(View):
                 'label': version.label,
                 'description': version.description,                
                 'metadata': version.metadata,
-                'username': version.username,
+                'signature_properties': version.signature_properties,
             }
             for version in Version.objects.all()
         ]    
@@ -126,9 +127,10 @@ class VersionObject(View):
             'key_id': version.key_id,
             'download': reverse('version-download', args=[version.full_uuid]),
             'serve': reverse('version-serve', args=[version.full_uuid]),
+            'signature_properties': version.signature_properties,
         }
 
-        
+
 class ResourceDownload(View):
     def post(self, request, uuid):
         #logger.info('received resource download call from node: %s @ %s' % (node_uuid, request.META['REMOTE_ADDR']))
@@ -232,8 +234,6 @@ def node_info(request):
 
 def resource_list(request, fingerprint=None):
     resource_list = {}
-    # TODO: remove magic [:40]
-    fingerprint = fingerprint[:40]
     if fingerprint:
         network_resources = [NetworkResourceVersion.objects.get(uuid=resource['uuid']) for resource in NetworkResourceVersion.objects.filter(uuid__startswith=fingerprint).values('uuid').distinct().order_by()]
         local_resources = Resource.objects.filter(uuid__startswith=fingerprint)
@@ -247,8 +247,8 @@ def resource_list(request, fingerprint=None):
         title = _(u'Resource list')
         
     for network_resource in network_resources:
-        # TODO: remove magic ;[0]
-        resource_list[network_resource.uuid.split(';')[0]] = network_resource
+        # Remove any timestamp
+        resource_list[network_resource.uuid.split(TIMESTAMP_SEPARATOR)[0]] = network_resource
 
     for resource in local_resources:
         resource_list[resource.uuid] = resource
@@ -265,8 +265,7 @@ def resource_publishers(request):
     for network_resource in network_resources:
         if network_resource.username:
             username_dict = publishers.setdefault(network_resource.username, {})
-            # TODO: remove magic [:40]
-            username_dict['fingerprint'] = network_resource.uuid[:40]
+            username_dict['fingerprint'] = network_resource.fingerprint
 
     for resource in Resource.objects.all():
         username_dict = publishers.setdefault(resource.username, {})

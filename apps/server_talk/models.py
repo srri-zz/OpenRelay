@@ -3,6 +3,7 @@ import socket
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django.utils.simplejson import dumps, loads
 
 from openrelay_resources.models import ResourceBase, VersionBase
 from openrelay_resources.literals import TIMESTAMP_SEPARATOR
@@ -84,15 +85,31 @@ class NetworkResourceVersionManager(models.Manager):
 
 
 class NetworkResourceVersion(models.Model):
-    uuid = models.CharField(max_length=48, blank=True, editable=False, verbose_name=_(u'UUID'))
+    uuid = models.CharField(max_length=48, blank=True, verbose_name=_(u'UUID'), editable=False)
     timestamp = models.PositiveIntegerField(verbose_name=_(u'timestamp'), db_index=True, editable=False)
-    name = models.CharField(max_length=255, verbose_name=_(u'name'), editable=False)
-    label = models.CharField(blank=True, max_length=255, verbose_name=_(u'label'), editable=False)
-    description = models.TextField(blank=True, verbose_name=_(u'description'), editable=False)
     metadata = models.TextField(blank=True, verbose_name=_(u'metadata'), editable=False)
-    username = models.CharField(max_length=255, verbose_name=_(u'username'), editable=False)
+    signature_properties = models.TextField(blank=True, verbose_name=_(u'signature properties'), editable=False)
     
     objects = NetworkResourceVersionManager()
+
+    def __getattr__(self, name):
+        signature_properties_list = ['is_valid', 'signature_status', 'username', 'signature_id', 'raw_timestamp', 'timestamp_display', 'fingerprint', 'key_id']
+        metadata_attributes_list = ['name', 'label', 'description']
+        
+        if name in signature_properties_list:
+            try:
+                return loads(self.signature_properties)[name]
+            except KeyError, msg:
+                # Convert KeyError exception into an AttributeError
+                # as we are simulating class properties
+                raise AttributeError(msg)
+        elif name in metadata_attributes_list:
+            # Don't raise KeyError or AttributeError exception for a
+            # non existant value on 'label' or 'description' as these are
+            # blank by default 
+            return loads(self.metadata).get(name, u'')
+        else:
+            raise AttributeError
 
     def __unicode__(self):
         return self.uuid
