@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 
 from server_talk.api import NetworkCall
+from server_talk.models import LocalNode
 from queue_manager import Queue
 
 from django_gpg import Key, KeyGenerationError
@@ -23,7 +24,7 @@ def key_list(request, secret=True):
         messages.add_message(request, msg_data.get('tag', messages.INFO), msg_data['message'])
         
     if secret:
-        object_list = Key.get_all(gpg, secret=True)
+        object_list = Key.get_all(gpg, secret=True, exclude=LocalNode().get().public_key)
         title = _(u'Private key list')
     else:
         object_list = Key.get_all(gpg)

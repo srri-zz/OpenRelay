@@ -74,10 +74,11 @@ class RemoteCall(object):
         return urlparse.urlunparse(['http', self.get_full_ip_address(), reverse(service_name, *args, **kwargs), '', '', ''])
         
     def get_id_package(self):
+        local_node = LocalNode.get()
         return {
             'ip_address': IPADDRESS,
             'port': PORT,
-            'uuid': LocalNode.get().uuid,
+            'uuid': local_node.uuid,
         }
         
     def announce(self):
@@ -98,7 +99,13 @@ class RemoteCall(object):
                 logger.error('announce service on node with uuid: %s and url: %s, responded the same UUID as the local server' % (node_answer['uuid'], full_ip_address))
                 raise AnnounceClientError('Remote and local nodes identity conflict')
             else:
-                sibling_data = {'ip_address':  node_answer['ip_address'], 'port': node_answer['port']}
+                sibling_data = {
+                    'ip_address':  node_answer['ip_address'],
+                    'port': node_answer['port'],
+                    'name': node_answer['name'],
+                    'email': node_answer['email'],
+                    'comment': node_answer['comment'],
+                }
                 sibling, created = Sibling.objects.get_or_create(uuid=node_answer['uuid'], defaults=sibling_data)
                 if not created:
                     sibling.ip_address = sibling_data['ip_address']
