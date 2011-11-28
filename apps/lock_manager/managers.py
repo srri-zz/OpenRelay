@@ -1,11 +1,4 @@
 import logging
-
-#try:
-#    from psycopg2 import OperationalError
-#except ImportError:
-#    class OperationalError(Exception):
-#        pass
-
 import datetime
 
 from django.db.utils import DatabaseError
