@@ -1,32 +1,33 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 #   <sbrichards@mit.edu>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenRelay\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-26 20:31-0400\n"
+"POT-Creation-Date: 2011-11-28 05:18-0400\n"
 "PO-Revision-Date: 2011-11-27 01:29+0000\n"
 "Last-Translator: sbrichards <sbrichards@mit.edu>\n"
-"Language-Team: Czech (Czech Republic) (http://www.transifex.net/projects/p/openrelay/team/cs_CZ/)\n"
+"Language-Team: Czech (Czech Republic) (http://www.transifex.net/projects/p/"
+"openrelay/team/cs_CZ/)\n"
+"Language: cs_CZ\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: cs_CZ\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
 
-#: views.py:64
+#: views.py:65
 msgid "Incorrent username or password."
 msgstr "Špatné heslo nebo jméno uživatele. "
 
-#: views.py:82
+#: views.py:83
 msgid "function found"
 msgstr "funkce nalezena"
 
-#: views.py:84 views.py:86
+#: views.py:85 views.py:87
 #, python-format
 msgid "class found: %s"
 msgstr "funkce nalezena: %s"
@@ -58,5 +59,3 @@ msgstr "Jméno"
 #: templates/settings_list.html:12
 msgid "Value"
 msgstr "Hodnota"
-
-

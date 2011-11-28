@@ -1,110 +1,170 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 #   <jonny_nut@hotmail.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenRelay\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-26 20:21-0400\n"
+"POT-Creation-Date: 2011-11-28 05:18-0400\n"
 "PO-Revision-Date: 2011-11-27 23:17+0000\n"
 "Last-Translator: jonny_nut <jonny_nut@hotmail.com>\n"
-"Language-Team: Ukrainian (http://www.transifex.net/projects/p/openrelay/team/uk/)\n"
+"Language-Team: Ukrainian (http://www.transifex.net/projects/p/openrelay/team/"
+"uk/)\n"
+"Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: uk\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 
-#: api.py:14
+#: api.py:18
 msgid "Public"
 msgstr "Публічне"
 
-#: api.py:15
+#: api.py:19
 msgid "Secret"
 msgstr "Секретне"
 
-#: api.py:71
+#: api.py:27 api.py:32
+msgid "RSA"
+msgstr ""
+
+#: api.py:28
+msgid "DSA"
+msgstr ""
+
+#: api.py:33
+msgid "Elgamal"
+msgstr ""
+
+#: api.py:89
 msgid "unknown"
 msgstr "невідоме"
 
-#: forms.py:11
+#: forms.py:12
 msgid "Real name"
 msgstr "Справжнє Ім'я"
 
-#: forms.py:12
+#: forms.py:13
 msgid "Your real name."
 msgstr "Ваше справжнє Ім'я."
 
-#: forms.py:16
+#: forms.py:17
 msgid "Comment"
 msgstr "Коментар"
 
-#: forms.py:18
+#: forms.py:19
 msgid "A comment or a note to help identify this key."
 msgstr "Коментар або примітка, яка допоможе ідентифікувати цей ключ."
 
-#: forms.py:22
+#: forms.py:23
 msgid "Email"
 msgstr "Електронна пошта"
 
-#: forms.py:26
+#: forms.py:28
+#, fuzzy
+msgid "Primary key class"
+msgstr "Список приватних ключів "
+
+#: forms.py:29
+msgid "The key that will be used to sign uploaded content."
+msgstr ""
+
+#: forms.py:33
+msgid "Primary key size (in bytes)"
+msgstr ""
+
+#: forms.py:41
+msgid "Secondary key class"
+msgstr ""
+
+#: forms.py:42
+msgid "The key that will be used to encrypt uploaded content."
+msgstr ""
+
+#: forms.py:46
+msgid "Secondary key size (in bytes)"
+msgstr ""
+
+#: forms.py:53
+msgid "Expiration"
+msgstr ""
+
+#: forms.py:54
+msgid ""
+"You can use 0 for a non expiring key, an ISO date in the form: <year>-"
+"<month>-<day> or a date difference from the current date in the forms: "
+"<days>d, <months>m, <weeks>w or <years>y."
+msgstr ""
+
+#: forms.py:59
 msgid "Passphrase"
 msgstr "Passphrase"
 
-#: forms.py:32
+#: forms.py:65
 msgid "Passphrase (verification)"
 msgstr "Passphrase (верифікація)"
 
-#: forms.py:39
+#: forms.py:72
 msgid "Both passphrase fields entries must match."
 msgstr "Обидві поля запису фрази повинні збігатися."
 
-#: forms.py:47
+#: forms.py:80
 msgid "Key"
 msgstr "Ключ"
 
-#: forms.py:48
+#: forms.py:81
 msgid "Key to be published, only the public part of the key will be sent."
 msgstr "Ключ для опубліковання, лише публічну частину ключа буде надіслано."
 
-#: views.py:19
-msgid "Private key list"
-msgstr "Список приватних ключів "
-
-#: views.py:22
-msgid "Public key list"
-msgstr "Список публічних ключів"
-
-#: views.py:42
+#: tasks.py:27
 #, python-format
 msgid "Key pair: %s, created successfully."
 msgstr "Ключова пара: %s, успішно створено."
 
-#: views.py:52
+#: tasks.py:34
+#, python-format
+msgid "Key creation error; %s"
+msgstr ""
+
+#: views.py:27
+msgid "Private key list"
+msgstr "Список приватних ключів "
+
+#: views.py:30
+msgid "Public key list"
+msgstr "Список публічних ключів"
+
+#: views.py:54
+msgid "Key pair queued for creation, refresh this page to check results."
+msgstr ""
+
+#: views.py:64
 msgid "Create a new key"
 msgstr "Створити новий ключ"
 
-#: views.py:53
+#: views.py:65
+#, fuzzy
 msgid ""
-"The key creation process can take a few minutes, don't close or browse "
-"another page until it has finished."
+"The key creation process can take quite some time to complete, please be "
+"patient."
 msgstr ""
 "Процес створення ключова може зайняти кілька хвилин, отже не закривайте "
 "вікно ані переглядайте інші сторінки, поки не закінчено."
 
-#: views.py:63
+#: views.py:75
 #, python-format
 msgid "Key: %s, deleted successfully."
 msgstr "Ключ: %s, успішно видалено."
 
-#: views.py:70
+#: views.py:82
 msgid "Delete key"
 msgstr "Видалити ключ"
 
-#: views.py:71
+#: views.py:83
 #, python-format
 msgid ""
 "Are you sure you wish to delete key:%s?  If you try to delete a public key "
@@ -115,16 +175,16 @@ msgstr ""
 "ключ, який є частиною ключової пари, його приватний ключ буде видаленим "
 "також."
 
-#: views.py:83
+#: views.py:95
 #, python-format
 msgid "Key publish request for key: %s, has been sent"
 msgstr "Заявка на публікацію ключа: %s, було надіслано"
 
-#: views.py:86
+#: views.py:98
 msgid "Unable to send key publish call"
 msgstr "Не вдається відправити виклик на публікацію ключа"
 
-#: views.py:93
+#: views.py:105
 msgid "Publish a key to the OpenRelay network"
 msgstr "Публікувати ключ в мережу OpenRelay"
 
@@ -151,5 +211,3 @@ msgstr "Видалити"
 #: templates/key_list.html:26
 msgid "There are no keys available."
 msgstr "Немає жодних доступних ключів."
-
-

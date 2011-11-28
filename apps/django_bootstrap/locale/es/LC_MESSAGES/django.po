@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenRelay\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-26 20:19-0400\n"
-"PO-Revision-Date: 2011-11-27 05:02+0000\n"
+"POT-Creation-Date: 2011-11-28 05:18-0400\n"
+"PO-Revision-Date: 2011-11-28 09:21+0000\n"
 "Last-Translator: rosarior <roberto.rosario.gonzalez@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -18,87 +18,79 @@ msgstr ""
 "Language: es\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: templates/base.html:90
-msgid "Key management"
-msgstr "Manejo de llaves"
-
-#: templates/base.html:92
-msgid "Create new key pair"
-msgstr "Crear nuevo par de llaves"
-
-#: templates/base.html:93
-msgid "Private key list"
-msgstr "Lista de llaves privadas"
-
-#: templates/base.html:94
-msgid "Public key list"
-msgstr "Lista de llaves públicas"
-
-#: templates/base.html:95
-msgid "Publish public key"
-msgstr "Publicar llave pública"
-
-#: templates/base.html:99
-msgid "Resources"
-msgstr "Recursos"
-
-#: templates/base.html:101
-msgid "Upload"
-msgstr "Subir"
-
-#: templates/base.html:102
-msgid "List"
-msgstr "Lista"
-
-#: templates/base.html:107
+#: templates/base.html:91
 msgid "Network"
 msgstr "Red"
 
-#: templates/base.html:109
+#: templates/base.html:93
 msgid "Join"
 msgstr "Unirse"
 
-#: templates/base.html:110
+#: templates/base.html:94
+msgid "Upload content"
+msgstr "Subir contenido"
+
+#: templates/base.html:95
 msgid "Node list"
 msgstr "Lista de nodos"
 
-#: templates/base.html:111
+#: templates/base.html:96
 msgid "Local node info"
 msgstr "Información del nodo local"
 
-#: templates/base.html:112
+#: templates/base.html:97
+msgid "Resource publishers"
+msgstr "Autores de recursos"
+
+#: templates/base.html:98
 msgid "Resource list"
 msgstr "Lista de recursos"
 
-#: templates/base.html:116
+#: templates/base.html:99
+msgid "Resource list (local only)"
+msgstr "Lista de recursos (sólo local)"
+
+#: templates/base.html:104
+msgid "Key management"
+msgstr "Manejo de llaves"
+
+#: templates/base.html:106
+msgid "Create new key pair"
+msgstr "Crear nuevo par de llaves"
+
+#: templates/base.html:107
+msgid "Private key list"
+msgstr "Lista de llaves privadas"
+
+#: templates/base.html:108
+msgid "Publish public key"
+msgstr "Publicar llave pública"
+
+#: templates/base.html:112
 msgid "Settings"
 msgstr "Configuración"
 
-#: templates/base.html:117
-msgid "API"
-msgstr "API"
-
-#: templates/base.html:118
+#: templates/base.html:113
 msgid "About"
 msgstr "Sobre"
 
-#: templates/base.html:132
+#: templates/base.html:127
 msgid "Username"
 msgstr "Usuario"
 
-#: templates/base.html:133
+#: templates/base.html:128
 msgid "Password"
 msgstr "Contraseña"
 
-#: templates/base.html:134
+#: templates/base.html:129
 msgid "Sign in"
 msgstr "Ingresar"
 
-#: templates/base.html:137
+#: templates/base.html:132
 msgid "Logged in as"
 msgstr "Conectado como"
 
-#: templates/base.html:140
+#: templates/base.html:135
 msgid "Logout"
 msgstr "Cerrar sesión"
 

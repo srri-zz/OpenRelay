@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenRelay\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-26 20:21-0400\n"
-"PO-Revision-Date: 2011-11-27 05:07+0000\n"
+"POT-Creation-Date: 2011-11-28 05:18-0400\n"
+"PO-Revision-Date: 2011-11-28 09:25+0000\n"
 "Last-Translator: rosarior <roberto.rosario.gonzalez@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -18,94 +18,155 @@ msgstr ""
 "Language: es\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: api.py:14
+#: api.py:18
 msgid "Public"
 msgstr "Pública"
 
-#: api.py:15
+#: api.py:19
 msgid "Secret"
 msgstr "Secreta"
 
-#: api.py:71
+#: api.py:27 api.py:32
+msgid "RSA"
+msgstr "RSA"
+
+#: api.py:28
+msgid "DSA"
+msgstr "DSA"
+
+#: api.py:33
+msgid "Elgamal"
+msgstr "Elgamal"
+
+#: api.py:89
 msgid "unknown"
 msgstr "desconocido"
 
-#: forms.py:11
+#: forms.py:12
 msgid "Real name"
 msgstr "Nombre real"
 
-#: forms.py:12
+#: forms.py:13
 msgid "Your real name."
 msgstr "Su nombre real."
 
-#: forms.py:16
+#: forms.py:17
 msgid "Comment"
 msgstr "Comentario"
 
-#: forms.py:18
+#: forms.py:19
 msgid "A comment or a note to help identify this key."
 msgstr "Un comentario o una nota para ayudar a identificar esta llave."
 
-#: forms.py:22
+#: forms.py:23
 msgid "Email"
 msgstr "E-mail"
 
-#: forms.py:26
+#: forms.py:28
+msgid "Primary key class"
+msgstr "Clase de llave primaria"
+
+#: forms.py:29
+msgid "The key that will be used to sign uploaded content."
+msgstr "La llave que se utilizara para firmar el contenido subido."
+
+#: forms.py:33
+msgid "Primary key size (in bytes)"
+msgstr "Tamaño de la llave principal (en bytes)"
+
+#: forms.py:41
+msgid "Secondary key class"
+msgstr "Clase de llave secundaria"
+
+#: forms.py:42
+msgid "The key that will be used to encrypt uploaded content."
+msgstr "La llave que se utilizara para cifrar el contenido subido."
+
+#: forms.py:46
+msgid "Secondary key size (in bytes)"
+msgstr "Tamaño de la llave secundaria (en bytes)"
+
+#: forms.py:53
+msgid "Expiration"
+msgstr "Expiración"
+
+#: forms.py:54
+msgid ""
+"You can use 0 for a non expiring key, an ISO date in the form: "
+"<year>-<month>-<day> or a date difference from the current date in the "
+"forms: <days>d, <months>m, <weeks>w or <years>y."
+msgstr ""
+"Usted puede utilizar 0 para llaves que no expiran, una fecha ISO en la "
+"forma: <año>-<mes>-<dia> o una diferencia de fecha con respecto a la fecha "
+"actual en las formas: <dias>d, <meses>m, <semanas>w o <años>y."
+
+#: forms.py:59
 msgid "Passphrase"
 msgstr "Frase de contraseña"
 
-#: forms.py:32
+#: forms.py:65
 msgid "Passphrase (verification)"
 msgstr "Contraseña (verificación)"
 
-#: forms.py:39
+#: forms.py:72
 msgid "Both passphrase fields entries must match."
 msgstr "Las entradas de los campos de contraseña deben coincidir."
 
-#: forms.py:47
+#: forms.py:80
 msgid "Key"
 msgstr "Llave"
 
-#: forms.py:48
+#: forms.py:81
 msgid "Key to be published, only the public part of the key will be sent."
 msgstr ""
 "La llave para ser publicada, sólo la parte pública de la llave será enviada."
 
-#: views.py:19
-msgid "Private key list"
-msgstr "Lista de llaves privadas"
-
-#: views.py:22
-msgid "Public key list"
-msgstr "Lista de llaves públicas"
-
-#: views.py:42
+#: tasks.py:27
 #, python-format
 msgid "Key pair: %s, created successfully."
 msgstr "Par de llaves: %s, creado correctamente."
 
-#: views.py:52
+#: tasks.py:34
+#, python-format
+msgid "Key creation error; %s"
+msgstr "Error de creación de llave; %s"
+
+#: views.py:27
+msgid "Private key list"
+msgstr "Lista de llaves privadas"
+
+#: views.py:30
+msgid "Public key list"
+msgstr "Lista de llaves públicas"
+
+#: views.py:54
+msgid "Key pair queued for creation, refresh this page to check results."
+msgstr ""
+"Par de llaves en lista de creación, vuelva a cargar esta página "
+"periodicamente para comprobar los resultados."
+
+#: views.py:64
 msgid "Create a new key"
 msgstr "Crear una llave nueva"
 
-#: views.py:53
+#: views.py:65
 msgid ""
-"The key creation process can take a few minutes, don't close or browse "
-"another page until it has finished."
+"The key creation process can take quite some time to complete, please be "
+"patient."
 msgstr ""
-"El proceso de creación de llaves puede tardar unos minutos, no cierre o "
-"navegue por otra página hasta que haya terminado."
+"El proceso de creación de la llaves puede tomar bastante tiempo en "
+"completar, por favor, sea paciente."
 
-#: views.py:63
+#: views.py:75
 #, python-format
 msgid "Key: %s, deleted successfully."
 msgstr "Llave: %s, eliminada exitosamente."
 
-#: views.py:70
+#: views.py:82
 msgid "Delete key"
 msgstr "Eliminar la llave"
 
-#: views.py:71
+#: views.py:83
 #, python-format
 msgid ""
 "Are you sure you wish to delete key:%s?  If you try to delete a public key "
@@ -116,16 +177,16 @@ msgstr ""
 " pública que forma parte de una pareja pública / privada de la llave privada"
 " se eliminarán también."
 
-#: views.py:83
+#: views.py:95
 #, python-format
 msgid "Key publish request for key: %s, has been sent"
 msgstr "Solicitud publicación de llave: %s, ha sido enviada"
 
-#: views.py:86
+#: views.py:98
 msgid "Unable to send key publish call"
 msgstr "No se puede enviar llave publica"
 
-#: views.py:93
+#: views.py:105
 msgid "Publish a key to the OpenRelay network"
 msgstr "Publicar una llave a la red OpenRelay"
 

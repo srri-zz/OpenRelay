@@ -1,105 +1,111 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 #   <felixm@kth.se>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenRelay\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-26 20:19-0400\n"
+"POT-Creation-Date: 2011-11-28 05:18-0400\n"
 "PO-Revision-Date: 2011-11-27 05:43+0000\n"
 "Last-Translator: tesseraktik <felixm@kth.se>\n"
-"Language-Team: Klingon (http://www.transifex.net/projects/p/openrelay/team/tlh/)\n"
+"Language-Team: Klingon (http://www.transifex.net/projects/p/openrelay/team/"
+"tlh/)\n"
+"Language: tlh\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: tlh\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
 
-#: templates/base.html:90
-msgid "Key management"
-msgstr "naw' ngoq SeHlaw"
-
-#: templates/base.html:92
-msgid "Create new key pair"
-msgstr "naw' ngoq chang'eng chu' yIchenmoH"
-
-#: templates/base.html:93
-msgid "Private key list"
-msgstr "naw' ngoq pegh tetlh"
-
-#: templates/base.html:94
-msgid "Public key list"
-msgstr "peghbe'bogh naw' ngoq tetlh"
-
-#: templates/base.html:95
-msgid "Publish public key"
-msgstr "peghbe'bogh naw' ngoq yIlab"
-
-#: templates/base.html:99
-msgid "Resources"
-msgstr "jo"
-
-#: templates/base.html:101
-msgid "Upload"
-msgstr "lab"
-
-#: templates/base.html:102
-msgid "List"
-msgstr "tetlh"
-
-#: templates/base.html:107
+#: templates/base.html:91
 msgid "Network"
 msgstr "De'wI'ghom"
 
-#: templates/base.html:109
+#: templates/base.html:93
 msgid "Join"
 msgstr "jImuv"
 
-#: templates/base.html:110
+#: templates/base.html:94
+#, fuzzy
+msgid "Upload content"
+msgstr "lab"
+
+#: templates/base.html:95
 msgid "Node list"
 msgstr "Daq tetlh"
 
-#: templates/base.html:111
+#: templates/base.html:96
 msgid "Local node info"
 msgstr "Daqvam De'"
 
-#: templates/base.html:112
+#: templates/base.html:97
+#, fuzzy
+msgid "Resource publishers"
+msgstr "Sup tetlh"
+
+#: templates/base.html:98
 msgid "Resource list"
 msgstr "Sup tetlh"
 
-#: templates/base.html:116
+#: templates/base.html:99
+#, fuzzy
+msgid "Resource list (local only)"
+msgstr "Sup tetlh"
+
+#: templates/base.html:104
+msgid "Key management"
+msgstr "naw' ngoq SeHlaw"
+
+#: templates/base.html:106
+msgid "Create new key pair"
+msgstr "naw' ngoq chang'eng chu' yIchenmoH"
+
+#: templates/base.html:107
+msgid "Private key list"
+msgstr "naw' ngoq pegh tetlh"
+
+#: templates/base.html:108
+msgid "Publish public key"
+msgstr "peghbe'bogh naw' ngoq yIlab"
+
+#: templates/base.html:112
 msgid "Settings"
 msgstr "DuHmey"
 
-#: templates/base.html:117
-msgid "API"
-msgstr "API"
-
-#: templates/base.html:118
+#: templates/base.html:113
 msgid "About"
 msgstr "De'"
 
-#: templates/base.html:132
+#: templates/base.html:127
 msgid "Username"
 msgstr "lo'meH pong"
 
-#: templates/base.html:133
+#: templates/base.html:128
 msgid "Password"
 msgstr "ngoq pegh"
 
-#: templates/base.html:134
+#: templates/base.html:129
 msgid "Sign in"
 msgstr "'el"
 
-#: templates/base.html:137
+#: templates/base.html:132
 msgid "Logged in as"
 msgstr "lo'meH pong"
 
-#: templates/base.html:140
+#: templates/base.html:135
 msgid "Logout"
 msgstr "jImej"
 
+#~ msgid "Public key list"
+#~ msgstr "peghbe'bogh naw' ngoq tetlh"
 
+#~ msgid "Resources"
+#~ msgstr "jo"
+
+#~ msgid "List"
+#~ msgstr "tetlh"
+
+#~ msgid "API"
+#~ msgstr "API"
