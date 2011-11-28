@@ -25,13 +25,20 @@ Core
 
 .. data:: CORE_KEYSERVERS
 
-    Default: ``['http://peer.to:11371']``
+    Default: ``['peer.to']``
     
     The list of key server that the node will query for public keys to verify resources.  This setting option may be eliminated in the future when OpenRelay supports storing and replicating of public keys without using centralize key servers.
 
 
 API
 ---
+
+.. data:: SERVER_IPADDRESS
+
+    Default: Computer's current IP address
+    
+    TCP/IP port where the UI and API can be accessed.
+
 
 .. data:: SERVER_PORT
 
@@ -54,3 +61,16 @@ API
     
     
     Time interval in seconds to perform an inventory hash checks on other OpenRelay nodes.
+
+    
+.. data:: SERVER_HEARTBEAT_FAILURE_THRESHOLD
+
+    Default: ``30``
+    
+    
+    Amount of failed heartbeat attempts before removing a node for the active list.
+    
+    
+    
+    
+    
