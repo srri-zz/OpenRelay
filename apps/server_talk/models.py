@@ -14,6 +14,9 @@ from server_talk.literals import NODE_STATUS_DOWN, NODE_STATUS_CHOICES
 
 class Nodebase(models.Model):
     uuid = models.CharField(max_length=48, editable=False, verbose_name=_(u'UUID'))
+    name = models.CharField(max_length=255, editable=False, verbose_name=_(u'name'))
+    email = models.CharField(max_length=255, editable=False, verbose_name=_(u'e-mail'))
+    comment = models.CharField(max_length=255, editable=False, verbose_name=_(u'comment'))
 
     def __unicode__(self):
         return self.uuid
