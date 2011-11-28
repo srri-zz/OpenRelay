@@ -24,7 +24,7 @@ def heartbeat_check():
     if siblings:
         oldest = siblings[0]
         try:
-            lock = Lock.objects.acquire_lock(u''.join(['heartbeat_check', oldest.uuid]), 20)
+            lock = Lock.acquire_lock(u''.join(['heartbeat_check', oldest.uuid]), 20)
             node = RemoteCall(uuid=oldest.uuid)
             oldest.last_heartbeat = datetime.datetime.now()
             response = node.heartbeat()
@@ -55,7 +55,7 @@ def inventory_hash_check():
     if siblings:
         oldest = siblings[0]
         try:
-            lock = Lock.objects.acquire_lock(u''.join(['inventory_hash', oldest.uuid]), 20)
+            lock = Lock.acquire_lock(u''.join(['inventory_hash', oldest.uuid]), 20)
             oldest.last_inventory_hash = datetime.datetime.now()
             remote_api = RemoteCall(uuid=oldest.uuid)
             response = remote_api.inventory_hash()
