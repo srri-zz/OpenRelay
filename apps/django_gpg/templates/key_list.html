@@ -9,7 +9,6 @@
             <tr>
                 <th>{% trans 'ID' %}</th>
                 <th>{% trans 'User IDs' %}</th>
-                <th>{% trans 'Fingerprint' %}</th>
                 <th>{% trans 'Links' %}</th>
             </tr>
         </thead>
@@ -18,7 +17,6 @@
                 <tr>
                     <td>{{ object.key_id }}</td>
                     <td>{{ object.user_ids }}</td>
-                    <td>{{ object.fingerprint }}</td>
                     <td><a href="{% url key_delete object.fingerprint object.type %}">{% trans 'Delete' %}</a></td>
                 </tr>
             {% empty %}
