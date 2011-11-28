@@ -232,13 +232,15 @@ def node_info(request):
 
 def resource_list(request, fingerprint=None):
     resource_list = {}
+    # TODO: remove magic [:40]
+    fingerprint = fingerprint[:40]
     if fingerprint:
         network_resources = [NetworkResourceVersion.objects.get(uuid=resource['uuid']) for resource in NetworkResourceVersion.objects.filter(uuid__startswith=fingerprint).values('uuid').distinct().order_by()]
         local_resources = Resource.objects.filter(uuid__startswith=fingerprint)
         if network_resources:
-            title = _(u'Resource from: %s') % network_resources[0].username
+            title = _(u'Resources from: %s') % network_resources[0].username
         elif local_resources:
-            title = _(u'Resource from: %s') % local_resources[0].username
+            title = _(u'Resources from: %s') % local_resources[0].username
     else:
         network_resources = [NetworkResourceVersion.objects.get(uuid=resource['uuid']) for resource in NetworkResourceVersion.objects.values('uuid').distinct().order_by()]
         local_resources = Resource.objects.all()
@@ -263,8 +265,8 @@ def resource_publishers(request):
     for network_resource in network_resources:
         if network_resource.username:
             username_dict = publishers.setdefault(network_resource.username, {})
-            # TODO: remove magivc [16:]
-            username_dict['fingerprint'] = network_resource.uuid[16:]
+            # TODO: remove magic [:40]
+            username_dict['fingerprint'] = network_resource.uuid[:40]
 
     for resource in Resource.objects.all():
         username_dict = publishers.setdefault(resource.username, {})

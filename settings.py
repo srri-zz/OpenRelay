@@ -54,6 +54,7 @@ LANGUAGES = (
     ('es', ugettext('Spanish')),
     ('cs-cz', ugettext('Czech (Czech Republic)')),
     ('tlh', ugettext('Klingon')),
+    ('uk', ugettext('Ukrainian')),
 )
 
 SITE_ID = 1
