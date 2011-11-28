@@ -4,7 +4,8 @@ import uuid
 from django.db.models.signals import post_syncdb
 from django.dispatch import receiver
 
-from server_talk.scheduler import register_interval_job
+from scheduler import register_interval_job
+
 from server_talk import models as server_talk_model
 from server_talk.tasks import heartbeat_check, inventory_hash_check
 from server_talk.conf.settings import (HEARTBEAT_QUERY_INTERVAL,
