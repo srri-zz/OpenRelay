@@ -37,6 +37,11 @@ def key_create(request):
                     name_comment=form.cleaned_data['comment'],
                     name_email=form.cleaned_data['email'],
                     passphrase=form.cleaned_data['passphrase'],
+                    key_type=form.cleaned_data['key_primary_class'],
+                    key_length=form.cleaned_data['key_primary_size'],
+                    subkey_type=form.cleaned_data['key_secondary_class'],
+                    subkey_length=form.cleaned_data['key_secondary_size'],
+                    expire_date=form.cleaned_data['expiration'],
                 )
 
                 messages.success(request, _(u'Key pair: %s, created successfully.') % key.fingerprint)
