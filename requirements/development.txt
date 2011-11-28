@@ -9,3 +9,4 @@ gunicorn==0.13.4
 http://www.crummy.com/software/BeautifulSoup/unreleased/4.x/BeautifulSoup-4.0b.tar.gz
 -e git://github.com/rosarior/django-bootstrap-form.git#egg=django-bootstrap-form
 requests==0.8.1
+APScheduler==2.0.2

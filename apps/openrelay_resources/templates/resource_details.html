@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans 'Resource details' %}{% endblock %}
+
+{% block content %}
+    <table class="bordered-table zebra-striped">
+        <thead>
+            <tr>
+                <th>{% trans 'UUID (database)' %}</th>
+                <th>{% trans 'UUID (verified)' %}</th>
+                <th>{% trans 'Signee' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ resource.uuid }}</td>
+                <td>{{ resource.verified_uuid }}</td>
+                <td>{{ resource.username }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>{% trans 'Versions (newest to oldest)' %}</h2>
+
+    <table class="bordered-table zebra-striped">
+        <thead>
+            <tr>
+                <th>{% trans 'Timestamp' %}</th>
+                <th>{% trans 'Timestamp (raw)' %}</th>
+                <th>{% trans 'Metadata' %}</th>
+                <th>{% trans 'Exists in storage' %}</th>
+                <th>{% trans 'Is valid?' %}</th>
+                <th>{% trans 'Signature status' %}</th>
+                <th>{% trans 'MIME type' %}</th>
+                <th>{% trans 'Encoding' %}</th>
+                <th>{% trans 'Links' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for version in resource.version_set.all %}
+                <tr>
+                    <td>{{ version.timestamp_display }}</td>
+                    <td>{{ version.raw_timestamp }}</td>
+                    <td>
+                        <table class="bordered-table zebra-striped">
+                            {% for key, value in version.metadata.items %}
+                                <tr><td>{{ key }}</td><td>{{ value }}</td></tr>
+                            {% endfor %}
+                        </table>
+                    </td>
+                    <td>{{ version.exists }}</td>
+                    <td>{{ version.is_valid }}</td>
+                    <td>{{ version.signature_status }}</td>
+                    <td>{{ version.mimetype.0 }}</td>
+                    <td>{{ version.mimetype.1 }}</td>
+                    <td><a href="{{ version.get_absolute_url }}">{% trans 'Serve' %}</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+

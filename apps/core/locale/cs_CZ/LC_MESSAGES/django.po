@@ -1,0 +1,67 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Translators:
+#   <sbrichards@mit.edu>, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: OpenRelay\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-11-28 05:18-0400\n"
+"PO-Revision-Date: 2011-11-27 01:47+0000\n"
+"Last-Translator: sbrichards <sbrichards@mit.edu>\n"
+"Language-Team: Czech (Czech Republic) (http://www.transifex.net/projects/p/"
+"openrelay/team/cs_CZ/)\n"
+"Language: cs_CZ\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
+
+#: templates/about.html:3
+msgid "About this program"
+msgstr "O programu"
+
+#: templates/about.html:5
+msgid "OpenRelay"
+msgstr "OpenRelay"
+
+#: templates/about.html:5
+#, python-format
+msgid "(Version %(version)s)"
+msgstr "(Verze %(version)s)"
+
+#: templates/about.html:6
+msgid ""
+"OpenRelay is a p2p (peer to peer) based web hosting solution. It takes "
+"advantage of Bittorrent to send files between the hosts as well as Dynamic "
+"DNS for updating nodes."
+msgstr ""
+"OpenRelay je založená na webovém řešení p2p (užvatel uživateli). Toto řešení "
+"využívá Bittorrent k zasílání souborů mezi uživateli stejně jako Dynamic DNS "
+"na aktualizaci."
+
+#: templates/about.html:7
+msgid "Web site: "
+msgstr "Web:"
+
+#: templates/about.html:8
+msgid "Source code:"
+msgstr "Zdrojový kǒd:"
+
+#: templates/about.html:9
+msgid "OpenRelay is developed by:"
+msgstr "OpenRelay byl vytvořen:"
+
+#: templates/about.html:27
+msgid "OpenRelay is licensed under the GNU GPL v3"
+msgstr "Licence proramu OpenRelay spadá pod GNU GPL v3"
+
+#: templates/about.html:32 templates/home.html:12
+msgid "Copyright &copy; 2011 Steven Richards, Roberto Rosario"
+msgstr "Copyright &copy; 2011 Steven Richards, Roberto Rosario"
+
+#: templates/home.html:7
+msgid "Peer to peer based web hosting solution"
+msgstr "Vzájemné meziužvatelské webové služby "

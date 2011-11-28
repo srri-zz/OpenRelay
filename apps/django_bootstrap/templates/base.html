@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load custom_i18n %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
   <head>
@@ -28,7 +29,7 @@
         text-align: center; /* center align it with the container */
       }
       .container {
-        width: 95%; /* downsize our container to make the content feel a bit tighter and more cohesive. NOTE: this removes two full columns from the grid, meaning you only go to 14 columns and not 16. */
+        min-width: 820px; /* downsize our container to make the content feel a bit tighter and more cohesive. NOTE: this removes two full columns from the grid, meaning you only go to 14 columns and not 16. */
       }
 
       /* The white background content wrapper */
@@ -70,7 +71,7 @@
     </style>
 
     <!-- Le fav and touch icons -->
-    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="shortcut icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
     <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
     <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
@@ -82,42 +83,44 @@
     <body>
     <div class="topbar">
       <div class="fill">
-        <div class="container">
+        <div class="container-fluid">
           <a class="brand" href="{% url home_view %}">OpenRelay</a>
 
           <ul class="nav">
-            <li><a href="{% url home_view %}">{% trans 'Home' %}</a></li>
+            <li class="dropdown" data-dropdown="dropdown">
+              <a class="dropdown-toggle" href="#">{% trans 'Network' %}</a>
+              <ul class="dropdown-menu">
+                    <li><a href="{% url join %}">{% trans 'Join' %}</a></li>
+                    <li><a href="{% url resource_upload %}">{% trans 'Upload content' %}</a></li>
+                    <li><a href="{% url node_list %}">{% trans 'Node list' %}</a></li>
+                    <li><a href="{% url node_info %}">{% trans 'Local node info' %}</a></li>
+                    <li><a href="{% url resource_publishers %}">{% trans 'Resource publishers' %}</a></li>
+                    <li><a href="{% url network_resource_list %}">{% trans 'Resource list' %}</a></li>
+                    <li><a href="{% url resource_list %}">{% trans 'Resource list (local only)' %}</a></li>  
+              </ul>
+            </li>            
+
             <li class="dropdown" data-dropdown="dropdown">
               <a class="dropdown-toggle" href="#">{% trans 'Key management' %}</a>
               <ul class="dropdown-menu">
                     <li><a href="{% url key_create %}">{% trans 'Create new key pair' %}</a></li>  
                     <li><a href="{% url key_private_list %}">{% trans 'Private key list' %}</a></li>  
-                    <li><a href="{% url key_public_list %}">{% trans 'Public key list' %}</a></li>  
+                    <li><a href="{% url key_publish %}">{% trans 'Publish public key' %}</a></li>  
               </ul>
-            </li>            
-            <li class="dropdown" data-dropdown="dropdown">
-              <a class="dropdown-toggle" href="#">{% trans 'Resources' %}</a>
-              <ul class="dropdown-menu">
-                    <li><a href="{% url resource_upload %}">{% trans 'Upload' %}</a></li>
-                    <li><a href="{% url resource_list_simple %}">{% trans 'List' %}</a></li>  
-                    <li><a href="{% url resource_list %}">{% trans 'List (detailed)' %}</a></li>  
-              </ul>
-            </li>            
-
-            <li class="dropdown" data-dropdown="dropdown">
-              <a class="dropdown-toggle" href="#">{% trans 'Network' %}</a>
-              <ul class="dropdown-menu">
-                    <li><a href="{% url join %}">{% trans 'Join' %}</a></li>
-                    <li><a href="{% url node_list %}">{% trans 'Node list' %}</a></li>
-                    <li><a href="{% url node_info %}">{% trans 'Local node info' %}</a></li>
-              </ul>
-            </li>            
+            </li>
 
             <li><a href="{% url settings_list %}">{% trans 'Settings' %}</a></li>
-            <li><a href="{% url api-root %}">{% trans 'API' %}</a></li>
             <li><a href="{% url about_view %}">{% trans 'About' %}</a></li>
+            <li>
+                <form action="{% url set_language %}" method="post">{% csrf_token %}
+                    <select name="language" onchange="this.form.submit()">
+                        {% for lang in LANGUAGES %}
+                            <option value="{{ lang.0 }}" {% if lang.0 == LANGUAGE_CODE %}selected="selected"{% endif %}>{{ lang.0|custom_language_name_local|capfirst }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </li>
           </ul>
-          
           {% if user.is_anonymous %}
               <form action="{% url login_view %}" class="pull-right" method="post">
                 {% csrf_token %}
@@ -138,7 +141,7 @@
 
     <div class="container">
         <div class="row">
-            <div class="span12" style="width: 99%;">
+            <div class="span16">
                 {% for message in messages %}
                     <div class="alert-message {{ message.tags }} fade in"  data-alert="alert" >
                         <a href="#" class="close">×</a>
@@ -153,17 +156,14 @@
         <div class="page-header">
           <h1>{% block title %}{% endblock %}<small>{% block subtitle %}{% endblock %}</small></h1>
         </div>
-        
-                
         <div class="row">
-          <div class="span24" style="width: 99%;">
+          <div class="span16">
             {% block content %}{% endblock %}
           </div>
         </div>
       </div>
 
       <footer>
-        {#<p>&copy; Company 2011</p>#}
             {% block footer %}{% endblock %}            
       </footer>
 

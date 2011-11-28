@@ -15,25 +15,25 @@ start_server () {
   if [ -f $1 ]; then
     #pid exists, check if running
     if [ "$(ps -p `cat $1` | wc -l)" -gt 1 ]; then
-       echo "Server already running on ${ADDRESS}:${2}"
+       echo "Server already running at http://${ADDRESS}:${2}"
        return
     fi
   fi
   cd $PROJECTLOC
-  echo "starting ${ADDRESS}:${2}"
+  echo "Starting new server instance at http://${ADDRESS}:${2}"
   $BASE_CMD$2 --pid=$1 settings_local_server.py
 }
 
 stop_server (){
   if [ -f $1 ] && [ "$(ps -p `cat $1` | wc -l)" -gt 1 ]; then
-    echo "stopping server ${ADDRESS}:${2}"
+    echo "Stopping server at http:// ${ADDRESS}:${2}"
     kill -9 `cat $1`
     rm $1
   else 
     if [ -f $1 ]; then
-      echo "server ${ADDRESS}:${2} not running"
+      echo "server located at http://${ADDRESS}:${2} is not running"
     else
-      echo "No pid file found for server ${ADDRESS}:${2}"
+      echo "No pid file found for server http://${ADDRESS}:${2}"
     fi
   fi
 }

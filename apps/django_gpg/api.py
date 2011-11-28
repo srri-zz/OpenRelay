@@ -1,19 +1,37 @@
 import types
 from StringIO import StringIO
+from pickle import dumps
 
 import gnupg
 
 from django.core.files.base import File
 from django.utils.translation import ugettext_lazy as _
 
+from queue_manager import Queue, QueuePushError
+
 from django_gpg.exceptions import GPGVerificationError, GPGSigningError, \
     GPGDecryptionError, KeyDeleteError, KeyGenerationError, \
-    KeyFetchingError
+    KeyFetchingError, KeyDoesNotExist
+
 
 KEY_TYPES = {
     'pub': _(u'Public'),
     'sec': _(u'Secret'),
 }
+
+KEY_CLASS_RSA = 'RSA'
+KEY_CLASS_DSA = 'DSA'
+KEY_CLASS_ELG = 'ELG-E'
+
+KEY_PRIMARY_CLASSES = (
+    ((KEY_CLASS_RSA), _(u'RSA')),
+    ((KEY_CLASS_DSA), _(u'DSA')),
+)
+
+KEY_SECONDARY_CLASSES = (
+    ((KEY_CLASS_RSA), _(u'RSA')),
+    ((KEY_CLASS_ELG), _(u'Elgamal')),
+)
 
 
 class Key(object):
@@ -22,28 +40,43 @@ class Key(object):
         return fingerprint[-16:]
 
     @classmethod
-    def get_all(cls, gpg, secret=False):
+    def get_all(cls, gpg, secret=False, exclude=None):
         result = []
         keys = gpg.gpg.list_keys(secret=secret)
+        if exclude:
+            excluded_id = exclude.key_id
+        else:
+            excluded_id = u''
         for key in keys:
-            key_instance = Key(
-                fingerprint=key['fingerprint'],
-                uids=key['uids'],
-                type=key['type'],
-                data=gpg.gpg.export_keys([key['keyid']], secret=secret)
-            )
-            result.append(key_instance)
+            if not key['keyid'] in excluded_id:
+                key_instance = Key(
+                    fingerprint=key['fingerprint'],
+                    uids=key['uids'],
+                    type=key['type'],
+                    data=gpg.gpg.export_keys([key['keyid']], secret=secret)
+                )
+                result.append(key_instance)
 
         return result
 
     @classmethod
-    def get(cls, gpg, key_id, secret=False):
+    def get(cls, gpg, key_id, secret=False, search_keyservers=False):
         if len(key_id) > 16:
             # key_id is a fingerprint
             key_id = Key.get_key_id(key_id)
 
         keys = gpg.gpg.list_keys(secret=secret)
         key = next((key for key in keys if key['keyid'] == key_id), None)
+        if not key:
+            if search_keyservers and secret==False:
+                try:
+                    gpg.receive_key(key_id)
+                    return Key(gpg, key_id)
+                except KeyFetchingError:
+                    raise KeyDoesNotExist
+            else:
+                raise KeyDoesNotExist
+
         key_instance = Key(
             fingerprint=key['fingerprint'],
             uids=key['uids'],
@@ -99,7 +132,7 @@ class GPG(object):
         """
         if isinstance(file_input, types.StringTypes):
             descriptor = open(file_input, 'rb')
-        elif isinstance(file_input, types.FileType) or isinstance(file_input, File):
+        elif isinstance(file_input, types.FileType) or isinstance(file_input, File) or isinstance(file_input, StringIO):
             descriptor = file_input
         else:
             raise ValueError('Invalid file_input argument type')
@@ -172,7 +205,7 @@ class GPG(object):
     def decrypt_file(self, file_input):
         if isinstance(file_input, types.StringTypes):
             input_descriptor = open(file_input, 'rb')
-        elif isinstance(file_input, types.FileType) or isinstance(file_input, File):
+        elif isinstance(file_input, types.FileType) or isinstance(file_input, File) or isinstance(file_input, StringIO):
             input_descriptor = file_input
         else:
             raise ValueError('Invalid file_input argument type')
@@ -184,6 +217,24 @@ class GPG(object):
 
         return result
 
+    def create_key_background(self, *args, **kwargs):
+        try:
+            kwargs['gpg'] = dumps(self)
+            queue = Queue(queue_name='gpg_key_gen', unique_names=True)
+            queue.push(
+                name=u''.join(
+                    [
+                        kwargs.get('name_real'),
+                        kwargs.get('name_comment'),
+                        kwargs.get('name_email'),
+                    ]
+                ),
+                data=kwargs
+            )
+            return
+        except QueuePushError:
+            raise KeyGenerationError('A key with these same parameters is queued for creation')
+        
     def create_key(self, *args, **kwargs):
         if kwargs.get('passphrase') == u'':
             kwargs.pop('passphrase')
@@ -203,15 +254,10 @@ class GPG(object):
         elif status != 'ok':
             raise KeyDeleteError('Unable to delete key')
 
-    def receive_key(self, fingerprint):
-        result = None
+    def receive_key(self, key_id):
         for keyserver in self.keyservers:
-            import_result = self.gpg.recv_keys(keyserver, fingerprint)
+            import_result = self.gpg.recv_keys(keyserver, key_id)
             if import_result:
-                result = import_result
-                break
+                return Key.get(self, import_result.fingerprints[0], secret=False)
 
-        if not result:
-            raise KeyFetchingError()
-
-        return Key.get(self, result[0]['fingerprint'], secret=False)
+        raise KeyFetchingError

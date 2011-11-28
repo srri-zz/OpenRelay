@@ -47,6 +47,16 @@ TIME_ZONE = 'America/Chicago'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
+ugettext = lambda s: s
+
+LANGUAGES = (
+    ('en', ugettext('English')),
+    ('es', ugettext('Spanish')),
+    ('cs-cz', ugettext('Czech (Czech Republic)')),
+    ('tlh', ugettext('Klingon')),
+    ('uk', ugettext('Ukrainian')),
+)
+
 SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
@@ -107,8 +117,8 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -136,8 +146,11 @@ INSTALLED_APPS = (
     'django_bootstrap',
     'bootstrapform',
     'bittorrent',
+    'scheduler',
+    'queue_manager',
     'django_gpg',
     'openrelay_resources',
+    'lock_manager',
     'server_talk',
     'core',
 )

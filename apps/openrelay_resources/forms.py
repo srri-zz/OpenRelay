@@ -1,17 +1,16 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
+from server_talk.models import LocalNode
 from django_gpg import Key
-
-from openrelay_resources.models import Resource
 
 from core.runtime import gpg
 
 
-class ResourceForm(forms.ModelForm):
-    class Meta:
-        model = Resource
-        exclude = ('time_stamp',)
+class ResourceForm(forms.Form):
+    file = forms.FileField(
+        label=(u'File'),
+    )
 
     name = forms.CharField(
         label=_(u'Name'),
@@ -33,7 +32,7 @@ class ResourceForm(forms.ModelForm):
     )
 
     key = forms.ChoiceField(
-        choices=[(key.fingerprint, key) for key in Key.get_all(gpg, secret=True)],
+        choices=[],
         label=_(u'Key'),
         help_text=_(u'The private key that will be used to sign the file.'),
     )
@@ -43,3 +42,8 @@ class ResourceForm(forms.ModelForm):
         help_text=_(u'Automatically convert relative references to images, links, CSS and Javascript.'),
         initial=True
     )
+
+    def __init__(self, *args, **kwargs):
+        super(ResourceForm, self).__init__(*args, **kwargs)
+        self.fields['key'].choices = [(key.fingerprint, key) for key in Key.get_all(gpg, secret=True, exclude=LocalNode().get().public_key)]
+        self.fields['key'].widget.attrs = {'style': 'width: auto;'}

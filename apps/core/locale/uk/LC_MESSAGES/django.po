@@ -1,0 +1,68 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Translators:
+#   <jonny_nut@hotmail.com>, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: OpenRelay\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-11-28 05:18-0400\n"
+"PO-Revision-Date: 2011-11-27 22:33+0000\n"
+"Last-Translator: jonny_nut <jonny_nut@hotmail.com>\n"
+"Language-Team: Ukrainian (http://www.transifex.net/projects/p/openrelay/team/"
+"uk/)\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
+
+#: templates/about.html:3
+msgid "About this program"
+msgstr "Про цю програму"
+
+#: templates/about.html:5
+msgid "OpenRelay"
+msgstr "OpenRelay"
+
+#: templates/about.html:5
+#, python-format
+msgid "(Version %(version)s)"
+msgstr "(Версія %(version)s)"
+
+#: templates/about.html:6
+msgid ""
+"OpenRelay is a p2p (peer to peer) based web hosting solution. It takes "
+"advantage of Bittorrent to send files between the hosts as well as Dynamic "
+"DNS for updating nodes."
+msgstr ""
+"OpenRelay, це розчин веб-хостингу на основі p2p (рівний-рівному). Переваги "
+"BitTorrent використовуються для відправки файлів між хостами, а Dynamic DNS "
+"для оновлення вузлів."
+
+#: templates/about.html:7
+msgid "Web site: "
+msgstr "Веб-сайт:"
+
+#: templates/about.html:8
+msgid "Source code:"
+msgstr "Вихідний код:"
+
+#: templates/about.html:9
+msgid "OpenRelay is developed by:"
+msgstr "OpenRelay розробленo слідуючими:"
+
+#: templates/about.html:27
+msgid "OpenRelay is licensed under the GNU GPL v3"
+msgstr "OpenRelay під ліцензією GNU GPL v3"
+
+#: templates/about.html:32 templates/home.html:12
+msgid "Copyright &copy; 2011 Steven Richards, Roberto Rosario"
+msgstr ""
+
+#: templates/home.html:7
+msgid "Peer to peer based web hosting solution"
+msgstr "Розчин веб-хостингу на основі рівних-рівним тимчасовою мережею"

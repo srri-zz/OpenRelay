@@ -2,13 +2,29 @@
 {% load i18n %}
 {% block title %}{% trans 'About this program' %}{% endblock %}
 {% block content %}
-    <div class="content tc">
-        <h1>{% trans 'OpenRelay' %} {% blocktrans with version as version %}(Version {{ version }}){% endblocktrans %}</h1>
-        <p>{% trans 'OpenRelay is a p2p (peer to peer) based web hosting solution. It takes advantage of Bittorrent to send files between the hosts as well as Dynamic DNS for updating nodes.' %}</p>
-        <p>{% trans 'Web site: ' %}<a href="http://peer.to/peer">http://peer.to/peer</a></p>
-        <p>{% trans 'Source code:' %} <a href="https://github.com/Captainkrtek/OpenRelay">https://github.com/Captainkrtek/OpenRelay</a></p>
-        <p>{% trans 'OpenRelay is licensed under the GNU GPL v3' %}</p>
-    </div>
+    <h1>{% trans 'OpenRelay' %} {% blocktrans with version as version %}(Version {{ version }}){% endblocktrans %}</h1>
+    <p>{% trans 'OpenRelay is a p2p (peer to peer) based web hosting solution. It takes advantage of Bittorrent to send files between the hosts as well as Dynamic DNS for updating nodes.' %}</p>
+    <p>{% trans 'Web site: ' %}<a href="http://peer.to/peer">http://peer.to/peer</a></p>
+    <p>{% trans 'Source code:' %} <a href="https://github.com/Captainkrtek/OpenRelay">https://github.com/Captainkrtek/OpenRelay</a></p>
+    <h2>{% trans 'OpenRelay is developed by:' %}</h2>
+    <ul>
+        <li>Steven Richards
+            <ul>
+                <li>Email - <a href="mailto:steve@peer.to">steve@peer.to</a></li>
+                <li>Twitter - <a href="http://twitter.com/Captainkrtek">Captainkrtek</a></li>
+                <li>Github - <a href="http://github.com/Captainkrtek">Captainkrtek</a></li>
+            </ul>
+        </li>
+        
+        <li>Roberto Rosario
+            <ul>
+                <li>Email - <a href="mailto:roberto@peer.to">roberto@peer.to</a></li>
+                <li>Twitter - <a href="http://twitter.com/siloraptor">siloraptor</a></li>
+                <li>Github - <a href="http://github.com/rosarior">rosarior</a></li>
+            </ul>
+        </li>            
+    </ul>
+    <p>{% trans 'OpenRelay is licensed under the GNU GPL v3' %}</p>
 {% endblock %}
 {% block footer %}
     <div id="footer">

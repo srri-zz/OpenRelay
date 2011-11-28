@@ -24,3 +24,8 @@ class KeyGenerationError(GPGException):
 
 class KeyFetchingError(GPGException):
     pass
+
+
+class KeyDoesNotExist(GPGException):
+    pass
+

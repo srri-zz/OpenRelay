@@ -7,17 +7,27 @@
     <table class="bordered-table zebra-striped">
         <thead>
             <tr>
-                <th>{% trans 'UUID' %}</th>
+                <th>{% trans 'Name' %}</th>
                 <th>{% trans 'IP address' %}</th>
                 <th>{% trans 'Port' %}</th>
+                <th>{% trans 'Last heartbeat' %}</th>
+                <th>{% trans 'CPU load' %}</th>
+                <th>{% trans 'Status' %}</th>
+                <th>{% trans 'Failure count' %}</th>
+                <th>{% trans 'Last inventory hash' %}</th>
             </tr>
         </thead>
         <tbody>
             {% for object in object_list %}
                 <tr>
-                    <td>{{ object }}</td>
+                    <td>{{ object.name }}</td>
                     <td>{{ object.ip_address }}</td>
                     <td>{{ object.port }}</td>
+                    <td>{{ object.last_heartbeat }}</td>
+                    <td>{{ object.cpuload }}</td>
+                    <td>{{ object.get_status_display }}</td>
+                    <td>{{ object.failure_count }}</td>
+                    <td>{{ object.last_inventory_hash }}</td>
                 </tr>
             {% endfor %}
         </tbody>
