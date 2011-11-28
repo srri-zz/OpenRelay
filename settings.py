@@ -146,6 +146,8 @@ INSTALLED_APPS = (
     'django_bootstrap',
     'bootstrapform',
     'bittorrent',
+    'scheduler',
+    'queue_manager',
     'django_gpg',
     'openrelay_resources',
     'lock_manager',
