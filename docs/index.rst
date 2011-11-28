@@ -25,5 +25,7 @@ Contents
     installation
     settings
     development
+    changelog
+    planned
     internals
     credits
