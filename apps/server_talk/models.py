@@ -7,6 +7,8 @@ from django.utils.simplejson import dumps, loads
 
 from openrelay_resources.models import ResourceBase, VersionBase
 from openrelay_resources.literals import TIMESTAMP_SEPARATOR
+from django_gpg import Key
+from core.runtime import gpg
 
 from server_talk.conf.settings import PORT
 from server_talk.literals import NODE_STATUS_DOWN, NODE_STATUS_CHOICES
@@ -20,6 +22,10 @@ class Nodebase(models.Model):
 
     def __unicode__(self):
         return self.uuid
+
+    @property
+    def public_key(self):
+        return Key.get(gpg, self.uuid, secret=False, search_keyservers=True)
 
     class Meta:
         abstract = True
