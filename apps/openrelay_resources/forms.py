@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
+from server_talk.models import LocalNode
 from django_gpg import Key
 
 from core.runtime import gpg
@@ -42,8 +43,7 @@ class ResourceForm(forms.Form):
         initial=True
     )
 
-
     def __init__(self, *args, **kwargs):
         super(ResourceForm, self).__init__(*args, **kwargs)
-        self.fields['key'].choices = [(key.fingerprint, key) for key in Key.get_all(gpg, secret=True)]
+        self.fields['key'].choices = [(key.fingerprint, key) for key in Key.get_all(gpg, secret=True, exclude=LocalNode().get().public_key)]
         self.fields['key'].widget.attrs = {'style': 'width: auto;'}
