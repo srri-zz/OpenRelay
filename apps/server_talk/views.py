@@ -1,6 +1,5 @@
 """The root view for OpenRelay API"""
 import logging
-import socket
 import hashlib
 
 from django.utils.translation import ugettext_lazy as _
@@ -21,7 +20,7 @@ from openrelay_resources.literals import TIMESTAMP_SEPARATOR
 from server_talk.models import LocalNode, Sibling, NetworkResourceVersion
 from server_talk.forms import JoinForm
 from server_talk.api import RemoteCall
-from server_talk.conf.settings import PORT
+from server_talk.conf.settings import PORT, IPADDRESS
 from server_talk.exceptions import AnnounceClientError
 from server_talk.utils import CPUsage
 
@@ -169,7 +168,7 @@ class Announce(View):
                 sibling.save()
             local_node = LocalNode.get()
             local_node_info = {
-                'ip_address': socket.gethostbyname(socket.gethostname()),
+                'ip_address': IPADDRESS,
                 'port': PORT,
                 'uuid': local_node.uuid,
                 'name': local_node.name,

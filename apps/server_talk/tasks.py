@@ -64,15 +64,11 @@ def inventory_hash_check():
                 # later the ones it doesn't have anymore
                 ResourceHolder.objects.filter(node__uuid=oldest.uuid).delete()
                 for resource_item in remote_api.resource_list():
-                    print 'resource_item', resource_item
                     uuid, timestamp=resource_item['uuid'].split(TIMESTAMP_SEPARATOR)
                     resource, created = NetworkResourceVersion.objects.get_or_create(
                         uuid=uuid,
                         timestamp=timestamp,
                         defaults={
-                            #'name': resource_item.get('name'),
-                            #'label': resource_item.get('label'),
-                            #'description': resource_item.get('description'),
                             'metadata': dumps(resource_item.get('metadata')),
                             'signature_properties': dumps(resource_item.get('signature_properties')),
                         }
