@@ -3,8 +3,7 @@ import logging
 
 from django.utils.simplejson import dumps
 
-from lock_manager.models import Lock
-from lock_manager.exceptions import LockError
+from lock_manager import Lock, LockError
 from openrelay_resources.literals import TIMESTAMP_SEPARATOR
 
 from server_talk.exceptions import HeartbeatError, InventoryHashError
