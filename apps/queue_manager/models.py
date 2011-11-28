@@ -22,7 +22,9 @@ class Queue(models.Model):
     def __unicode__(self):
         return self.label if self.label else self.name
 
-    def push(self, name, data):
+    def push(self, data, name=None):
+        if not name:
+            name = u''
         queue_item = QueueItem(queue=self, name=name, data=dumps(data))
         queue_item.save()
         return queue_item
