@@ -1,0 +1,40 @@
+#!/bin/sh
+COMPILEMESSAGES="django-admin compilemessages"
+PWD=`pwd`
+BASE=$PWD
+
+cd $BASE/apps/common
+$COMPILEMESSAGES -l es
+$COMPILEMESSAGES -l tlh
+$COMPILEMESSAGES -l cs_CZ
+$COMPILEMESSAGES -l uk
+
+cd $BASE/apps/core
+$COMPILEMESSAGES -l es
+$COMPILEMESSAGES -l tlh
+$COMPILEMESSAGES -l cs_CZ
+$COMPILEMESSAGES -l uk
+
+cd $BASE/apps/django_bootstrap
+$COMPILEMESSAGES -l es
+$COMPILEMESSAGES -l tlh
+$COMPILEMESSAGES -l cs_CZ
+$COMPILEMESSAGES -l uk
+
+cd $BASE/apps/django_gpg
+$COMPILEMESSAGES -l es
+$COMPILEMESSAGES -l tlh
+$COMPILEMESSAGES -l cs_CZ
+$COMPILEMESSAGES -l uk
+
+cd $BASE/apps/openrelay_resources
+$COMPILEMESSAGES -l es
+$COMPILEMESSAGES -l tlh
+$COMPILEMESSAGES -l cs_CZ
+$COMPILEMESSAGES -l uk
+
+cd $BASE/apps/server_talk
+$COMPILEMESSAGES -l es
+$COMPILEMESSAGES -l tlh
+$COMPILEMESSAGES -l cs_CZ
+$COMPILEMESSAGES -l uk
