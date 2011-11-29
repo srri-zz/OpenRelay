@@ -3,7 +3,7 @@ Planned features
 ================
 
 * Validated API calls
-* Routing
+* Node based Routing
 * Inter node communication encryption
 * Node blacklisting
 * HTTP Proxy support
@@ -11,3 +11,4 @@ Planned features
 * Zip file upload support
 * ARP-like resource locating algorithm
 * More caching improvements
+* Resource size detection during download (prevent DoS attack by lying)
