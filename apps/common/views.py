@@ -22,6 +22,7 @@ from django.contrib.sites.models import get_current_site
 SETTINGS_LIST = (
     ('openrelay_resources', 'STORAGE_BACKEND', 'RESOURCES_STORAGE_BACKEND'),
     ('openrelay_resources', 'FILESTORAGE_LOCATION', 'RESOURCES_FILESTORAGE_LOCATION'),
+    ('openrelay_resources', 'STORAGE_SIZE_LIMIT', 'RESOURCES_STORAGE_SIZE_LIMIT'),
     ('core', 'KEYSERVERS', 'CORE_KEYSERVERS'),
     ('server_talk', 'IPADDRESS', 'SERVER_IPADDRESS'),
     ('server_talk', 'PORT', 'SERVER_PORT'),
