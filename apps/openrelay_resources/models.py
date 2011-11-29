@@ -1,4 +1,5 @@
 import urlparse
+import errno
 from datetime import datetime
 from StringIO import StringIO
 
@@ -15,6 +16,7 @@ import magic
 from django_gpg import Key, GPGVerificationError, GPGDecryptionError, KeyFetchingError
 
 from openrelay_resources.conf.settings import STORAGE_BACKEND
+from openrelay_resources.conf.settings import STORAGE_SIZE_LIMIT
 from openrelay_resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
     MAGIC_NUMBER, TIMESTAMP_SEPARATOR, MAGIC_VERSION
 from openrelay_resources.exceptions import ORInvalidResourceFile
@@ -73,7 +75,12 @@ class VersionBase(models.Model):
 
     @property
     def full_uuid(self):
-        resource = getattr(self, self.parent_resource_model_name.lower())
+        try:
+            resource = getattr(self, self.parent_resource_model_name.lower())
+        except Resource.DoesNotExist:
+            # Orphan version instance, delete it
+            self.delete()
+            return '<Invalid version instance>'
         return VersionBase.prepare_full_resource_name(resource.uuid, self.timestamp)
 
     def __unicode__(self):
@@ -88,6 +95,30 @@ class Resource(ResourceBase):
     resource_version_model_name = u'Version'
 
     @staticmethod
+    def storage_culling():
+        used_size = Resource.storage_used_space()
+        while used_size > STORAGE_SIZE_LIMIT:
+            for version in Version.objects.order_by('last_access'):
+                version_size = version.size
+                if version_size:
+                    version.delete()
+                    # If there are no more versions of this resource
+                    # delete the resource
+                    if Version.objects.filter(resource=version.resource).count() == 0:
+                        version.resource.delete()
+                    used_size -= version_size
+            
+        return used_size
+
+    @staticmethod
+    def storage_used_space():
+        total_space = 0
+        for version in Version.objects.all():
+            total_space += version.size
+        
+        return total_space    
+        
+    @staticmethod
     def prepare_resource_uuid(key, name):
         return RESOURCE_SEPARATOR.join([key.fingerprint, name])
         
@@ -95,7 +126,7 @@ class Resource(ResourceBase):
     def get_absolute_url(self):
         return ('resource_serve', [self.uuid])
         
-    def save(self, *args, **kwargs):
+    def upload(self, *args, **kwargs):
         version = kwargs.pop('raw_data_version', None)
         if not version:
             key = kwargs.pop('key')
@@ -116,18 +147,18 @@ class Resource(ResourceBase):
             resource = Resource.objects.get(uuid=uuid)
             self.pk = resource.pk
             self.uuid = uuid
-            super(Resource, self).save(*args , **kwargs)
+            self.save(*args, **kwargs)
         except Resource.DoesNotExist:
             self.uuid = uuid
-            super(Resource, self).save(*args , **kwargs)
+            self.save(*args, **kwargs)
             resource = self
         
         if version:
             version.resource = resource
-            version.save()
+            version.upload()
         else:
             version = Version(resource=resource, file=file)
-            version.save(key=key, name=name, label=label, description=description, filter_html=filter_html)
+            version.upload(key=key, name=name, label=label, description=description, filter_html=filter_html)
     
     class Meta(ResourceBase.Meta):
         verbose_name = _(u'resource')
@@ -139,6 +170,7 @@ class Version(VersionBase):
     
     resource = models.ForeignKey(Resource, verbose_name=_(u'resource'))
     file = models.FileField(upload_to='resources', storage=STORAGE_BACKEND(), verbose_name=_(u'file'), editable=False)
+    last_access = models.DateTimeField(verbose_name=_(u'last access'), editable=False)
 
     @staticmethod
     def prepare_resource_url(key, filename):
@@ -163,7 +195,7 @@ class Version(VersionBase):
         # TODO: pass exceptions to caller
         if version.verify:
             resource = Resource()
-            resource.save(raw_data_version=version)
+            resource.upload(raw_data_version=version)
             return version
         else:
             raise ORInvalidResourceFile('Remote resource failed verification')
@@ -175,7 +207,7 @@ class Version(VersionBase):
         self._content = None
         self._raw = None
 
-    def save(self, key=None, *args, **kwargs):
+    def upload(self, key=None, *args, **kwargs):
         if self.pk:
             raise NotImplemented('Cannot update an existing resource, create a new version from the same content instead.')
 
@@ -224,16 +256,8 @@ class Version(VersionBase):
             self.file.save(self.verified_uuid, ContentFile(self._raw.encode('UTF-8')), save=False)
             self.timestamp = self.raw_timestamp
 
-        super(Version, self).save(*args, **kwargs)
-
-    def exists(self):
-        return self.file.storage.exists(self.file.name)
-
-    def delete(self, *args, **kwargs):
-        # Delete using filename not uuid as 
-        # there is no warraty the uuid is formed as a valid filename
-        self.file.storage.delete(self.file.name)
-        super(Version, self).delete(*args, **kwargs)
+        self.last_access = datetime.now()
+        self.save(*args, **kwargs)
 
     def _refresh_metadata(self):
         if not self._metadata:
@@ -359,22 +383,19 @@ class Version(VersionBase):
         else:
             raise AttributeError
 
-    def open(self):
-        """
-        Returns a file-like object to the resource data
-        """
-        if self._raw:
-            container = StringIO()
-            container.write(self._raw)
-            container.seek(0)
-            return container
-        else:
-            return self.file.storage.open(self.file.name)
-
     @property
     def content(self):
+        # Returns the plain text content of a resource
         self._refresh_metadata()
+        self.last_access = datetime.now()
+        self.save()
         return self._content
+        
+    def download(self):
+        # Returns a file like object to the signed resource
+        self.last_access = datetime.now()
+        self.save()
+        return self.open()
 
     @property
     def metadata(self):
@@ -398,6 +419,33 @@ class Version(VersionBase):
             return mimetype, encoding
         else:
             return u'', u''
+
+    # Storage methods
+    def open(self):
+        """
+        Returns a file-like object to the resource's raw data
+        """
+        if self._raw:
+            container = StringIO()
+            container.write(self._raw)
+            container.seek(0)
+            return container
+        else:
+            return self.file.storage.open(self.file.name)
+
+    def exists(self):
+        return self.file.storage.exists(self.file.name)
+
+    @property
+    def size(self):
+        return self.file.storage.size(self.file.name)
+
+    def delete(self, *args, **kwargs):
+        # Delete using filename not uuid as 
+        # there is no warraty the uuid is formed as a valid filename
+        self.file.storage.delete(self.file.name)
+        
+        super(Version, self).delete(*args, **kwargs)
 
     @models.permalink
     def get_absolute_url(self):
