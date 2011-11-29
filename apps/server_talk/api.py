@@ -42,6 +42,7 @@ class NetworkCall(object):
             node = RemoteCall(uuid=resource_holder.uuid)
             resource_raw_data = node.download_version(uuid)
             remote_resource = Version.create_from_raw(resource_raw_data)
+            Resource.storage_culling()    
             return remote_resource
 
         except (NetworkResourceVersion.DoesNotExist, IndexError, ORInvalidResourceFile, NetworkResourceDownloadError), msg:

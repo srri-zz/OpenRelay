@@ -138,7 +138,7 @@ class ResourceDownload(View):
         except Resource.DoesNotExist:
             raise Http404('No %s matches the given query.' % Resource._meta.object_name)
 
-        return HttpResponse(resource.open())
+        return HttpResponse(resource.download())
 
 
 class ResourceServe(View):

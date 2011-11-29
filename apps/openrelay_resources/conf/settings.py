@@ -15,3 +15,4 @@ class FileBasedStorage(FileSystemStorage):
 
 FILESTORAGE_LOCATION = getattr(settings, 'RESOURCES_FILESTORAGE_LOCATION', os.path.join(settings.PROJECT_ROOT, 'resource_storage'))
 STORAGE_BACKEND = getattr(settings, 'RESOURCES_STORAGE_BACKEND', FileBasedStorage)
+STORAGE_SIZE_LIMIT = getattr(settings, 'RESOURCES_STORAGE_SIZE_LIMIT', 100000000)  #100 MB

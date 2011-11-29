@@ -45,7 +45,7 @@ def resource_upload(request):
         if form.is_valid():
             try:
                 resource = Resource()
-                resource.save(
+                resource.upload(
                     file=request.FILES['file'],
                     key=Key.get(gpg, form.cleaned_data['key']),
                     name=form.cleaned_data['name'],
