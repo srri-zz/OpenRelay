@@ -64,7 +64,7 @@ class ResourceFileRoot(View):
             }
             for resource in Resource.objects.all()
         ]
-    
+
 
 class ResourceFileObject(View):
     def post(self, request, uuid):
@@ -87,7 +87,7 @@ class ResourceFileObject(View):
             'latest_version': resource.latest_version().full_uuid,
         }
 
-   
+
 class VersionRoot(View):
     def post(self, request):
         return [
@@ -96,12 +96,12 @@ class VersionRoot(View):
                 'url': reverse('version', args=[version.full_uuid]),
                 'name': version.name,
                 'label': version.label,
-                'description': version.description,                
+                'description': version.description,
                 'metadata': version.metadata,
                 'signature_properties': version.signature_properties,
             }
             for version in Version.objects.all()
-        ]    
+        ]
 
 
 class VersionObject(View):
@@ -127,6 +127,7 @@ class VersionObject(View):
             'download': reverse('version-download', args=[version.full_uuid]),
             'serve': reverse('version-serve', args=[version.full_uuid]),
             'signature_properties': version.signature_properties,
+            'size': version.size,
         }
 
 
@@ -148,7 +149,7 @@ class ResourceServe(View):
             resource = Resource.objects.get(uuid=uuid)
         except Resource.DoesNotExist:
             raise Http404('No %s matches the given query.' % Resource._meta.object_name)
-        
+
         return HttpResponse(resource.content, mimetype=u';charset='.join(resource.mimetype))
 
 
@@ -194,8 +195,8 @@ class InventoryHash(View):
         # TODO: Reject call from non verified nodes
         logger.info('received inventory hash call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
         return {'inventory_hash': HASH_FUNCTION(u''.join([version.full_uuid for version in Version.objects.all().order_by('timestamp')]))}
-     
-        
+
+
 # Interactive views - user
 def join(request):
     if request.method == 'POST':
@@ -248,7 +249,7 @@ def resource_list(request, fingerprint=None):
         network_resources = [NetworkResourceVersion.objects.get(uuid=resource['uuid']) for resource in NetworkResourceVersion.objects.values('uuid').distinct().order_by()]
         local_resources = Resource.objects.all()
         title = _(u'Resource list')
-        
+
     for network_resource in network_resources:
         # Remove any timestamp
         resource_list[network_resource.uuid.split(TIMESTAMP_SEPARATOR)[0]] = network_resource
