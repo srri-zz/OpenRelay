@@ -40,7 +40,8 @@ class ResourceForm(forms.Form):
     filter_html = forms.BooleanField(
         label=_('Filter HTML?'),
         help_text=_(u'Automatically convert relative references to images, links, CSS and Javascript.'),
-        initial=True
+        initial=True,
+        required=False,
     )
 
     def __init__(self, *args, **kwargs):
