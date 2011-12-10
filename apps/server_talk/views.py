@@ -53,6 +53,7 @@ class OpenRelayAPI(View):
             {'name': 'Heartbeat', 'url': reverse('service-heartbeat')},
             {'name': 'Inventory hash', 'url': reverse('service-inventory_hash')},
             {'name': 'Siblings hash', 'url': reverse('service-siblings_hash')},
+            {'name': 'Siblings list', 'url': reverse('service-siblings_list')},
         ]
 
 
@@ -199,11 +200,32 @@ class SiblingsHash(View):
             'siblings_hash': HASH_FUNCTION(
                 u''.join(
                     [
-                        #node.uuid for node in Sibling.objects.all().order_by('uuid')
+                        node.uuid for node in Sibling.objects.all().order_by('uuid')
                     ]
                 )
             )
         }
+
+
+class SiblingList(View):
+    def post(self, request):
+        uuid = request.GET.get('uuid')
+        logger.info('received siblings list call from node: %s' % uuid)
+        return [
+                {
+                    'uuid': sibling.uuid,
+                    'ip_address': sibling.ip_address,
+                    'port': sibling.port,
+                    'last_heartbeat': sibling.last_heartbeat,
+                    'cpuload': sibling.cpuload,
+                    'status': sibling.status,
+                    'failure_count': sibling.failure_count,
+                    'last_inventory_hash': sibling.last_inventory_hash,
+                    'inventory_hash': sibling.inventory_hash,
+                    'siblings_hash': sibling.siblings_hash,
+                }
+                for sibling in Sibling.objects.all()
+            ]
 
 
 class InventoryHash(View):
