@@ -26,6 +26,15 @@ class Nodebase(models.Model):
     @property
     def public_key(self):
         return Key.get(gpg, self.uuid, secret=False, search_keyservers=True)
+        
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            key = self.public_key
+            self.name = key.name
+            self.email = key.email
+            self.comment = key.comment
+
+        super(Nodebase, self).save(*args, **kwargs)
 
     class Meta:
         abstract = True
