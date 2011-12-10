@@ -108,6 +108,39 @@ class Key(object):
 
     def __repr__(self):
         return self.__unicode__()
+    
+    
+    def uid_components(self, uid_index=0):
+        uid = self.uids[uid_index]
+        email_start = uid.find(u'<')
+        if email_start:
+            email_end = uid.find(u'>')
+            email = uid[email_start + 1: email_end]
+            uid = u''.join([uid[:email_start], uid[email_end + 1:]])
+        else:
+            email = None
+
+        comment_start = uid.find(u'(')
+        if comment_start:
+            comment_end = uid.find(u')')
+            comment = uid[comment_start + 1: comment_end]
+            uid = u''.join([uid[:comment_start], uid[comment_end + 1:]])
+        else:
+            comment = None
+            
+        return uid.strip, comment, email
+    
+    @property
+    def name(self, uid_index=0):
+        return self.uid_components(uid_index)[0]
+
+    @property
+    def comment(self, uid_index=0):
+        return self.uid_components(uid_index)[1]
+
+    @property
+    def email(self, uid_index=0):
+        return self.uid_components(uid_index)[2]
 
 
 class GPG(object):
