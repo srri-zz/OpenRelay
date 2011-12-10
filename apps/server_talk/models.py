@@ -64,7 +64,6 @@ class LocalNode(Nodebase):
         verbose_name_plural = _(u'local node')
 
 
-
 class Sibling(Nodebase):
     ip_address = models.IPAddressField(verbose_name=_(u'URL'))
     port = models.PositiveIntegerField(blank=True, verbose_name=_(u'port'))
@@ -75,6 +74,7 @@ class Sibling(Nodebase):
     failure_count = models.PositiveIntegerField(default=0, verbose_name=_('failure count'))
     last_inventory_hash = models.DateTimeField(blank=True, default=datetime.datetime.now(), verbose_name=_(u'last inventory check'))
     inventory_hash = models.CharField(max_length=64, blank=True, verbose_name=_(u'inventory hash'))
+    siblings_hash = models.CharField(max_length=64, blank=True, verbose_name=_(u'siblings hash'))
 
     class Meta(Nodebase.Meta):
         verbose_name = _(u'sibling node')
