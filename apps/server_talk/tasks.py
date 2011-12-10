@@ -75,10 +75,10 @@ def inventory_hash_check():
                     )
                     resource.resourceholder_set.get_or_create(node=oldest)
                 
-            oldest.inventory_hash = response['inventory_hash']
-            oldest.save()
-            # Delete network resources that have no holder
-            NetworkResourceVersion.objects.filter(resourceholder=None).delete()
+                oldest.inventory_hash = response['inventory_hash']
+                oldest.save()
+                # Delete network resources that have no holder
+                NetworkResourceVersion.objects.filter(resourceholder=None).delete()
             lock.release()
         except LockError:
             pass
