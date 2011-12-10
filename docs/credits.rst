@@ -47,3 +47,9 @@ Credits
 
     * http://www.sxc.hu/photo/1043922
     * http://www.digital-delight.ch
+
+
+* python-requests - Python HTTP for Humans
+
+    * Copyright Kenneth Reitz
+    * http://python-requests.org
