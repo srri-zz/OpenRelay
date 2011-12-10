@@ -1,4 +1,5 @@
 import logging
+import socket
 
 from django.db.models.signals import post_syncdb
 from django.dispatch import receiver
@@ -19,18 +20,27 @@ logger = logging.getLogger(__name__)
 @receiver(post_syncdb, dispatch_uid='create_identify', sender=server_talk_model)
 def create_identify(sender, **kwargs):
     node, created = LocalNode.objects.get_or_create(lock_id='1')
-    if created or not node.uuid:
+    if created or not node.uuid or 1:
         print 'Creating local node identity ...'
-        name_real = raw_input('Enter a name to describe this node: ')
-        name_email = raw_input('Enter an e-mail associated with this node: ')
-        name_comment = raw_input('Enter comment for this node: ')
-        while True:
-            passphrase = raw_input('Enter a passphrase to lock this key: ')
-            passphrase_verify = raw_input('Enter again the same passphrase to verify: ')
-            if passphrase == passphrase_verify:
-                break
-            else:
-                print '\nPassphrases do not match, try again.\n'
+        if kwargs['interactive']:
+            name_real = raw_input('Enter a name to describe this node: ')
+            name_email = raw_input('Enter an e-mail associated with this node: ')
+            name_comment = raw_input('Enter comment for this node: ')
+            while True:
+                passphrase = raw_input('Enter a passphrase to lock this key: ')
+                passphrase_verify = raw_input('Enter again the same passphrase to verify: ')
+                if passphrase == passphrase_verify:
+                    break
+                else:
+                    print '\nPassphrases do not match, try again.\n'
+        else:
+            name_real = socket.gethostbyname(socket.gethostname())
+            name_email = None
+            name_comment = None
+            passphrase = None
+            # TODO: generate random passphrase
+            # TODO: save random passphrase in settings file
+
         key_args = {
             'name_real': name_real,
             'name_email': name_email,
