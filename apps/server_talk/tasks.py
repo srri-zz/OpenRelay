@@ -84,3 +84,42 @@ def inventory_hash_check():
             pass
         except InventoryHashError:
             lock.release()
+
+
+def siblings_hash_check():
+    '''
+    Find the node with the oldest siblings hash timestamp and query it
+    '''
+    logging.debug('DEBUG: inventory_hash_check()')
+    siblings = Sibling.objects.filter(status=NODE_STATUS_UP).order_by('last_siblings_hash')
+    if siblings:
+        oldest = siblings[0]
+        try:
+            lock = Lock.acquire_lock(u''.join(['siblings_hash', oldest.uuid]), 20)
+            oldest.last_siblings_hash = datetime.datetime.now()
+            remote_api = RemoteCall(uuid=oldest.uuid)
+            response = remote_api.siblings_hash()
+            if oldest.siblings_hash != response['siblings_hash']:
+                for remote_sibling in remote_api.siblings_list():
+                    # Don't use a precomputed list, to a DB check each time
+                    # to minimize posibility of race cond
+                    # TODO: add locking
+                    try:
+                        Sibling.objects.get(uuid=remote_sibling['uuid'])
+                    except Sibling.DoesNotExist:
+                        # Only add nodes not known
+                        if remote_sibling['uuid'] != LocalNode.get().uuid:
+                            # Don't add self
+                            sibling = Sibling()
+                            sibling.uuid=remote_sibling['uuid'])
+                            sibling.port=remote_sibling['port'])
+                            sibling.ip_address=remote_sibling['ip_address'])
+                            sibling.save()
+                    )
+                oldest.siblings_hash = response['siblings_hash']
+                oldest.save()
+            lock.release()
+        except LockError:
+            pass
+        except SiblingsHashError:
+            lock.release()
