@@ -14,11 +14,12 @@ urlpatterns = patterns('',
     url(r'^resources/version/serve/(?P<uuid>.+)/$', ResourceServe.as_view(), name='version-serve'),
     url(r'^resources/version/(?P<uuid>.+)/$', VersionObject.as_view(), name='version'),
     url(r'^resources/version/$', VersionRoot.as_view(), name='version-root'),
+    url(r'^resources/sibling/$', SiblingList.as_view(), name='sibling-root'),
+
     url(r'^services/announce/$', Announce.as_view(), name='service-announce'),
     url(r'^services/heartbeat/$', Heartbeat.as_view(), name='service-heartbeat'),
     url(r'^services/inventory/hash/$', InventoryHash.as_view(), name='service-inventory_hash'),
     url(r'^services/siblings/hash/$', SiblingsHash.as_view(), name='service-siblings_hash'),
-    url(r'^services/siblings/list/$', SiblingList.as_view(), name='service-siblings_list'),
 )
 
 urlpatterns += patterns('server_talk.views',

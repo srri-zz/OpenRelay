@@ -49,11 +49,11 @@ class OpenRelayAPI(View):
         return [
             {'name': 'Resources', 'url': reverse('resource_file-root')},
             {'name': 'Versions', 'url': reverse('version-root')},
+            {'name': 'Siblings', 'url': reverse('sibling-root')},
             {'name': 'Announce', 'url': reverse('service-announce')},
             {'name': 'Heartbeat', 'url': reverse('service-heartbeat')},
             {'name': 'Inventory hash', 'url': reverse('service-inventory_hash')},
             {'name': 'Siblings hash', 'url': reverse('service-siblings_hash')},
-            {'name': 'Siblings list', 'url': reverse('service-siblings_list')},
         ]
 
 
@@ -222,6 +222,7 @@ class SiblingList(View):
                     'failure_count': sibling.failure_count,
                     'last_inventory_hash': sibling.last_inventory_hash,
                     'inventory_hash': sibling.inventory_hash,
+                    'last_siblings_hash': sibling.last_siblings_hash,
                     'siblings_hash': sibling.siblings_hash,
                 }
                 for sibling in Sibling.objects.all()
