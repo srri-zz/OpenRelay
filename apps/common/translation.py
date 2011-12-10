@@ -71,7 +71,6 @@ def get_language_from_request(request):
         # 'normalized' is the root name of the locale in POSIX format (which is
         # the format used for the directories holding the MO files).
         normalized = locale.locale_alias.get(to_locale(accept_lang, True))
-        print 'normalized', normalized
         if not normalized:
             continue
         # Remove the default encoding from locale_alias.
