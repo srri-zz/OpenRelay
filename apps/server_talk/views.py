@@ -52,6 +52,7 @@ class OpenRelayAPI(View):
             {'name': 'Announce', 'url': reverse('service-announce')},
             {'name': 'Heartbeat', 'url': reverse('service-heartbeat')},
             {'name': 'Inventory hash', 'url': reverse('service-inventory_hash')},
+            {'name': 'Siblings hash', 'url': reverse('service-siblings_hash')},
         ]
 
 
@@ -187,6 +188,22 @@ class Heartbeat(View):
         # TODO: Reject call from non verified nodes
         logger.info('received heartbeat call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
         return {'cpuload': CPUsage()}
+
+
+class SiblingsHash(View):
+    def post(self, request):
+        uuid = request.GET.get('uuid')
+        # TODO: Reject call from non verified nodes
+        logger.info('received siblings hash call from node: %s' % uuid)
+        return {
+            'siblings_hash': HASH_FUNCTION(
+                u''.join(
+                    [
+                        #node.uuid for node in Sibling.objects.all().order_by('uuid')
+                    ]
+                )
+            )
+        }
 
 
 class InventoryHash(View):
