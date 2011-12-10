@@ -30,3 +30,11 @@ class NetworkResourceNotFound(ServerTalkException):
 
 class NetworkResourceDownloadError(ServerTalkException):
     pass
+
+
+class SiblingsHashError(ServerTalkException):
+    pass
+    
+    
+class SiblingsListError(ServerTalkException):
+    pass    

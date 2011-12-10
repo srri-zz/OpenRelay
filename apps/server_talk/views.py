@@ -49,9 +49,11 @@ class OpenRelayAPI(View):
         return [
             {'name': 'Resources', 'url': reverse('resource_file-root')},
             {'name': 'Versions', 'url': reverse('version-root')},
+            {'name': 'Siblings', 'url': reverse('sibling-root')},
             {'name': 'Announce', 'url': reverse('service-announce')},
             {'name': 'Heartbeat', 'url': reverse('service-heartbeat')},
             {'name': 'Inventory hash', 'url': reverse('service-inventory_hash')},
+            {'name': 'Siblings hash', 'url': reverse('service-siblings_hash')},
         ]
 
 
@@ -187,6 +189,44 @@ class Heartbeat(View):
         # TODO: Reject call from non verified nodes
         logger.info('received heartbeat call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
         return {'cpuload': CPUsage()}
+
+
+class SiblingsHash(View):
+    def post(self, request):
+        uuid = request.GET.get('uuid')
+        # TODO: Reject call from non verified nodes
+        logger.info('received siblings hash call from node: %s' % uuid)
+        return {
+            'siblings_hash': HASH_FUNCTION(
+                u''.join(
+                    [
+                        node.uuid for node in Sibling.objects.all().order_by('uuid')
+                    ]
+                )
+            )
+        }
+
+
+class SiblingList(View):
+    def post(self, request):
+        uuid = request.GET.get('uuid')
+        logger.info('received siblings list call from node: %s' % uuid)
+        return [
+                {
+                    'uuid': sibling.uuid,
+                    'ip_address': sibling.ip_address,
+                    'port': sibling.port,
+                    'last_heartbeat': sibling.last_heartbeat,
+                    'cpuload': sibling.cpuload,
+                    'status': sibling.status,
+                    'failure_count': sibling.failure_count,
+                    'last_inventory_hash': sibling.last_inventory_hash,
+                    'inventory_hash': sibling.inventory_hash,
+                    'last_siblings_hash': sibling.last_siblings_hash,
+                    'siblings_hash': sibling.siblings_hash,
+                }
+                for sibling in Sibling.objects.all()
+            ]
 
 
 class InventoryHash(View):

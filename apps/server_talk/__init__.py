@@ -7,9 +7,9 @@ from scheduler import register_interval_job
 from core.runtime import gpg
 
 from server_talk import models as server_talk_model
-from server_talk.tasks import heartbeat_check, inventory_hash_check
+from server_talk.tasks import heartbeat_check, inventory_hash_check, siblings_hash_check
 from server_talk.conf.settings import (HEARTBEAT_QUERY_INTERVAL,
-    INVENTORY_QUERY_INTERVAL)
+    INVENTORY_QUERY_INTERVAL, SIBLINGS_QUERY_INTERVAL)
 from server_talk.models import LocalNode
 from server_talk.api import NetworkCall
 
@@ -60,4 +60,5 @@ def create_identify(sender, **kwargs):
 
 register_interval_job('heartbeat_check', heartbeat_check, seconds=HEARTBEAT_QUERY_INTERVAL)
 register_interval_job('inventory_hash_check', inventory_hash_check, seconds=INVENTORY_QUERY_INTERVAL)
+register_interval_job('siblings_hash_check', siblings_hash_check, seconds=SIBLINGS_QUERY_INTERVAL)
 
