@@ -27,7 +27,8 @@ from server_talk.models import LocalNode, Sibling, NetworkResourceVersion
 from server_talk.conf.settings import PORT, IPADDRESS
 from server_talk.exceptions import (AnnounceClientError, NoSuchNode,
     HeartbeatError, InventoryHashError, ResourceListError,
-    NetworkResourceNotFound, NetworkResourceDownloadError)
+    NetworkResourceNotFound, NetworkResourceDownloadError, SiblingsHashError,
+    SiblingsListError)
 from server_talk.literals import NODE_STATUS_UP
 
 logger = logging.getLogger(__name__)
@@ -144,6 +145,20 @@ class RemoteCall(object):
             logger.error('unable to connect to url: %s' % url)
             raise InventoryHashError('Unable to query node')
 
+    def siblings_hash(self):
+        '''
+        Ask for a node's hash of it's known node list
+        '''
+        url = self.get_service_url('service-siblings_hash')
+        try:
+            logger.debug('calling siblings_hash service on url: %s' % url)
+            response = requests.post(url, data=self.get_id_package())
+            logger.debug('received siblings_hash from url: %s' % url)
+            return loads(response.content)
+        except requests.ConnectionError:
+            logger.error('unable to connect to url: %s' % url)
+            raise InventoryHashError('Unable to query node')
+
     def resource_list(self):
         '''
         Retrieve a node's resource list
@@ -157,6 +172,20 @@ class RemoteCall(object):
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
             raise ResourceListError('Unable to query node')
+
+    def siblings_list(self):
+        '''
+        Retrieve a node's resource list
+        '''
+        url = self.get_service_url('sibling-root')
+        try:
+            logger.debug('calling sibling-root service on url: %s' % url)
+            response = requests.post(url, data=self.get_id_package())
+            logger.debug('received sibling-root from url: %s' % url)
+            return loads(response.content)
+        except requests.ConnectionError:
+            logger.error('unable to connect to url: %s' % url)
+            raise SiblingListError('Unable to query node')
             
     def heartbeat(self):
         '''
