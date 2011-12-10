@@ -111,11 +111,11 @@ def siblings_hash_check():
                         if remote_sibling['uuid'] != LocalNode.get().uuid:
                             # Don't add self
                             sibling = Sibling()
-                            sibling.uuid=remote_sibling['uuid'])
-                            sibling.port=remote_sibling['port'])
-                            sibling.ip_address=remote_sibling['ip_address'])
+                            sibling.uuid=remote_sibling['uuid']
+                            sibling.port=remote_sibling['port']
+                            sibling.ip_address=remote_sibling['ip_address']
                             sibling.save()
-                    )
+
                 oldest.siblings_hash = response['siblings_hash']
                 oldest.save()
             lock.release()
