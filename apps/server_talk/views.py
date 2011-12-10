@@ -8,6 +8,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.utils.simplejson import loads, dumps
 
 from djangorestframework.mixins import InstanceMixin, ReadModelMixin
 from djangorestframework.views import View, ModelView
@@ -16,12 +17,14 @@ from djangorestframework.response import Response
 
 from openrelay_resources.models import Resource, Version
 from openrelay_resources.literals import TIMESTAMP_SEPARATOR
+from core.runtime import gpg
+from django_gpg.exceptions import KeyDoesNotExist
 
 from server_talk.models import LocalNode, Sibling, NetworkResourceVersion
 from server_talk.forms import JoinForm
-from server_talk.api import RemoteCall
-from server_talk.conf.settings import PORT, IPADDRESS
-from server_talk.exceptions import AnnounceClientError
+from server_talk.api import RemoteCall, decrypt_request_data
+from server_talk.conf.settings import PORT, IPADDRESS, KEY_PASSPHRASE
+from server_talk.exceptions import AnnounceClientError, NodeDataPackageError
 from server_talk.utils import CPUsage
 
 logger = logging.getLogger(__name__)
@@ -157,44 +160,66 @@ class ResourceServe(View):
 
 class Announce(View):
     def post(self, request):
-        uuid = request.POST.get('uuid')
-        ip_address = request.POST.get('ip_address')
-        port = request.POST.get('port')
-        logger.info('received announce call from: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
-        if uuid and ip_address and port:
-            sibling_data = {'ip_address': ip_address, 'port': port}
-            # TODO: Verify node identity
-            sibling, created = Sibling.objects.get_or_create(uuid=uuid, defaults=sibling_data)
-            if not created:
-                sibling.ip_address = sibling_data['ip_address']
-                sibling.port = sibling_data['port']
-                sibling.save()
-            local_node = LocalNode.get()
-            local_node_info = {
-                'ip_address': IPADDRESS,
-                'port': PORT,
-                'uuid': local_node.uuid,
-                'name': local_node.name,
-                'email': local_node.email,
-                'comment': local_node.comment,
-            }
-            return local_node_info
+        logger.info('received announce call from: %s' % request.META['REMOTE_ADDR'])
+        signed_data = request.POST.get('signed_data')
+        logger.debug('signed_data: %s' % signed_data)
+        try:
+            fingerprint, result = decrypt_request_data(signed_data)
+        except NodeDataPackageError:
+            logger.error('got NodeDataPackageError')
+            return Response(status.BAD_REQUEST)
         else:
-            return Response(status.PARTIAL_CONTENT)
+            logger.info('remote node uuid is: %s' % fingerprint)
+            try:
+                sibling_data = {'ip_address': result['ip_address'], 'port': result['port']}
+            except KeyError:
+                return Response(status.PARTIAL_CONTENT)
+            else:
+                sibling, created = Sibling.objects.get_or_create(uuid=fingerprint, defaults=sibling_data)
+                if not created:
+                    sibling.ip_address = sibling_data['ip_address']
+                    sibling.port = sibling_data['port']
+                    sibling.save()
+                local_node = LocalNode.get()
+                local_node_info = {
+                    'ip_address': IPADDRESS,
+                    'port': PORT,
+                    'uuid': local_node.uuid,
+                }
+                try:
+                    return {'signed_data': gpg.sign(dumps(local_node_info), key=LocalNode.get().public_key, passphrase=KEY_PASSPHRASE).data}
+                except KeyDoesNotExist:
+                    return Response(status.INTERNAL_SERVER_ERROR)
 
 
 class Heartbeat(View):
     def post(self, request):
-        uuid = request.GET.get('uuid')
-        # TODO: Reject call from non verified nodes
+        signed_data = request.POST.get('signed_data')
+        logger.debug('signed_data: %s' % signed_data)
+        try:
+            fingerprint, result = decrypt_request_data(signed_data)
+        except NodeDataPackageError:
+            logger.error('got NodeDataPackageError')
+            return Response(status.BAD_REQUEST)
+        else:
+            uuid = fingerprint
+
         logger.info('received heartbeat call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
         return {'cpuload': CPUsage()}
 
 
 class SiblingsHash(View):
     def post(self, request):
-        uuid = request.GET.get('uuid')
-        # TODO: Reject call from non verified nodes
+        signed_data = request.POST.get('signed_data')
+        logger.debug('signed_data: %s' % signed_data)
+        try:
+            fingerprint, result = decrypt_request_data(signed_data)
+        except NodeDataPackageError:
+            logger.error('got NodeDataPackageError')
+            return Response(status.BAD_REQUEST)
+        else:
+            uuid = fingerprint
+            
         logger.info('received siblings hash call from node: %s' % uuid)
         return {
             'siblings_hash': HASH_FUNCTION(
@@ -209,7 +234,16 @@ class SiblingsHash(View):
 
 class SiblingList(View):
     def post(self, request):
-        uuid = request.GET.get('uuid')
+        signed_data = request.POST.get('signed_data')
+        logger.debug('signed_data: %s' % signed_data)
+        try:
+            fingerprint, result = decrypt_request_data(signed_data)
+        except NodeDataPackageError:
+            logger.error('got NodeDataPackageError')
+            return Response(status.BAD_REQUEST)
+        else:
+            uuid = fingerprint
+
         logger.info('received siblings list call from node: %s' % uuid)
         return [
                 {
@@ -231,8 +265,16 @@ class SiblingList(View):
 
 class InventoryHash(View):
     def post(self, request):
-        uuid = request.GET.get('uuid')
-        # TODO: Reject call from non verified nodes
+        signed_data = request.POST.get('signed_data')
+        logger.debug('signed_data: %s' % signed_data)
+        try:
+            fingerprint, result = decrypt_request_data(signed_data)
+        except NodeDataPackageError:
+            logger.error('got NodeDataPackageError')
+            return Response(status.BAD_REQUEST)
+        else:
+            uuid = fingerprint
+
         logger.info('received inventory hash call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
         return {'inventory_hash': HASH_FUNCTION(u''.join([version.full_uuid for version in Version.objects.all().order_by('timestamp')]))}
 

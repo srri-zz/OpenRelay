@@ -15,24 +15,46 @@ import logging
 
 import requests
 
-from django.utils.simplejson import loads
+from django.utils.simplejson import loads, dumps
 from django.core.urlresolvers import reverse
 
 from djangorestframework import status
 
 from openrelay_resources.models import Resource, Version
 from openrelay_resources.exceptions import ORInvalidResourceFile
+from core.runtime import gpg
+from django_gpg import (KeyFetchingError, GPGVerificationError,
+    GPGDecryptionError)
 
 from server_talk.models import LocalNode, Sibling, NetworkResourceVersion
-from server_talk.conf.settings import PORT, IPADDRESS
+from server_talk.conf.settings import PORT, IPADDRESS, KEY_PASSPHRASE
 from server_talk.exceptions import (AnnounceClientError, NoSuchNode,
     HeartbeatError, InventoryHashError, ResourceListError,
     NetworkResourceNotFound, NetworkResourceDownloadError, SiblingsHashError,
-    SiblingsListError)
+    SiblingsListError, NodeDataPackageError)
 from server_talk.literals import NODE_STATUS_UP
 
 logger = logging.getLogger(__name__)
 
+
+def decrypt_request_data(signed_data):
+    try:
+        result = gpg.verify(signed_data, retry=True)
+        result = gpg.decrypt(signed_data)
+    except (KeyFetchingError, GPGVerificationError), exc:
+        logger.error('got verify exception', exc_info=exc)
+        raise NodeDataPackageError('id package signature failure')
+    except GPGDecryptionError:
+        logger.error('got GPGDecryptionError')
+        raise NodeDataPackageError('id package signature failure')
+    else:
+        try:
+            return result.fingerprint, loads(result.data)
+        except ValueError:
+            logger.error('non JSON data')
+            logger.debug('got: %s' % result.data)
+            return result.fingerprint, {}
+            
 
 class NetworkCall(object):
     def find_resource(self, uuid):
@@ -75,14 +97,18 @@ class RemoteCall(object):
     def get_service_url(self, service_name, *args, **kwargs):
         return urlparse.urlunparse(['http', self.get_full_ip_address(), reverse(service_name, *args, **kwargs), '', '', ''])
         
-    def get_id_package(self):
+    def get_id_package(self, signed=True):
         local_node = LocalNode.get()
-        return {
+        info = {
             'ip_address': IPADDRESS,
             'port': PORT,
             'uuid': local_node.uuid,
         }
-        
+        if signed:
+            return {'signed_data': gpg.sign(dumps(info), key=LocalNode.get().public_key, passphrase=KEY_PASSPHRASE).data}
+        else:
+            return info
+            
     def announce(self):
         '''
         Announce the local node to another OpenRelay node
@@ -90,32 +116,35 @@ class RemoteCall(object):
         full_ip_address = self.get_full_ip_address()
         url = self.get_service_url('service-announce')
         try:
-            response = requests.post(url, data=self.get_id_package())
+            signed_data = self.get_id_package()
+            logger.debug('signed data: %s' % signed_data)
+            response = requests.post(url, data=signed_data)
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
             raise AnnounceClientError('Unable to join network')
-
-        if response.status_code == status.OK:
-            node_answer = loads(response.content)
-            if node_answer['uuid'] == LocalNode.get().uuid:
-                logger.error('announce service on node with uuid: %s and url: %s, responded the same UUID as the local server' % (node_answer['uuid'], full_ip_address))
-                raise AnnounceClientError('Remote and local nodes identity conflict')
-            else:
-                sibling_data = {
-                    'ip_address':  node_answer['ip_address'],
-                    'port': node_answer['port'],
-                    'name': node_answer['name'],
-                    'email': node_answer['email'],
-                    'comment': node_answer['comment'],
-                }
-                sibling, created = Sibling.objects.get_or_create(uuid=node_answer['uuid'], defaults=sibling_data)
-                if not created:
-                    sibling.ip_address = sibling_data['ip_address']
-                    sibling.port = sibling_data['port']
-                    sibling.save()
         else:
-            logger.error('announce service on remote node responded with a non OK code')
-            raise AnnounceClientError('Unable to join network')
+            if response.status_code == status.OK:
+                try:
+                    node_answer = decrypt_request_data(response.content)
+                except NodeDataPackageError:
+                    AnnounceClientError('id package signature failure')
+                else:
+                    if result.fingerprint == LocalNode.get().uuid:
+                        logger.error('announce service on node with uuid: %s and url: %s, responded the same UUID as the local server' % (node_answer['uuid'], full_ip_address))
+                        raise AnnounceClientError('Remote and local nodes identity conflict')
+                    else:
+                        sibling_data = {
+                            'ip_address':  node_answer['ip_address'],
+                            'port': node_answer['port'],
+                        }
+                        sibling, created = Sibling.objects.get_or_create(uuid=result.fingerprint, defaults=sibling_data)
+                        if not created:
+                            sibling.ip_address = sibling_data['ip_address']
+                            sibling.port = sibling_data['port']
+                            sibling.save()
+            else:
+                logger.error('announce service on remote node responded with a non OK code')
+                raise AnnounceClientError('Unable to join network')
             
     def heartbeat(self):
         '''
@@ -126,7 +155,11 @@ class RemoteCall(object):
             logger.debug('calling heartbeat service on url: %s' % url)
             response = requests.post(url, data=self.get_id_package())
             logger.debug('received heartbeat from url: %s' % url)
-            return loads(response.content)
+            try:
+                return loads(response.content)
+            except ValueError:
+                #logger.error('ValueError, got: %s' % response.content)
+                raise InventoryHashError('non JSON response')
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
             raise HeartbeatError('Unable to query node')
@@ -140,7 +173,11 @@ class RemoteCall(object):
             logger.debug('calling inventory_hash service on url: %s' % url)
             response = requests.post(url, data=self.get_id_package())
             logger.debug('received inventory_hash from url: %s' % url)
-            return loads(response.content)
+            try:
+                return loads(response.content)
+            except ValueError:
+                #logger.error('ValueError, got: %s' % response.content)
+                raise InventoryHashError('non JSON response')
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
             raise InventoryHashError('Unable to query node')
@@ -154,10 +191,14 @@ class RemoteCall(object):
             logger.debug('calling siblings_hash service on url: %s' % url)
             response = requests.post(url, data=self.get_id_package())
             logger.debug('received siblings_hash from url: %s' % url)
-            return loads(response.content)
+            try:
+                return loads(response.content)
+            except ValueError:
+                #logger.error('ValueError, got: %s' % response.content)
+                raise SiblingsHashError('non JSON response')
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
-            raise InventoryHashError('Unable to query node')
+            raise SiblingsHashError('Unable to query node')
 
     def resource_list(self):
         '''

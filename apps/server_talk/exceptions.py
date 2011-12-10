@@ -38,3 +38,11 @@ class SiblingsHashError(ServerTalkException):
     
 class SiblingsListError(ServerTalkException):
     pass    
+
+
+class NodeDataPackageError(ServerTalkException):
+    '''
+    Raised for verification or decryption error
+    if the node communication
+    '''
+    pass
