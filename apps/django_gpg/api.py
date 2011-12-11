@@ -1,6 +1,7 @@
 import types
 from StringIO import StringIO
 from pickle import dumps
+import logging
 
 import gnupg
 
@@ -12,6 +13,8 @@ from queue_manager import Queue, QueuePushError
 from django_gpg.exceptions import GPGVerificationError, GPGSigningError, \
     GPGDecryptionError, KeyDeleteError, KeyGenerationError, \
     KeyFetchingError, KeyDoesNotExist
+
+logger = logging.getLogger(__name__)
 
 
 KEY_TYPES = {
@@ -37,7 +40,11 @@ KEY_SECONDARY_CLASSES = (
 class Key(object):
     @staticmethod
     def get_key_id(fingerprint):
-        return fingerprint[-16:]
+        if len(fingerprint) > 16:
+            # key_id is a fingerprint
+            return fingerprint[-16:]
+        else:
+            return fingerprint
 
     @classmethod
     def get_all(cls, gpg, secret=False, exclude=None):
@@ -61,17 +68,13 @@ class Key(object):
 
     @classmethod
     def get(cls, gpg, key_id, secret=False, search_keyservers=False):
-        if len(key_id) > 16:
-            # key_id is a fingerprint
-            key_id = Key.get_key_id(key_id)
-
+        key_id = Key.get_key_id(key_id)
         keys = gpg.gpg.list_keys(secret=secret)
         key = next((key for key in keys if key['keyid'] == key_id), None)
         if not key:
             if search_keyservers and secret==False:
                 try:
-                    gpg.receive_key(key_id)
-                    return Key(gpg, key_id)
+                    return gpg.receive_key(key_id)
                 except KeyFetchingError:
                     raise KeyDoesNotExist
             else:
@@ -108,6 +111,39 @@ class Key(object):
 
     def __repr__(self):
         return self.__unicode__()
+    
+    
+    def uid_components(self, uid_index=0):
+        uid = self.uids[uid_index]
+        email_start = uid.find(u'<')
+        if email_start:
+            email_end = uid.find(u'>')
+            email = uid[email_start + 1: email_end]
+            uid = u''.join([uid[:email_start], uid[email_end + 1:]])
+        else:
+            email = None
+
+        comment_start = uid.find(u'(')
+        if comment_start:
+            comment_end = uid.find(u')')
+            comment = uid[comment_start + 1: comment_end]
+            uid = u''.join([uid[:comment_start], uid[comment_end + 1:]])
+        else:
+            comment = None
+            
+        return uid.strip(), comment, email
+    
+    @property
+    def name(self, uid_index=0):
+        return self.uid_components(uid_index)[0]
+
+    @property
+    def comment(self, uid_index=0):
+        return self.uid_components(uid_index)[1]
+
+    @property
+    def email(self, uid_index=0):
+        return self.uid_components(uid_index)[2]
 
 
 class GPG(object):
@@ -147,14 +183,23 @@ class GPG(object):
         else:
             raise GPGVerificationError(verify.status)
 
-    def verify(self, data):
+    def verify(self, data, retry=False):
         # TODO: try to merge with verify_file
         verify = self.gpg.verify(data)
 
         if verify:
             return verify
         else:
-            raise GPGVerificationError(verify.status)
+            if retry and verify.key_id:
+                try:
+                    logger.debug('key_id', verify.key_id)
+                    self.receive_key(verify.keyid)
+                except KeyFetchingError:
+                    return verify
+                else:
+                    return self.verify(data)
+            else:
+                raise GPGVerificationError()
 
     def sign_file(self, file_input, key=None, destination=None, key_id=None, passphrase=None, clearsign=False):
         """
@@ -202,6 +247,24 @@ class GPG(object):
         if not destination:
             return signed_data
 
+    def sign(self, data, key=None, key_id=None, passphrase=None, clearsign=False):
+        kwargs = {}
+        kwargs['clearsign'] = clearsign
+
+        if key_id:
+            kwargs['keyid'] = key_id
+
+        if key:
+            kwargs['keyid'] = key.key_id
+
+        if passphrase:
+            kwargs['passphrase'] = passphrase
+
+        signed_data = self.gpg.sign(message=data, **kwargs)
+        if not signed_data.fingerprint:
+            raise GPGSigningError('Unable to sign data')
+        return signed_data
+
     def decrypt_file(self, file_input):
         if isinstance(file_input, types.StringTypes):
             input_descriptor = open(file_input, 'rb')
@@ -214,6 +277,17 @@ class GPG(object):
         input_descriptor.close()
         if not result.status:
             raise GPGDecryptionError('Unable to decrypt file')
+
+        return result
+
+    def decrypt(self, data, passphrase=None):
+        kwargs = {}
+        if passphrase:
+            kwargs['passphrase'] = passphrase
+
+        result = self.gpg.decrypt(message=data, **kwargs)
+        if not result.status:
+            raise GPGDecryptionError('Unable to decrypt data')
 
         return result
 
@@ -256,6 +330,8 @@ class GPG(object):
 
     def receive_key(self, key_id):
         for keyserver in self.keyservers:
+            logger.debug('keyserver: %s' % keyserver)
+            logger.debug('key_id: %s' % key_id)
             import_result = self.gpg.recv_keys(keyserver, key_id)
             if import_result:
                 return Key.get(self, import_result.fingerprints[0], secret=False)

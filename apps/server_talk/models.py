@@ -13,12 +13,14 @@ from core.runtime import gpg
 from server_talk.conf.settings import PORT
 from server_talk.literals import NODE_STATUS_DOWN, NODE_STATUS_CHOICES
 
+LOCALNODE_ID = '1'
+
 
 class Nodebase(models.Model):
     uuid = models.CharField(max_length=48, editable=False, verbose_name=_(u'UUID'))
-    name = models.CharField(max_length=255, editable=False, verbose_name=_(u'name'))
-    email = models.CharField(max_length=255, editable=False, verbose_name=_(u'e-mail'))
-    comment = models.CharField(max_length=255, editable=False, verbose_name=_(u'comment'))
+    name = models.CharField(max_length=255, editable=False, blank=True, verbose_name=_(u'name'))
+    email = models.CharField(max_length=255, editable=False, blank=True, verbose_name=_(u'e-mail'))
+    comment = models.CharField(max_length=255, editable=False, blank=True, verbose_name=_(u'comment'))
 
     def __unicode__(self):
         return self.uuid
@@ -26,27 +28,40 @@ class Nodebase(models.Model):
     @property
     def public_key(self):
         return Key.get(gpg, self.uuid, secret=False, search_keyservers=True)
+       
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            key = self.public_key
+            self.name = key.name
+            self.email = key.email
+            self.comment = key.comment
+
+        super(Nodebase, self).save(*args, **kwargs)
 
     class Meta:
         abstract = True
         verbose_name = _(u'node')
         verbose_name_plural = _(u'nodes')
 
+
+class LocalNodeModelManager(models.Manager):
+    def get(self):
+        node, created = self.model.objects.get_or_create(lock_id=LOCALNODE_ID)
+        return node
         
-class LocalNode(Nodebase):
+        
+class LocalNodeModel(Nodebase):
     '''
     This class holds information of the currenty node, the "self" node, 
     and it is a singleton model
     '''
-    lock_id = models.CharField(max_length=1, default='1', editable=False, verbose_name=_(u'lock field'), unique=True)
+    lock_id = models.CharField(max_length=1, default=LOCALNODE_ID, editable=False, verbose_name=_(u'lock field'), unique=True)
 
-    @classmethod
-    def get(cls):
-        return cls.objects.get(lock_id='1')
+    objects = LocalNodeModelManager()
 
     def save(self, *args, **kwargs):
         self.id = 1
-        super(LocalNode, self).save()
+        super(LocalNodeModel, self).save()
 
     def delete(self):
         pass
@@ -62,6 +77,8 @@ class LocalNode(Nodebase):
     class Meta(Nodebase.Meta):
         verbose_name = _(u'local node')
         verbose_name_plural = _(u'local node')
+
+LocalNode = LocalNodeModel.objects.get
 
 
 class Sibling(Nodebase):

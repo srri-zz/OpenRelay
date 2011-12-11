@@ -15,23 +15,50 @@ import logging
 
 import requests
 
-from django.utils.simplejson import loads
+from django.utils.simplejson import loads, dumps
 from django.core.urlresolvers import reverse
+from django.core.serializers.json import DjangoJSONEncoder
 
 from djangorestframework import status
 
 from openrelay_resources.models import Resource, Version
 from openrelay_resources.exceptions import ORInvalidResourceFile
+from core.runtime import gpg
+from django_gpg import (KeyFetchingError, GPGVerificationError,
+    GPGDecryptionError)
 
 from server_talk.models import LocalNode, Sibling, NetworkResourceVersion
-from server_talk.conf.settings import PORT, IPADDRESS
+from server_talk.conf.settings import PORT, IPADDRESS, KEY_PASSPHRASE
 from server_talk.exceptions import (AnnounceClientError, NoSuchNode,
     HeartbeatError, InventoryHashError, ResourceListError,
     NetworkResourceNotFound, NetworkResourceDownloadError, SiblingsHashError,
-    SiblingsListError)
+    SiblingsListError, NodeDataPackageError)
 from server_talk.literals import NODE_STATUS_UP
 
 logger = logging.getLogger(__name__)
+
+
+def decrypt_request_data(signed_data):
+    try:
+        result = gpg.verify(signed_data, retry=True)
+        result = gpg.decrypt(signed_data)
+    except (KeyFetchingError, GPGVerificationError):
+        logger.error('got verify exception')
+        raise NodeDataPackageError('package signature failure')
+    except GPGDecryptionError:
+        logger.error('got GPGDecryptionError')
+        raise NodeDataPackageError('package decryption failure')
+    else:
+        try:
+            return result.pubkey_fingerprint, loads(result.data)
+        except ValueError:
+            logger.error('non JSON data')
+            logger.debug('got: %s' % result.data)
+            return result.pubkey_fingerprint, {}
+
+
+def prepare_package(package):
+    return {'signed_data': gpg.sign(dumps(package, cls=DjangoJSONEncoder), key=LocalNode().public_key, passphrase=KEY_PASSPHRASE).data}        
 
 
 class NetworkCall(object):
@@ -76,13 +103,11 @@ class RemoteCall(object):
         return urlparse.urlunparse(['http', self.get_full_ip_address(), reverse(service_name, *args, **kwargs), '', '', ''])
         
     def get_id_package(self):
-        local_node = LocalNode.get()
-        return {
+        return prepare_package({
             'ip_address': IPADDRESS,
             'port': PORT,
-            'uuid': local_node.uuid,
-        }
-        
+        })
+            
     def announce(self):
         '''
         Announce the local node to another OpenRelay node
@@ -90,32 +115,38 @@ class RemoteCall(object):
         full_ip_address = self.get_full_ip_address()
         url = self.get_service_url('service-announce')
         try:
-            response = requests.post(url, data=self.get_id_package())
+            signed_data = self.get_id_package()
+            logger.debug('signed data: %s' % signed_data)
+            response = requests.post(url, data=signed_data)
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
             raise AnnounceClientError('Unable to join network')
-
-        if response.status_code == status.OK:
-            node_answer = loads(response.content)
-            if node_answer['uuid'] == LocalNode.get().uuid:
-                logger.error('announce service on node with uuid: %s and url: %s, responded the same UUID as the local server' % (node_answer['uuid'], full_ip_address))
-                raise AnnounceClientError('Remote and local nodes identity conflict')
-            else:
-                sibling_data = {
-                    'ip_address':  node_answer['ip_address'],
-                    'port': node_answer['port'],
-                    'name': node_answer['name'],
-                    'email': node_answer['email'],
-                    'comment': node_answer['comment'],
-                }
-                sibling, created = Sibling.objects.get_or_create(uuid=node_answer['uuid'], defaults=sibling_data)
-                if not created:
-                    sibling.ip_address = sibling_data['ip_address']
-                    sibling.port = sibling_data['port']
-                    sibling.save()
         else:
-            logger.error('announce service on remote node responded with a non OK code')
-            raise AnnounceClientError('Unable to join network')
+            if response.status_code == status.OK:
+                try:
+                    result = loads(response.content)
+                    fingerprint, node_answer = decrypt_request_data(result['signed_data'])
+                except NodeDataPackageError:
+                    raise AnnounceClientError('id package signature failure')
+                except ValueError:
+                    raise AnnounceClientError('non JSON response')
+                else:
+                    if fingerprint == LocalNode().uuid:
+                        logger.error('announce service on node with uuid: %s and url: %s, responded the same UUID as the local server' % (node_answer['uuid'], full_ip_address))
+                        raise AnnounceClientError('Remote and local nodes identity conflict')
+                    else:
+                        sibling_data = {
+                            'ip_address':  node_answer['ip_address'],
+                            'port': node_answer['port'],
+                        }
+                        sibling, created = Sibling.objects.get_or_create(uuid=fingerprint, defaults=sibling_data)
+                        if not created:
+                            sibling.ip_address = sibling_data['ip_address']
+                            sibling.port = sibling_data['port']
+                            sibling.save()
+            else:
+                logger.error('announce service on remote node responded with a non OK code')
+                raise AnnounceClientError('Unable to join network')
             
     def heartbeat(self):
         '''
@@ -124,12 +155,19 @@ class RemoteCall(object):
         url = self.get_service_url('service-heartbeat')
         try:
             logger.debug('calling heartbeat service on url: %s' % url)
-            response = requests.post(url, data=self.get_id_package())
+            request = requests.post(url, data=self.get_id_package())
             logger.debug('received heartbeat from url: %s' % url)
-            return loads(response.content)
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
             raise HeartbeatError('Unable to query node')
+        else:
+            try:
+                response = loads(request.content)
+                return decrypt_request_data(response['signed_data'])
+            except ValueError:
+                raise HeartbeatError('non JSON data')
+            except NodeDataPackageError, exc:
+                raise HeartbeatError(exc)
             
     def inventory_hash(self):
         '''
@@ -138,12 +176,19 @@ class RemoteCall(object):
         url = self.get_service_url('service-inventory_hash')
         try:
             logger.debug('calling inventory_hash service on url: %s' % url)
-            response = requests.post(url, data=self.get_id_package())
+            request = requests.post(url, data=self.get_id_package())
             logger.debug('received inventory_hash from url: %s' % url)
-            return loads(response.content)
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
             raise InventoryHashError('Unable to query node')
+        else:
+            try:
+                response = loads(request.content)
+                return decrypt_request_data(response['signed_data'])
+            except ValueError:
+                raise InventoryHashError('non JSON data')
+            except NodeDataPackageError, exc:
+                raise InventoryHashError(exc)
 
     def siblings_hash(self):
         '''
@@ -152,12 +197,19 @@ class RemoteCall(object):
         url = self.get_service_url('service-siblings_hash')
         try:
             logger.debug('calling siblings_hash service on url: %s' % url)
-            response = requests.post(url, data=self.get_id_package())
+            request = requests.post(url, data=self.get_id_package())
             logger.debug('received siblings_hash from url: %s' % url)
-            return loads(response.content)
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
-            raise InventoryHashError('Unable to query node')
+            raise SiblingsHashError('Unable to query node')
+        else:
+            try:
+                response = loads(request.content)
+                return decrypt_request_data(response['signed_data'])
+            except ValueError:
+                raise SiblingsHashError('non JSON data')
+            except NodeDataPackageError, exc:
+                raise SiblingsHashError(exc)
 
     def resource_list(self):
         '''
@@ -166,12 +218,19 @@ class RemoteCall(object):
         url = self.get_service_url('version-root')
         try:
             logger.debug('calling resource_list service on url: %s' % url)
-            response = requests.post(url, data=self.get_id_package())
+            request = requests.post(url, data=self.get_id_package())
             logger.debug('received resource_list from url: %s' % url)
-            return loads(response.content)
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
             raise ResourceListError('Unable to query node')
+        else:
+            try:
+                response = loads(request.content)
+                return decrypt_request_data(response['signed_data'])
+            except ValueError:
+                raise ResourceListError('non JSON data')
+            except NodeDataPackageError, exc:
+                raise ResourceListError(exc)
 
     def siblings_list(self):
         '''
@@ -180,26 +239,19 @@ class RemoteCall(object):
         url = self.get_service_url('sibling-root')
         try:
             logger.debug('calling sibling-root service on url: %s' % url)
-            response = requests.post(url, data=self.get_id_package())
+            request = requests.post(url, data=self.get_id_package())
             logger.debug('received sibling-root from url: %s' % url)
-            return loads(response.content)
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
             raise SiblingListError('Unable to query node')
-            
-    def heartbeat(self):
-        '''
-        Check a host's availability and cpu load
-        '''
-        url = self.get_service_url('service-heartbeat')
-        try:
-            logger.debug('calling heartbeat service on url: %s' % url)
-            response = requests.post(url, data=self.get_id_package())
-            logger.debug('received heartbeat from url: %s' % url)
-            return loads(response.content)
-        except requests.ConnectionError:
-            logger.error('unable to connect to url: %s' % url)
-            raise HeartbeatError('Unable to query node')          
+        else:
+            try:
+                response = loads(request.content)
+                return decrypt_request_data(response['signed_data'])
+            except ValueError:
+                raise SiblingListError('non JSON data')
+            except NodeDataPackageError, exc:
+                raise SiblingListError(exc)
             
     def download_version(self, uuid):
         '''
@@ -208,9 +260,16 @@ class RemoteCall(object):
         url = self.get_service_url('version-download', args=[uuid])
         try:
             logger.debug('calling version download on url: %s' % url)
-            response = requests.post(url, data=self.get_id_package())
+            request = requests.post(url, data=self.get_id_package())
             logger.debug('received download from url: %s' % url)
-            return response.content
         except requests.ConnectionError:
             logger.error('unable to connect to url: %s' % url)
             raise NetworkResourceDownloadError('Unable to query node')
+        else:
+            try:
+                response = loads(request.content)
+                return decrypt_request_data(response['signed_data'])
+            except ValueError:
+                raise NetworkResourceDownloadError('non JSON data')
+            except NodeDataPackageError, exc:
+                raise NetworkResourceDownloadError(exc)

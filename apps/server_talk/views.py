@@ -8,6 +8,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.utils.simplejson import loads
 
 from djangorestframework.mixins import InstanceMixin, ReadModelMixin
 from djangorestframework.views import View, ModelView
@@ -16,12 +17,14 @@ from djangorestframework.response import Response
 
 from openrelay_resources.models import Resource, Version
 from openrelay_resources.literals import TIMESTAMP_SEPARATOR
+from core.runtime import gpg
+from django_gpg.exceptions import KeyDoesNotExist
 
 from server_talk.models import LocalNode, Sibling, NetworkResourceVersion
 from server_talk.forms import JoinForm
-from server_talk.api import RemoteCall
-from server_talk.conf.settings import PORT, IPADDRESS
-from server_talk.exceptions import AnnounceClientError
+from server_talk.api import RemoteCall, decrypt_request_data, prepare_package
+from server_talk.conf.settings import PORT, IPADDRESS, KEY_PASSPHRASE
+from server_talk.exceptions import AnnounceClientError, NodeDataPackageError
 from server_talk.utils import CPUsage
 
 logger = logging.getLogger(__name__)
@@ -92,18 +95,22 @@ class ResourceFileObject(View):
 
 class VersionRoot(View):
     def post(self, request):
-        return [
+        return prepare_package(
             {
-                'uuid': version.full_uuid,
-                'url': reverse('version', args=[version.full_uuid]),
-                'name': version.name,
-                'label': version.label,
-                'description': version.description,
-                'metadata': version.metadata,
-                'signature_properties': version.signature_properties,
+                'version-list': [
+                    {
+                        'uuid': version.full_uuid,
+                        'url': reverse('version', args=[version.full_uuid]),
+                        'name': version.name,
+                        'label': version.label,
+                        'description': version.description,
+                        'metadata': version.metadata,
+                        'signature_properties': version.signature_properties,
+                    }
+                    for version in Version.objects.all()
+                ]
             }
-            for version in Version.objects.all()
-        ]
+        )
 
 
 class VersionObject(View):
@@ -157,84 +164,130 @@ class ResourceServe(View):
 
 class Announce(View):
     def post(self, request):
-        uuid = request.POST.get('uuid')
-        ip_address = request.POST.get('ip_address')
-        port = request.POST.get('port')
-        logger.info('received announce call from: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
-        if uuid and ip_address and port:
-            sibling_data = {'ip_address': ip_address, 'port': port}
-            # TODO: Verify node identity
-            sibling, created = Sibling.objects.get_or_create(uuid=uuid, defaults=sibling_data)
-            if not created:
-                sibling.ip_address = sibling_data['ip_address']
-                sibling.port = sibling_data['port']
-                sibling.save()
-            local_node = LocalNode.get()
-            local_node_info = {
-                'ip_address': IPADDRESS,
-                'port': PORT,
-                'uuid': local_node.uuid,
-                'name': local_node.name,
-                'email': local_node.email,
-                'comment': local_node.comment,
-            }
-            return local_node_info
+        logger.info('received announce call from: %s' % request.META['REMOTE_ADDR'])
+        signed_data = request.POST.get('signed_data')
+        try:
+            fingerprint, result = decrypt_request_data(signed_data)
+        except NodeDataPackageError:
+            logger.error('got NodeDataPackageError')
+            return Response(status.BAD_REQUEST)
         else:
-            return Response(status.PARTIAL_CONTENT)
+            logger.info('remote node uuid is: %s' % fingerprint)
+            try:
+                sibling_data = {'ip_address': result['ip_address'], 'port': result['port']}
+            except KeyError:
+                return Response(status.PARTIAL_CONTENT)
+            else:
+                sibling, created = Sibling.objects.get_or_create(uuid=fingerprint, defaults=sibling_data)
+                if not created:
+                    sibling.ip_address = sibling_data['ip_address']
+                    sibling.port = sibling_data['port']
+                    sibling.save()
+                
+                # Send our info
+                local_node_info = {
+                    'ip_address': IPADDRESS,
+                    'port': PORT,
+                }
+                try:
+                    return prepare_package(local_node_info)
+                except KeyDoesNotExist:
+                    return Response(status.INTERNAL_SERVER_ERROR)
 
 
 class Heartbeat(View):
     def post(self, request):
-        uuid = request.GET.get('uuid')
-        # TODO: Reject call from non verified nodes
+        signed_data = request.POST.get('signed_data')
+        try:
+            fingerprint, result = decrypt_request_data(signed_data)
+        except NodeDataPackageError:
+            logger.error('got NodeDataPackageError')
+            return Response(status.BAD_REQUEST)
+        else:
+            uuid = fingerprint
+
         logger.info('received heartbeat call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
-        return {'cpuload': CPUsage()}
+        return prepare_package({'cpuload': str(CPUsage())})
 
 
 class SiblingsHash(View):
     def post(self, request):
-        uuid = request.GET.get('uuid')
-        # TODO: Reject call from non verified nodes
+        signed_data = request.POST.get('signed_data')
+        try:
+            fingerprint, result = decrypt_request_data(signed_data)
+        except NodeDataPackageError:
+            logger.error('got NodeDataPackageError')
+            return Response(status.BAD_REQUEST)
+        else:
+            uuid = fingerprint
+            
         logger.info('received siblings hash call from node: %s' % uuid)
-        return {
-            'siblings_hash': HASH_FUNCTION(
-                u''.join(
-                    [
-                        node.uuid for node in Sibling.objects.all().order_by('uuid')
-                    ]
+        return prepare_package(
+            {
+                'siblings_hash': HASH_FUNCTION(
+                    u''.join(
+                        [
+                            node.uuid for node in Sibling.objects.all().order_by('uuid')
+                        ]
+                    )
                 )
-            )
-        }
+            }
+        )
 
 
 class SiblingList(View):
     def post(self, request):
-        uuid = request.GET.get('uuid')
+        signed_data = request.POST.get('signed_data')
+        try:
+            fingerprint, result = decrypt_request_data(signed_data)
+        except NodeDataPackageError:
+            logger.error('got NodeDataPackageError')
+            return Response(status.BAD_REQUEST)
+        else:
+            uuid = fingerprint
+
         logger.info('received siblings list call from node: %s' % uuid)
-        return [
-                {
-                    'uuid': sibling.uuid,
-                    'ip_address': sibling.ip_address,
-                    'port': sibling.port,
-                    'last_heartbeat': sibling.last_heartbeat,
-                    'cpuload': sibling.cpuload,
-                    'status': sibling.status,
-                    'failure_count': sibling.failure_count,
-                    'last_inventory_hash': sibling.last_inventory_hash,
-                    'inventory_hash': sibling.inventory_hash,
-                    'last_siblings_hash': sibling.last_siblings_hash,
-                    'siblings_hash': sibling.siblings_hash,
-                }
-                for sibling in Sibling.objects.all()
-            ]
+        return prepare_package(
+            {
+                'sibling_list': [
+                    {
+                        'uuid': sibling.uuid,
+                        'ip_address': sibling.ip_address,
+                        'port': sibling.port,
+                        'last_heartbeat': sibling.last_heartbeat,
+                        'cpuload': sibling.cpuload,
+                        'status': sibling.status,
+                        'failure_count': sibling.failure_count,
+                        'last_inventory_hash': sibling.last_inventory_hash,
+                        'inventory_hash': sibling.inventory_hash,
+                        'last_siblings_hash': sibling.last_siblings_hash,
+                        'siblings_hash': sibling.siblings_hash,
+                    }
+                    for sibling in Sibling.objects.all()
+                ]
+            }
+        )
 
 
 class InventoryHash(View):
     def post(self, request):
-        uuid = request.GET.get('uuid')
-        # TODO: Reject call from non verified nodes
+        signed_data = request.POST.get('signed_data')
+        try:
+            fingerprint, result = decrypt_request_data(signed_data)
+        except NodeDataPackageError:
+            logger.error('got NodeDataPackageError')
+            return Response(status.BAD_REQUEST)
+        else:
+            uuid = fingerprint
+
         logger.info('received inventory hash call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
-        return {'inventory_hash': HASH_FUNCTION(u''.join([version.full_uuid for version in Version.objects.all().order_by('timestamp')]))}
+        return prepare_package(
+            {
+                'inventory_hash': HASH_FUNCTION(
+                    u''.join([version.full_uuid for version in Version.objects.all().order_by('timestamp')])
+                )
+            }
+        )
 
 
 # Interactive views - user
@@ -271,7 +324,7 @@ def node_list(request):
 
 def node_info(request):
     return render_to_response('node_list.html', {
-        'object_list': [LocalNode.get()],
+        'object_list': [LocalNode()],
         'title': _(u'Local node information'),
     }, context_instance=RequestContext(request))
 
