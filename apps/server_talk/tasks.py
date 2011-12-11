@@ -31,7 +31,7 @@ def heartbeat_check():
         else:
             node = RemoteCall(uuid=oldest.uuid)
             try:
-                response = node.heartbeat()
+                fingerprint, response = node.heartbeat()
             except HeartbeatError:
                 oldest.status = NODE_STATUS_DOWN
                 oldest.failure_count += 1
@@ -65,20 +65,20 @@ def inventory_hash_check():
         else:        
             remote_api = RemoteCall(uuid=oldest.uuid)
             try:
-                response = remote_api.inventory_hash()
+                fingerprint, hash_response = remote_api.inventory_hash()
             except InventoryHashError:
                 logger.error('got InventoryHashError')
             else:
-                if oldest.inventory_hash != response['inventory_hash']:
+                if oldest.inventory_hash != hash_response['inventory_hash']:
                     # Delete this holder from all it's resources to catch
                     # later the ones it doesn't have anymore
                     ResourceHolder.objects.filter(node__uuid=oldest.uuid).delete()
                     try:
-                        remote_resources = remote_api.resource_list()
+                        fingerprint, response = remote_api.resource_list()
                     except ResourceListError:
                         logger.error('got ResourceListError')
                     else:
-                        for remote_resource in remote_resources:
+                        for remote_resource in response['version-list']:
                             uuid, timestamp=remote_resource['uuid'].split(TIMESTAMP_SEPARATOR)
                             resource, created = NetworkResourceVersion.objects.get_or_create(
                                 uuid=uuid,
@@ -91,7 +91,7 @@ def inventory_hash_check():
                             resource.resourceholder_set.get_or_create(node=oldest)
 
                         oldest.last_inventory_hash = datetime.datetime.now()
-                        oldest.inventory_hash = response['inventory_hash']
+                        oldest.inventory_hash = hash_response['inventory_hash']
                         oldest.save()
                         # Delete network resources that have no holder
                         NetworkResourceVersion.objects.filter(resourceholder=None).delete()
@@ -113,17 +113,17 @@ def siblings_hash_check():
         else:
             remote_api = RemoteCall(uuid=oldest.uuid)
             try:
-                response = remote_api.siblings_hash()
+                fingerprint, hash_response = remote_api.siblings_hash()
             except SiblingsHashError:
                 logger.error('got SiblingsHashError')
             else:
-                if oldest.siblings_hash != response['siblings_hash']:
+                if oldest.siblings_hash != hash_response['siblings_hash']:
                     try:
-                        sibling_list = remote_api.siblings_list()
+                        fingerprint, response = remote_api.siblings_list()
                     except SiblingsListError:
                         logger.error('got SiblingsListError')
                     else:
-                        for remote_sibling in sibling_list:
+                        for remote_sibling in response['sibling_list']:
                             # Don't use a precomputed list, to a DB check each time
                             # to minimize posibility of race cond
                             # TODO: add locking
@@ -131,7 +131,9 @@ def siblings_hash_check():
                                 Sibling.objects.get(uuid=remote_sibling['uuid'])
                             except Sibling.DoesNotExist:
                                 # Only add nodes not known
-                                if remote_sibling['uuid'] != LocalNode.get().uuid:
+                                if remote_sibling['uuid'] != LocalNode().uuid:
+                                    logger.debug("remote_sibling['uuid']: %s" % remote_sibling['uuid'])
+                                    logger.debug("LocalNode().uuid: %s" % LocalNode().uuid)
                                     # Don't add self
                                     sibling = Sibling()
                                     sibling.uuid=remote_sibling['uuid']
@@ -140,7 +142,7 @@ def siblings_hash_check():
                                     sibling.save()
 
                         oldest.last_siblings_hash = datetime.datetime.now()
-                        oldest.siblings_hash = response['siblings_hash']
+                        oldest.siblings_hash = hash_response['siblings_hash']
                         oldest.save()
             finally:
                 lock.release()
