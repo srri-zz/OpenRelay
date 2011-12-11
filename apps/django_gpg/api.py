@@ -131,7 +131,7 @@ class Key(object):
         else:
             comment = None
             
-        return uid.strip, comment, email
+        return uid.strip(), comment, email
     
     @property
     def name(self, uid_index=0):
