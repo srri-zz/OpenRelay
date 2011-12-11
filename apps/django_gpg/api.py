@@ -193,7 +193,7 @@ class GPG(object):
             if retry and verify.key_id:
                 try:
                     logger.debug('key_id', verify.key_id)
-                    self.receive_key(verify.keyid)
+                    self.receive_key(verify.key_id)
                 except KeyFetchingError:
                     return verify
                 else:
