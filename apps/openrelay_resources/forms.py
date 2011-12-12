@@ -43,8 +43,15 @@ class ResourceForm(forms.Form):
         initial=True,
         required=False,
     )
+    
+    uncompress = forms.BooleanField(
+        label=_('Uncompress'),
+        help_text=_(u'Expand compressed files and upload each element as a separate resource.'),
+        initial=True,
+        required=False,
+    )
 
     def __init__(self, *args, **kwargs):
         super(ResourceForm, self).__init__(*args, **kwargs)
-        self.fields['key'].choices = [(key.fingerprint, key) for key in Key.get_all(gpg, secret=True, exclude=LocalNode().get().public_key)]
+        self.fields['key'].choices = [(key.fingerprint, key) for key in Key.get_all(gpg, secret=True, exclude=LocalNode().public_key)]
         self.fields['key'].widget.attrs = {'style': 'width: auto;'}
