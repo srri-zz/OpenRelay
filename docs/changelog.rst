@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 0.4
+-----------
+* Node list sharing - Nodes now share their known node list with others,
+  this make the network interconnections grown faster.
+* Communication between nodes is now signed by the originator and
+  verified by the recipient, this improves security by allowing tamper 
+  detection of the inter node messages.
+
+
 Version 0.3
 -----------
 * More control over the key creation parameters
