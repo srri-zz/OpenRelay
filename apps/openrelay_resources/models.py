@@ -2,7 +2,6 @@ import urlparse
 import errno
 from datetime import datetime
 from StringIO import StringIO
-import logging
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -15,7 +14,6 @@ from django.core.exceptions import ValidationError
 import magic
 
 from django_gpg import Key, GPGVerificationError, GPGDecryptionError, KeyFetchingError
-from core.runtime import gpg
 
 from openrelay_resources.conf.settings import STORAGE_BACKEND
 from openrelay_resources.conf.settings import STORAGE_SIZE_LIMIT
@@ -24,9 +22,8 @@ from openrelay_resources.literals import BINARY_DELIMITER, RESOURCE_SEPARATOR, \
 from openrelay_resources.exceptions import ORInvalidResourceFile
 from openrelay_resources.filters import FilteredHTML, FilterError
 from openrelay_resources.managers import ResourceManager
-from openrelay_resources.compressed_file import CompressedFile, NotACompressedFile
 
-logger = logging.getLogger(__name__)
+from core.runtime import gpg
 
 
 class ResourceBase(models.Model):
@@ -56,6 +53,7 @@ class ResourceBase(models.Model):
 
     def __unicode__(self):
         return self.uuid
+
 
     def clean(self):
         # Don't allow timestamp separators in the filename or resource name
@@ -127,38 +125,8 @@ class Resource(ResourceBase):
     @models.permalink
     def get_absolute_url(self):
         return ('resource_serve', [self.uuid])
-
+        
     def upload(self, *args, **kwargs):
-        logger.debug('called')
-        uncompress = kwargs.pop('uncompress')
-        
-        if uncompress:
-            file = kwargs.pop('file')
-            try:
-                cf = CompressedFile(file)
-            except NotACompressedFile:
-                # Reset the file descriptor
-                file.seek(0)
-                kwargs['file'] = file
-                self.upload_single_file(*args, **kwargs)
-            else:
-                # Discard name, label and description
-                #kwargs.pop('label')
-                #kwargs.pop('description')
-                kwargs.pop('name')
-                key = kwargs['key']
-                for fp in cf.children():
-                    print 'FP', fp
-                    kwargs['file'] = fp
-                    self.upload_single_file(*args, **kwargs)
-                    kwargs['key'] = key
-                    fp.close()
-        else:
-            self.upload_single_file(*args, **kwargs)
-
-        #file_object.close()
-        
-    def upload_single_file(self, *args, **kwargs):
         version = kwargs.pop('raw_data_version', None)
         if not version:
             key = kwargs.pop('key')
@@ -170,8 +138,7 @@ class Resource(ResourceBase):
             name = kwargs.pop('name', None)
             if not name:
                 name = file.name
-            
-            logger.debug('name: %s' % name)
+                    
             uuid = Resource.prepare_resource_uuid(key, name)
         else:
             uuid = version.verified_uuid
@@ -228,7 +195,7 @@ class Version(VersionBase):
         # TODO: pass exceptions to caller
         if version.verify:
             resource = Resource()
-            resource.upload_single_file(raw_data_version=version)
+            resource.upload(raw_data_version=version)
             return version
         else:
             raise ORInvalidResourceFile('Remote resource failed verification')

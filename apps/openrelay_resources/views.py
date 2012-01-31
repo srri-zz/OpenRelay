@@ -51,8 +51,7 @@ def resource_upload(request):
                     name=form.cleaned_data['name'],
                     label=form.cleaned_data['label'],
                     description=form.cleaned_data['description'],
-                    filter_html=form.cleaned_data['filter_html'],
-                    uncompress=form.cleaned_data['uncompress'],
+                    filter_html=form.cleaned_data['filter_html']
                 )
                 messages.success(request, _(u'Resource: %s, created successfully.') % resource)
                 return HttpResponseRedirect(reverse('resource_upload'))
