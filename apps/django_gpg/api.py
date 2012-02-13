@@ -10,9 +10,9 @@ from django.utils.translation import ugettext_lazy as _
 
 from queue_manager import Queue, QueuePushError
 
-from django_gpg.exceptions import GPGVerificationError, GPGSigningError, \
-    GPGDecryptionError, KeyDeleteError, KeyGenerationError, \
-    KeyFetchingError, KeyDoesNotExist
+from django_gpg.exceptions import (GPGVerificationError, GPGSigningError,
+    GPGDecryptionError, KeyDeleteError, KeyGenerationError,
+    KeyFetchingError, KeyDoesNotExist, KeyImportError)
 
 logger = logging.getLogger(__name__)
 
@@ -147,6 +147,18 @@ class Key(object):
 
 
 class GPG(object):
+    @staticmethod
+    def get_descriptor(file_input):
+        try:
+            # Is it a file like object?
+            file_input.seek(0)
+        except AttributeError:
+            # If not, try open it.
+            return open(file_input, 'rb')
+        else:
+            return file_input
+
+
     def __init__(self, binary_path=None, home=None, keyring=None, keyservers=None):
         kwargs = {}
         if binary_path:
@@ -337,3 +349,18 @@ class GPG(object):
                 return Key.get(self, import_result.fingerprints[0], secret=False)
 
         raise KeyFetchingError
+        
+    def import_keys(self, key_data):
+        """
+        Read a file data and try to import the keys contained in it
+        """
+        input_descriptor = GPG.get_descriptor(key_data)
+
+        import_result = self.gpg.import_keys(input_descriptor.read())
+
+        input_descriptor.close()
+
+        if not import_result:
+            raise KeyImportError
+        
+        return import_result
