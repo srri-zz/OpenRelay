@@ -23,6 +23,7 @@ SETTINGS_LIST = (
     ('openrelay_resources', 'FILESTORAGE_LOCATION', 'RESOURCES_FILESTORAGE_LOCATION'),
     ('openrelay_resources', 'STORAGE_SIZE_LIMIT', 'RESOURCES_STORAGE_SIZE_LIMIT'),
     ('core', 'KEYSERVERS', 'CORE_KEYSERVERS'),
+    ('core', 'GPG_HOME', 'CORE_GPG_HOME'),
     ('server_talk', 'IPADDRESS', 'SERVER_IPADDRESS'),
     ('server_talk', 'PORT', 'SERVER_PORT'),
     ('server_talk', 'HEARTBEAT_QUERY_INTERVAL', 'SERVER_HEARTBEAT_QUERY_INTERVAL'),

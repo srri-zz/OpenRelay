@@ -13,3 +13,4 @@ image_cache/
 build/
 _build/
 resource_storage/
+gpg_home/
