@@ -28,7 +28,7 @@ from django_gpg import (KeyFetchingError, GPGVerificationError,
     GPGDecryptionError)
 
 from server_talk.models import LocalNode, Sibling, NetworkResourceVersion
-from server_talk.conf.settings import PORT, IPADDRESS, KEY_PASSPHRASE
+from server_talk.conf.settings import (PORT, IPADDRESS, KEY_PASSPHRASE, TIMEOUT)
 from server_talk.exceptions import (AnnounceClientError, NoSuchNode,
     HeartbeatError, InventoryHashError, ResourceListError,
     NetworkResourceNotFound, NetworkResourceDownloadError, SiblingsHashError,
@@ -78,7 +78,7 @@ class NetworkCall(object):
             
     def publish_key(self, key):
         # For now publishes key to http://peer.to keyserver
-        response = requests.post(u'http://peer.to:11371/pks/add', data={'keytext': key.data})
+        response = requests.post(u'http://peer.to:11371/pks/add', data={'keytext': key.data}, timeout=TIMEOUT)
 
 
 class RemoteCall(object):
@@ -117,8 +117,8 @@ class RemoteCall(object):
         try:
             signed_data = self.get_id_package()
             logger.debug('signed data: %s' % signed_data)
-            response = requests.post(url, data=signed_data)
-        except requests.ConnectionError:
+            response = requests.post(url, data=signed_data, timeout=TIMEOUT)
+        except (requests.ConnectionError, requests.Timeout):
             logger.error('unable to connect to url: %s' % url)
             raise AnnounceClientError('Unable to join network')
         else:
@@ -155,9 +155,9 @@ class RemoteCall(object):
         url = self.get_service_url('service-heartbeat')
         try:
             logger.debug('calling heartbeat service on url: %s' % url)
-            request = requests.post(url, data=self.get_id_package())
+            request = requests.post(url, data=self.get_id_package(), timeout=TIMEOUT)
             logger.debug('received heartbeat from url: %s' % url)
-        except requests.ConnectionError:
+        except (requests.ConnectionError, requests.Timeout):
             logger.error('unable to connect to url: %s' % url)
             raise HeartbeatError('Unable to query node')
         else:
@@ -176,9 +176,9 @@ class RemoteCall(object):
         url = self.get_service_url('service-inventory_hash')
         try:
             logger.debug('calling inventory_hash service on url: %s' % url)
-            request = requests.post(url, data=self.get_id_package())
+            request = requests.post(url, data=self.get_id_package(), timeout=TIMEOUT)
             logger.debug('received inventory_hash from url: %s' % url)
-        except requests.ConnectionError:
+        except (requests.ConnectionError, requests.Timeout):
             logger.error('unable to connect to url: %s' % url)
             raise InventoryHashError('Unable to query node')
         else:
@@ -197,9 +197,9 @@ class RemoteCall(object):
         url = self.get_service_url('service-siblings_hash')
         try:
             logger.debug('calling siblings_hash service on url: %s' % url)
-            request = requests.post(url, data=self.get_id_package())
+            request = requests.post(url, data=self.get_id_package(), timeout=TIMEOUT)
             logger.debug('received siblings_hash from url: %s' % url)
-        except requests.ConnectionError:
+        except (requests.ConnectionError, requests.Timeout):
             logger.error('unable to connect to url: %s' % url)
             raise SiblingsHashError('Unable to query node')
         else:
@@ -218,9 +218,9 @@ class RemoteCall(object):
         url = self.get_service_url('version-root')
         try:
             logger.debug('calling resource_list service on url: %s' % url)
-            request = requests.post(url, data=self.get_id_package())
+            request = requests.post(url, data=self.get_id_package(), timeout=TIMEOUT)
             logger.debug('received resource_list from url: %s' % url)
-        except requests.ConnectionError:
+        except (requests.ConnectionError, requests.Timeout):
             logger.error('unable to connect to url: %s' % url)
             raise ResourceListError('Unable to query node')
         else:
@@ -239,9 +239,9 @@ class RemoteCall(object):
         url = self.get_service_url('sibling-root')
         try:
             logger.debug('calling sibling-root service on url: %s' % url)
-            request = requests.post(url, data=self.get_id_package())
+            request = requests.post(url, data=self.get_id_package(), timeout=TIMEOUT)
             logger.debug('received sibling-root from url: %s' % url)
-        except requests.ConnectionError:
+        except (requests.ConnectionError, requests.Timeout):
             logger.error('unable to connect to url: %s' % url)
             raise SiblingListError('Unable to query node')
         else:
@@ -260,9 +260,9 @@ class RemoteCall(object):
         url = self.get_service_url('version-download', args=[uuid])
         try:
             logger.debug('calling version download on url: %s' % url)
-            request = requests.post(url, data=self.get_id_package())
+            request = requests.post(url, data=self.get_id_package(), timeout=TIMEOUT)
             logger.debug('received download from url: %s' % url)
-        except requests.ConnectionError:
+        except (requests.ConnectionError, requests.Timeout):
             logger.error('unable to connect to url: %s' % url)
             raise NetworkResourceDownloadError('Unable to query node')
         else:
