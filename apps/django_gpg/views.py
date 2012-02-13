@@ -9,8 +9,8 @@ from server_talk.api import NetworkCall
 from server_talk.models import LocalNode
 from queue_manager import Queue
 
-from django_gpg import Key, KeyGenerationError
-from django_gpg.forms import NewKeyForm, KeySelectionForm
+from django_gpg import Key, KeyGenerationError, KeyImportError
+from django_gpg.forms import NewKeyForm, KeySelectionForm, KeyImportForm
     
 from core.runtime import gpg
 
@@ -105,3 +105,23 @@ def key_publish(request):
         'form': form,
         'title': _(u'Publish a key to the OpenRelay network'),
     }, context_instance=RequestContext(request))       
+
+
+def key_import(request):
+    if request.method == 'POST':
+        form = KeyImportForm(data=request.POST, files=request.FILES)
+        if form.is_valid():
+            try:
+                result = gpg.import_keys(request.FILES['file'])
+                messages.success(request, _(u'Imported %s keys sucessfully') % result.count)
+                return HttpResponseRedirect(reverse('home_view'))
+            except KeyImportError:
+                messages.error(request, _(u'Unable to import key(s)'))
+                return HttpResponseRedirect(reverse('key_import'))
+    else:
+        form = KeyImportForm()
+
+    return render_to_response('generic_form.html', {
+        'form': form,
+        'title': _(u'Import existing keys'),
+    }, context_instance=RequestContext(request))  

@@ -6,4 +6,5 @@ urlpatterns = patterns('django_gpg.views',
     url(r'^list/private/$', 'key_list', {'secret': True}, 'key_private_list'),
     url(r'^list/public/$', 'key_list', {'secret': False}, 'key_public_list'),
     url(r'^publish/$', 'key_publish', (), 'key_publish'),
+    url(r'^import/$', 'key_import', (), 'key_import'),
 )
