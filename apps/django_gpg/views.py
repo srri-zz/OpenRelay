@@ -24,7 +24,7 @@ def key_list(request, secret=True):
         messages.add_message(request, msg_data.get('tag', messages.INFO), msg_data['message'])
         
     if secret:
-        object_list = Key.get_all(gpg, secret=True, exclude=LocalNode().get().public_key)
+        object_list = Key.get_all(gpg, secret=True, exclude=LocalNode().public_key)
         title = _(u'Private key list')
     else:
         object_list = Key.get_all(gpg)
