@@ -28,5 +28,6 @@ Contents
     changelog
     planned
     internals
+    api
     contributors
     credits
