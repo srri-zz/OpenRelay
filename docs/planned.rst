@@ -61,6 +61,11 @@ Usability
 * Unreplicabale resources
 
   * To support services like chat or web apps
+  
+* Search and distributed content indexing
+
+  * Provide full text search capabilities for all content in the OpenRelay network
+  
 
 Content availability
 --------------------
