@@ -28,4 +28,5 @@ Contents
     changelog
     planned
     internals
+    contributors
     credits
