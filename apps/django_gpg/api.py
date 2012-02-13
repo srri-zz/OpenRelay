@@ -149,6 +149,7 @@ class Key(object):
 class GPG(object):
     @staticmethod
     def get_descriptor(file_input):
+        # TODO: convert all methods to use this convenience method
         try:
             # Is it a file like object?
             file_input.seek(0)
