@@ -12,6 +12,7 @@ Version 0.4
 * API calls timeout support - Avoid node from appear frozen waiting for
   a response from an unavailable remote machine.
 * Scheduler shutdown during database creation to avoid segmentation faults.
+* OpenRelay now uses it's own isolated GPG home directory
 
 
 Version 0.3
