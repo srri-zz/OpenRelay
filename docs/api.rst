@@ -2,21 +2,97 @@
 API reference
 =============
 
-**OpenRelay node protocol V0.1**
+**OpenRelay protocol specification V0**
 
-=== =========
-URL View name
-=== =========
-services/announce/ service-announce
-=== =========
+service-announce
+----------------
+
+**URL**: services/announce/
+
+Announces a new node to an established node, for initial seeding in the
+OpenRelay network.  Returns the established node's information if the new
+node's key verification is successful.
+
+**Returns**::
+
+  {
+    'ip_address': <established node IP address>,
+    'port': <established node IP port>,
+  }
+
+service-heartbeat
+-----------------
+
+**URL**: services/heartbeat/
+
+Ask a node for it's current CPU usage.
+
+**Returns**::
+
+  {
+    'cpuload': str(<sibling node CPU usage>)
+  }
 
 
-# ping: request a pong from another server and stores the delay in weighted running average for the server
-# contacts: requests a list of servers from another server
-# inventory: requests a list of resources
-# proxy: relays an Http request to another server
-# request-resource: request a resource from another server
-# my_name_is: request server info (version, api version)
-# workaholic: requests the cpu load and resource serving stats of a server (could be merged with [ping])
-# report: blacklist a server that has repeatedly tampered with files (from authoritative nodes only)
-# unblacklist
+service-inventory_hash
+----------------------
+
+**URL**: service/inventory/hash
+
+Ask a node for it's resource inventory hash, to avoid retrieving the
+entire resource list on every call.
+
+**Return**::
+
+  {
+    'inventory_hash': <resource inventory hash>
+  }
+
+
+service-siblings_hash
+---------------------
+
+**URL**: service/siblings/hash
+
+Ask a node for it's node list hash, to avoid retrieving the
+entire node list on every call.
+
+**Return**::
+
+  {
+    'siblings_hash': <sibling node node inventory hash>
+  }
+
+resource_file
+-------------
+
+**URL**: resources/resource_file/<uuid>/
+
+
+version-download
+----------------
+
+URL: resources/version/download/<uuid>/
+
+
+version-serve
+-------------
+
+URL: resources/version/serve/<uuid>/
+
+
+version
+-------
+
+URL: resources/version/<uuid>/
+
+version-root
+------------
+
+URL: resources/version/
+
+
+sibling-root
+------------
+
+URL: resources/sibling/
