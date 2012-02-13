@@ -85,3 +85,9 @@ class KeySelectionForm(forms.Form):
         super(KeySelectionForm, self).__init__(*args, **kwargs)
         self.fields['key'].choices = [(key.fingerprint, key) for key in Key.get_all(gpg, secret=True)]
         self.fields['key'].widget.attrs = {'style': 'width: auto;'}
+
+        
+class KeyImportForm(forms.Form):
+    file = forms.FileField(
+        label=_(u'File')
+    ) 
