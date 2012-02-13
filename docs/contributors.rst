@@ -23,7 +23,7 @@ Bug fixes
 
 Website
 -------
-* Dustin (@distortednet)
+* Dustin (https://twitter.com/#!/distortednet)
 
 
 Translations
