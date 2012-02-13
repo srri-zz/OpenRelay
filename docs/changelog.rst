@@ -9,6 +9,9 @@ Version 0.4
 * Communication between nodes is now signed by the originator and
   verified by the recipient, this improves security by allowing tamper 
   detection of the inter node messages.
+* API calls timeout support - Avoid node from appear frozen waiting for
+  a response from an unavailable remote machine.
+* Scheduler shutdown during database creation to avoid segmentation faults.
 
 
 Version 0.3
