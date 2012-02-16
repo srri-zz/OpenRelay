@@ -3,7 +3,11 @@ import logging
 import urlparse
 
 from datetime import datetime
-from StringIO import StringIO
+
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
