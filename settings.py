@@ -157,6 +157,8 @@ INSTALLED_APPS = (
     'lock_manager',
     'server_talk',
     'core',
+ # Has to be last so the other apps can register it's signals
+    'signaler',
 )
 
 # A sample logging configuration. The only tangible logging
