@@ -36,6 +36,7 @@ To install the python dependencies using the production dependencies file includ
 Populate the database with the project's schema doing::
 
     $ ./manage.py syncdb 
+    $ ./manage.py migrate
     
 Launch the server daemon doing::
 

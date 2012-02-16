@@ -53,3 +53,5 @@ Credits
 
     * Copyright Kenneth Reitz
     * http://python-requests.org
+    
+* South
