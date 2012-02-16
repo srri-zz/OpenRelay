@@ -69,6 +69,10 @@ Usability
 
   * Provide full text search capabilities for all content in the OpenRelay network
   
+* Framed portal
+
+  * Keep OpenRelay's menu bar open when doing normal browsing
+  
 
 Content availability
 --------------------

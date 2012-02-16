@@ -33,7 +33,7 @@ Git branch structure
 Each release is tagged and available for download on the Downloads_ section of the **OpenRelay** repository on GitHub_.
 
 When submitting patches, please place your feature/change in its own branch prior to opening a pull request on GitHub_.
-To familiarize yourself with the technical details of the project read the :ref:`internals` section.
+To familiarize yourself with the technical details of the project read the :doc:`internals` chapter.
 
 .. _GitHub: https://www.github.com
 .. _Git: http://git-scm.org
