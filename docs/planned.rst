@@ -25,6 +25,9 @@ Node availability
 Security
 --------
 * Inter node communication encryption
+
+  * Avoid eavesdropping of node communication
+
 * Validated API calls |done|
 
   * Avoid tampering with the node messages
@@ -54,7 +57,7 @@ Security
 
 Usability
 ---------
-* Zip file upload support |started|
+* Zip file upload support |done|
 
   * Add the ability to upload entire websites in one step
 
@@ -62,7 +65,7 @@ Usability
 
   * To support services like chat or web apps
   
-* Search and distributed content indexing
+* Search and distributed content indexing |started|
 
   * Provide full text search capabilities for all content in the OpenRelay network
   
