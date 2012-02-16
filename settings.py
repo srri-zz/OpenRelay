@@ -134,6 +134,7 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
+# Django
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -142,10 +143,13 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.admindocs',
+# 3rd party    
     'djangorestframework',
+    'south',
+    'bootstrapform',
+# OpenRelay
     'common',
     'django_bootstrap',
-    'bootstrapform',
     'bittorrent',
     'scheduler',
     'queue_manager',
