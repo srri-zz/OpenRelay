@@ -150,7 +150,6 @@ INSTALLED_APPS = (
 # OpenRelay
     'common',
     'django_bootstrap',
-    'bittorrent',
     'scheduler',
     'queue_manager',
     'django_gpg',
