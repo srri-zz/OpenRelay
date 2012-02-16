@@ -1,5 +1,3 @@
-import types
-from StringIO import StringIO
 from pickle import dumps
 import logging
 
@@ -149,7 +147,6 @@ class Key(object):
 class GPG(object):
     @staticmethod
     def get_descriptor(file_input):
-        # TODO: convert all methods to use this convenience method
         try:
             # Is it a file like object?
             file_input.seek(0)
@@ -179,15 +176,11 @@ class GPG(object):
         """
         Verify the signature of a file.
         """
-        if isinstance(file_input, types.StringTypes):
-            descriptor = open(file_input, 'rb')
-        elif isinstance(file_input, types.FileType) or isinstance(file_input, File) or isinstance(file_input, StringIO):
-            descriptor = file_input
-        else:
-            raise ValueError('Invalid file_input argument type')
 
-        verify = self.gpg.verify_file(descriptor)
-        descriptor.close()
+        input_descriptor = GPG.get_descriptor(file_input)
+
+        verify = self.gpg.verify_file(input_descriptor)
+        input_descriptor.close()
         if verify:
             return verify
         elif verify.status == 'no public key':
@@ -233,14 +226,7 @@ class GPG(object):
         if passphrase:
             kwargs['passphrase'] = passphrase
 
-        if isinstance(file_input, types.StringTypes):
-            input_descriptor = open(file_input, 'rb')
-        elif isinstance(file_input, types.FileType) or isinstance(file_input, File):
-            input_descriptor = file_input
-        elif issubclass(file_input.__class__, StringIO):
-            input_descriptor = file_input
-        else:
-            raise ValueError('Invalid file_input argument type')
+        input_descriptor = GPG.get_descriptor(file_input)
 
         if destination:
             output_descriptor = open(destination, 'wb')
@@ -279,12 +265,7 @@ class GPG(object):
         return signed_data
 
     def decrypt_file(self, file_input):
-        if isinstance(file_input, types.StringTypes):
-            input_descriptor = open(file_input, 'rb')
-        elif isinstance(file_input, types.FileType) or isinstance(file_input, File) or isinstance(file_input, StringIO):
-            input_descriptor = file_input
-        else:
-            raise ValueError('Invalid file_input argument type')
+        input_descriptor = GPG.get_descriptor(file_input)
 
         result = self.gpg.decrypt_file(input_descriptor)
         input_descriptor.close()
