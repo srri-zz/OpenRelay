@@ -12,6 +12,13 @@ class ResourceForm(forms.Form):
         label=(u'File'),
     )
 
+    uncompress = forms.BooleanField(
+        label=_('Uncompress'),
+        help_text=_(u'Expand compressed files and upload each element as a separate resource.'),
+        initial=True,
+        required=False,
+    )
+
     name = forms.CharField(
         label=_(u'Name'),
         help_text=_(u'An internal name that uniquely identifies this resource, if left blank the filename is used instead.'),

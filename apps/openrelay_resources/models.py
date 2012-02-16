@@ -1,5 +1,7 @@
-import urlparse
 import errno
+import logging
+import urlparse
+
 from datetime import datetime
 from StringIO import StringIO
 
@@ -116,7 +118,7 @@ class Resource(ResourceBase):
         for version in Version.objects.all():
             total_space += version.size
         
-        return total_space    
+        return total_space
         
     @staticmethod
     def prepare_resource_uuid(key, name):
@@ -125,17 +127,26 @@ class Resource(ResourceBase):
     @models.permalink
     def get_absolute_url(self):
         return ('resource_serve', [self.uuid])
-        
+    
     def upload(self, *args, **kwargs):
+        uncompress = kwargs.pop('uncompress')
+        usefilename = kwargs.pop('usefilename', None)
         version = kwargs.pop('raw_data_version', None)
+
         if not version:
             key = kwargs.pop('key')
             file = kwargs.pop('file')
             label = kwargs.pop('label')
+
             description = kwargs.pop('description')
             filter_html= kwargs.pop('filter_html')
-            
-            name = kwargs.pop('name', None)
+           
+            if usefilename:
+                name = kwargs.pop('name', None)
+            else:
+                namepop = kwargs.pop('name', None)
+                name = None
+
             if not name:
                 name = file.name
                     

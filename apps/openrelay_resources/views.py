@@ -1,3 +1,5 @@
+import logging
+
 from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.shortcuts import render_to_response, get_object_or_404
@@ -13,7 +15,9 @@ from server_talk.exceptions import NetworkResourceNotFound
 
 from openrelay_resources.forms import ResourceForm
 from openrelay_resources.models import Resource, Version
+from openrelay_resources.compressed_file import CompressedFile, NotACompressedFile
 
+logger = logging.getLogger(__name__)
 
 def _get_object_or_404(model, *args, **kwargs):
     """
@@ -43,17 +47,66 @@ def resource_upload(request):
     if request.method == 'POST':
         form = ResourceForm(request.POST, request.FILES)
         if form.is_valid():
+            file=request.FILES['file']
+            uncompress=form.cleaned_data['uncompress']
+            filter_html = form.cleaned_data['filter_html']
+            key = Key.get(gpg, form.cleaned_data['key'])
+            name = form.cleaned_data['name']
+            label = form.cleaned_data['label']
+            description = form.cleaned_data['description']
+
             try:
-                resource = Resource()
-                resource.upload(
-                    file=request.FILES['file'],
-                    key=Key.get(gpg, form.cleaned_data['key']),
-                    name=form.cleaned_data['name'],
-                    label=form.cleaned_data['label'],
-                    description=form.cleaned_data['description'],
-                    filter_html=form.cleaned_data['filter_html']
-                )
-                messages.success(request, _(u'Resource: %s, created successfully.') % resource)
+                if uncompress:
+                    try:
+                        cf = CompressedFile(file)
+                        unzippedfiles = []
+                        for fp in cf.children():
+                            unzippedfile = Resource()
+                            unzippedfile.upload(
+                                file = fp,
+                                key = key,
+                                name = name,
+                                label = label,
+                                description = description,
+                                filter_html = filter_html,
+                                uncompress = uncompress,
+                                usefilename = False,
+                            )
+                            fp.close()
+                            unzippedfiles.append(unzippedfile)
+                        namelist = ""
+                        for name in unzippedfiles:
+                            namelist += name.uuid + "; "
+                        messages.success(request, _(u'Resource(s): %s, created successfully.') % namelist)
+                        cf.close()
+                    except NotACompressedFile:
+                        # Reset the file descriptor
+                        file.seek(0)
+                        resource = Resource()
+                        resource.upload(
+                            file = file,
+                            key = key,
+                            name = name,
+                            label = label,
+                            description = description,
+                            filter_html = filter_html,
+                            uncompress = uncompress,
+                            usefilename = True,
+                        )
+                        messages.success(request, _(u'Resource: %s, created successfully.') % resource)
+                else:
+                    resource = Resource()
+                    resource.upload(
+                        file = file,
+                        key = key,
+                        name = name,
+                        label = label,
+                        description = description,
+                        filter_html = filter_html,
+                        uncompress = uncompress,
+                        usefilename = True,
+                    )
+                    messages.success(request, _(u'Resource: %s, created successfully.') % resource)
                 return HttpResponseRedirect(reverse('resource_upload'))
             except GPGSigningError, msg:
                 messages.error(request, msg)

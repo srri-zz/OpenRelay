@@ -218,7 +218,7 @@ class GPG(object):
         """
         Signs a filename, storing the signature and the original file
         in the destination filename provided (the destination file is
-        overrided if it already exists), if no destination file name is
+        overridden if it already exists), if no destination file name is
         provided the signature is returned.
         """
         kwargs = {}
