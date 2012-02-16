@@ -331,6 +331,7 @@ def node_info(request):
 
 def resource_list(request, fingerprint=None):
     resource_list = {}
+    title = ""
     if fingerprint:
         network_resources = [NetworkResourceVersion.objects.get(uuid=resource['uuid']) for resource in NetworkResourceVersion.objects.filter(uuid__startswith=fingerprint).values('uuid').distinct().order_by()]
         local_resources = Resource.objects.filter(uuid__startswith=fingerprint)
