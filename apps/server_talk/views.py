@@ -10,6 +10,8 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.utils.simplejson import loads
 
+import psutil
+
 from djangorestframework.mixins import InstanceMixin, ReadModelMixin
 from djangorestframework.views import View, ModelView
 from djangorestframework import status
@@ -25,7 +27,6 @@ from server_talk.forms import JoinForm
 from server_talk.api import RemoteCall, decrypt_request_data, prepare_package
 from server_talk.conf.settings import PORT, IPADDRESS, KEY_PASSPHRASE
 from server_talk.exceptions import AnnounceClientError, NodeDataPackageError
-from server_talk.utils import CPUsage
 
 logger = logging.getLogger(__name__)
 HASH_FUNCTION = lambda x: hashlib.sha256(x).hexdigest()
@@ -207,7 +208,7 @@ class Heartbeat(View):
             uuid = fingerprint
 
         logger.info('received heartbeat call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
-        return prepare_package({'cpuload': str(CPUsage())})
+        return prepare_package({'cpuload': str(psutil.cpu_percent())})
 
 
 class SiblingsHash(View):
