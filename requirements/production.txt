@@ -9,3 +9,4 @@ http://www.crummy.com/software/BeautifulSoup/unreleased/4.x/BeautifulSoup-4.0b.t
 requests==0.8.1
 APScheduler==2.0.2
 South==0.7.3
+psutil==0.4.1
