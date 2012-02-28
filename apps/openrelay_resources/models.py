@@ -1,6 +1,7 @@
 import errno
 import logging
 import urlparse
+import codecs
 
 from datetime import datetime
 
@@ -244,6 +245,7 @@ class Version(VersionBase):
                 self._metadata['description'] = description
 
             container = StringIO()
+            wrapper = codecs.getwriter('utf8')(container)
             container.write(MAGIC_NUMBER)
             container.write(r'%c' % BINARY_DELIMITER)
             container.write(MAGIC_VERSION)
@@ -252,7 +254,9 @@ class Version(VersionBase):
 
             if kwargs.pop('filter_html'):
                 try:
-                    container.write(FilteredHTML(self.file.file.read(), url_filter=lambda x: Version.prepare_resource_url(key, x)))
+                    self.file.file.seek(0)
+                    output = FilteredHTML(self.file.file.read(), url_filter=lambda x: Version.prepare_resource_url(key, x)).html
+                    wrapper.writelines(output)
                 except FilterError:
                     self.file.file.seek(0)
                     container.write(self.file.file.read())
