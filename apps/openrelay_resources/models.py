@@ -2,6 +2,7 @@ import errno
 import logging
 import urlparse
 import codecs
+import os
 
 from datetime import datetime
 
@@ -31,6 +32,8 @@ from openrelay_resources.filters import FilteredHTML, FilterError
 from openrelay_resources.managers import ResourceManager
 
 from core.runtime import gpg
+
+logger = logging.getLogger(__name__)
 
 
 class ResourceBase(models.Model):
@@ -126,8 +129,11 @@ class Resource(ResourceBase):
         return total_space
         
     @staticmethod
-    def prepare_resource_uuid(key, name):
-        return RESOURCE_SEPARATOR.join([key.fingerprint, name])
+    def prepare_resource_uuid(key, name, prefix=None):
+        if prefix:
+            return RESOURCE_SEPARATOR.join([key.fingerprint, prefix, name])
+        else:
+            return RESOURCE_SEPARATOR.join([key.fingerprint, name])
         
     @models.permalink
     def get_absolute_url(self):
@@ -189,9 +195,10 @@ class Version(VersionBase):
     last_access = models.DateTimeField(verbose_name=_(u'last access'), editable=False)
 
     @staticmethod
-    def prepare_resource_url(key, filename):
+    def prepare_resource_url(key, filename, prefix=None):
+        logger.debug(u'key: %s; filename; %s' % (key, filename))
         #return urlparse.urljoin(reverse('resource_serve', args=[Resource.prepare_resource_uuid(key.fingerprint, filename)]))
-        return reverse('resource_serve', args=[Resource.prepare_resource_uuid(key, filename)])
+        return reverse('resource_serve', args=[Resource.prepare_resource_uuid(key, filename, prefix=prefix)])
 
     @staticmethod
     def encode_metadata(dictionary):
@@ -253,9 +260,11 @@ class Version(VersionBase):
             container.write(Version.encode_metadata(self._metadata))
 
             if kwargs.pop('filter_html'):
+                logger.debug(u'filter_html: %s' % name)
                 try:
+                    basepath, filename = os.path.split(name)
                     self.file.file.seek(0)
-                    output = FilteredHTML(self.file.file.read(), url_filter=lambda x: Version.prepare_resource_url(key, x)).html
+                    output = FilteredHTML(self.file.file.read(), url_filter=lambda x: Version.prepare_resource_url(key, x, prefix=basepath)).html
                     wrapper.writelines(output)
                 except FilterError:
                     self.file.file.seek(0)
