@@ -18,10 +18,12 @@ from django.utils.simplejson import dumps, loads
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 from django.core.exceptions import ValidationError
+from django.db import transaction
 
 import magic
 
-from django_gpg import Key, GPGVerificationError, GPGDecryptionError, KeyFetchingError
+from django_gpg import (Key, GPGVerificationError, GPGDecryptionError,
+    KeyFetchingError, GPGSigningError)
 
 from openrelay_resources.conf.settings import STORAGE_BACKEND
 from openrelay_resources.conf.settings import STORAGE_SIZE_LIMIT
@@ -138,49 +140,71 @@ class Resource(ResourceBase):
     @models.permalink
     def get_absolute_url(self):
         return ('resource_serve', [self.uuid])
-    
+
+    @transaction.commit_on_success
     def upload(self, *args, **kwargs):
-        uncompress = kwargs.pop('uncompress')
-        usefilename = kwargs.pop('usefilename', None)
-        version = kwargs.pop('raw_data_version', None)
-
-        if not version:
-            key = kwargs.pop('key')
-            file = kwargs.pop('file')
-            label = kwargs.pop('label')
-
-            description = kwargs.pop('description')
-            filter_html= kwargs.pop('filter_html')
-           
-            if usefilename:
-                name = kwargs.pop('name', None)
-            else:
-                namepop = kwargs.pop('name', None)
-                name = None
-
-            if not name:
-                name = file.name
-                    
-            uuid = Resource.prepare_resource_uuid(key, name)
-        else:
-            uuid = version.verified_uuid
-
         try:
-            resource = Resource.objects.get(uuid=uuid)
-            self.pk = resource.pk
-            self.uuid = uuid
-            self.save(*args, **kwargs)
-        except Resource.DoesNotExist:
-            self.uuid = uuid
-            self.save(*args, **kwargs)
-            resource = self
-        
-        if version:
-            version.resource = resource
-            version.upload()
-        else:
-            version = Version(resource=resource, file=file)
-            version.upload(key=key, name=name, label=label, description=description, filter_html=filter_html)
+            # Enclose the entire upload method into a single try/except
+            # block to revert on any unhandled error and avoid database corruption
+            uncompress = kwargs.pop('uncompress')
+            usefilename = kwargs.pop('usefilename', None)
+            version = kwargs.pop('raw_data_version', None)
+
+            if not version:
+                key = kwargs.pop('key')
+                file = kwargs.pop('file')
+                label = kwargs.pop('label')
+
+                description = kwargs.pop('description')
+                filter_html= kwargs.pop('filter_html')
+               
+                if usefilename:
+                    name = kwargs.pop('name', None)
+                else:
+                    namepop = kwargs.pop('name', None)
+                    name = None
+
+                if not name:
+                    name = file.name
+                        
+                uuid = Resource.prepare_resource_uuid(key, name)
+            else:
+                uuid = version.verified_uuid
+
+            try:
+                resource = Resource.objects.get(uuid=uuid)
+                self.pk = resource.pk
+                self.uuid = uuid
+                self.save(*args, **kwargs)
+            except Resource.DoesNotExist:
+                self.uuid = uuid
+                self.save(*args, **kwargs)
+                resource = self
+            
+            if version:
+                version.resource = resource
+                version.upload()
+            else:
+                version = Version(resource=resource, file=file)
+                try:
+                    version.upload(key=key, name=name, label=label, description=description, filter_html=filter_html)
+                except GPGSigningError:
+                    logger.debug('GPGSigningError')
+                    # Delete invalid resource with no version child
+                    # For databased that doesn't support transactions
+                    if self.version_set.count() == 0:
+                        logger.debug('Empty resource with no previous versions, deleting.')
+                        self.delete()
+                    # Rollback everything in case the database DOES support
+                    # transactions
+                    transaction.rollback()
+                    # Re-raise the error so that the view can capture
+                    # and display it
+                    raise
+        except Exception, exc:
+            logger.error('Unhandled exception: %s' % exc)
+            transaction.rollback()
+            raise
     
     class Meta(ResourceBase.Meta):
         verbose_name = _(u'resource')
