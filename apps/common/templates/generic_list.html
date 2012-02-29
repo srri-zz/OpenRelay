@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% if title %}{{ title }}{% else %}{% trans 'List' %}{% endif %}{% endblock %}
+{% block html_title %}OpenRelay / {% if title %}{{ title }}{% else %}{% trans 'List' %}{% endif %}{% endblock %}
 
 {% block content %}
     <table class="bordered-table zebra-striped">
