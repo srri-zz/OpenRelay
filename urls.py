@@ -23,4 +23,3 @@ if settings.DEVELOPMENT:
         urlpatterns += patterns('',
             url(r'^rosetta/', include('rosetta.urls'), name='rosetta'),
         )
-             
