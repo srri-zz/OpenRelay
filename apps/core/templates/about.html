@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{% trans 'About this program' %}{% endblock %}
+{% block html_title %}OpenRelay / {% trans 'About this program' %}{% endblock %}
 {% block content %}
     <h1>{% trans 'OpenRelay' %} {% blocktrans with version as version %}(Version {{ version }}){% endblocktrans %}</h1>
     <p>{% trans 'OpenRelay is a p2p (peer to peer) based web hosting solution. It takes advantage of Dynamic DNS for updating nodes.' %}</p>
