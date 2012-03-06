@@ -60,7 +60,7 @@ msgid "OpenRelay is licensed under the GNU GPL v3"
 msgstr "OpenRelay під ліцензією GNU GPL v3"
 
 #: templates/about.html:32 templates/home.html:12
-msgid "Copyright &copy; 2011 Steven Richards, Roberto Rosario"
+msgid "Copyright &copy; 2012 Steven Richards, Roberto Rosario"
 msgstr ""
 
 #: templates/home.html:7
