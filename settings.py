@@ -161,6 +161,12 @@ INSTALLED_APPS = (
     'signaler',
 )
 
+# Throttling support
+# DEFAULT_REQUESTS_PER_MINUTE represents number of requests that can
+# be made to the api without being throttled for a minute
+DEFAULT_REQUESTS_PER_MINUTE = 50
+
+
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error.
