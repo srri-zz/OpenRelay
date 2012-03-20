@@ -66,6 +66,8 @@ def login_view(request, template_name='login.html',
                 request.session.delete_test_cookie()
         else:
             messages.error(request, ugettext(u'Incorrent username or password.'))
+    else:
+        form = authentication_form()
 
     request.session.set_test_cookie()
 
