@@ -1,2 +1,5 @@
+#import production, becuase we need that too.
+-r production.txt
+
 django-extensions==0.7.1
 Werkzeug==0.8.1
