@@ -12,11 +12,14 @@ from django.utils.simplejson import loads
 
 import psutil
 
-from djangorestframework.mixins import InstanceMixin, ReadModelMixin
-from djangorestframework.views import View, ModelView
-from djangorestframework import status
-from djangorestframework.response import Response
-from djangorestframework.permissions import PerUserThrottling
+
+#from djangorestframework.mixins import InstanceMixin, ReadModelMixin
+#from djangorestframework.views import View, ModelView
+from rest_framework.views import APIView as View
+from rest_framework import status
+from rest_framework.response import Response
+#from djangorestframework.permissions import PerUserThrottling
+
 
 from openrelay_resources.models import Resource, Version
 from openrelay_resources.literals import TIMESTAMP_SEPARATOR
@@ -50,7 +53,7 @@ class OpenRelayAPI(View):
     This is the REST API for OpenRelay (https://github.com/Captainkrtek/OpenRelay).
     """
     # Throttling
-    permissions = (PerUserThrottling,)
+    #permissions = (PerUserThrottling,)
     throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
 
     def get(self, request):
@@ -66,9 +69,9 @@ class OpenRelayAPI(View):
 
 
 class ResourceFileRoot(View):
-    
+
     # Throttling
-    permissions = (PerUserThrottling,)
+    #permissions = (PerUserThrottling,)
     throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
 
     def post(self, request):
@@ -84,7 +87,7 @@ class ResourceFileRoot(View):
 class ResourceFileObject(View):
 
     # Throttling
-    permissions = (PerUserThrottling,)
+    #permissions = (PerUserThrottling,)
     throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
 
     def post(self, request, uuid):
@@ -111,7 +114,7 @@ class ResourceFileObject(View):
 class VersionRoot(View):
 
     # Throttling
-    permissions = (PerUserThrottling,)
+    #permissions = (PerUserThrottling,)
     throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
 
     def post(self, request):
@@ -136,7 +139,7 @@ class VersionRoot(View):
 class VersionObject(View):
 
     # Throttling
-    permissions = (PerUserThrottling,)
+    #permissions = (PerUserThrottling,)
     throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
 
     def post(self, request, uuid):
@@ -168,7 +171,7 @@ class VersionObject(View):
 class ResourceDownload(View):
 
     # Throttling
-    permissions = (PerUserThrottling,)
+    #permissions = (PerUserThrottling,)
     throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
 
     def post(self, request, uuid):
@@ -184,7 +187,7 @@ class ResourceDownload(View):
 class ResourceServe(View):
 
     # Throttling
-    permissions = (PerUserThrottling,)
+    #permissions = (PerUserThrottling,)
     throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
 
     def post(self, request, uuid):
@@ -200,7 +203,7 @@ class ResourceServe(View):
 class Announce(View):
 
     # Throttling
-    permissions = (PerUserThrottling,)
+    #permissions = (PerUserThrottling,)
     throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
 
     def post(self, request):
@@ -223,7 +226,7 @@ class Announce(View):
                     sibling.ip_address = sibling_data['ip_address']
                     sibling.port = sibling_data['port']
                     sibling.save()
-                
+
                 # Send our info
                 local_node_info = {
                     'ip_address': IPADDRESS,
@@ -238,7 +241,7 @@ class Announce(View):
 class Heartbeat(View):
 
     # Throttling
-    permissions = (PerUserThrottling,)
+    #permissions = (PerUserThrottling,)
     throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
 
     def post(self, request):
@@ -258,7 +261,7 @@ class Heartbeat(View):
 class SiblingsHash(View):
 
     # Throttling
-    permissions = (PerUserThrottling,)
+    #permissions = (PerUserThrottling,)
     throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
 
     def post(self, request):
@@ -270,7 +273,7 @@ class SiblingsHash(View):
             return Response(status.BAD_REQUEST)
         else:
             uuid = fingerprint
-            
+
         logger.info('received siblings hash call from node: %s' % uuid)
         return prepare_package(
             {
@@ -288,7 +291,7 @@ class SiblingsHash(View):
 class SiblingList(View):
 
     # Throttling
-    permissions = (PerUserThrottling,)
+    #permissions = (PerUserThrottling,)
     throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
 
     def post(self, request):
@@ -327,7 +330,7 @@ class SiblingList(View):
 class InventoryHash(View):
 
     # Throttling
-    permissions = (PerUserThrottling,)
+    #permissions = (PerUserThrottling,)
     throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
 
     def post(self, request):

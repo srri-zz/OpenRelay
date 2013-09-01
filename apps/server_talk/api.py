@@ -7,7 +7,8 @@ from django.utils.simplejson import loads, dumps
 from django.core.urlresolvers import reverse
 from django.core.serializers.json import DjangoJSONEncoder
 
-from djangorestframework import status
+#from djangorestframework import status
+from rest_framework import status
 
 from openrelay_resources.models import Resource, Version
 from openrelay_resources.exceptions import ORInvalidResourceFile
@@ -46,7 +47,7 @@ def decrypt_request_data(signed_data):
 
 
 def prepare_package(package):
-    return {'signed_data': gpg.sign(dumps(package, cls=DjangoJSONEncoder), key=LocalNode().public_key, passphrase=KEY_PASSPHRASE).data}        
+    return {'signed_data': gpg.sign(dumps(package, cls=DjangoJSONEncoder), key=LocalNode().public_key, passphrase=KEY_PASSPHRASE).data}
 
 
 class NetworkCall(object):
@@ -58,12 +59,12 @@ class NetworkCall(object):
             node = RemoteCall(uuid=resource_holder.uuid)
             resource_raw_data = node.download_version(uuid)
             remote_resource = Version.create_from_raw(resource_raw_data)
-            Resource.storage_culling()    
+            Resource.storage_culling()
             return remote_resource
 
         except (NetworkResourceVersion.DoesNotExist, IndexError, ORInvalidResourceFile, NetworkResourceDownloadError), msg:
             raise NetworkResourceNotFound(msg)
-            
+
     def publish_key(self, key):
         # For now publishes key to http://peer.to keyserver
         response = requests.post(u'http://peer.to:11371/pks/add', data={'keytext': key.data}, timeout=TIMEOUT)
@@ -74,7 +75,7 @@ class RemoteCall(object):
         self.ip_address = kwargs.pop('ip_address', '')
         self.port = kwargs.pop('port', '')
         self.uuid = kwargs.pop('uuid', None)
-        
+
         if not self.ip_address:
             try:
                 sibling = Sibling.objects.get(uuid=self.uuid)
@@ -82,20 +83,20 @@ class RemoteCall(object):
                 self.port = sibling.port
             except Sibling.DoesNotExist:
                 raise NoSuchNode('Node: %s, does not exists' % uuid)
-                
-                
+
+
     def get_full_ip_address(self):
         return u'%s%s' % (self.ip_address, u':%s' % self.port if self.port else '')
 
     def get_service_url(self, service_name, *args, **kwargs):
         return urlparse.urlunparse(['http', self.get_full_ip_address(), reverse(service_name, *args, **kwargs), '', '', ''])
-        
+
     def get_id_package(self):
         return prepare_package({
             'ip_address': IPADDRESS,
             'port': PORT,
         })
-            
+
     def announce(self):
         '''
         Announce the local node to another OpenRelay node
@@ -135,7 +136,7 @@ class RemoteCall(object):
             else:
                 logger.error('announce service on remote node responded with a non OK code')
                 raise AnnounceClientError('Unable to join network')
-            
+
     def heartbeat(self):
         '''
         Check a host's availability and cpu load
@@ -156,7 +157,7 @@ class RemoteCall(object):
                 raise HeartbeatError('non JSON data')
             except NodeDataPackageError, exc:
                 raise HeartbeatError(exc)
-            
+
     def inventory_hash(self):
         '''
         Ask for a node's hash of it's inventories
@@ -240,7 +241,7 @@ class RemoteCall(object):
                 raise SiblingListError('non JSON data')
             except NodeDataPackageError, exc:
                 raise SiblingListError(exc)
-            
+
     def download_version(self, uuid):
         '''
         Download a resource version from a remote node

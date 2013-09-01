@@ -143,8 +143,9 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.admindocs',
-# 3rd party    
-    'djangorestframework',
+# 3rd party
+    #'djangorestframework',
+    'rest_framework',
     'south',
     'bootstrapform',
 # OpenRelay

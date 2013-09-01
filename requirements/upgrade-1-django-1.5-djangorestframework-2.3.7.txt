@@ -1,0 +1,17 @@
+APScheduler==2.0.2
+BeautifulSoup==4.0b
+Django==1.5.2
+South==0.7.3
+Twisted==11.0.0
+Werkzeug==0.8.1
+django-bootstrap==0.2.4
+-e git://github.com/rosarior/django-bootstrap-form.git@622b7a4815a3872b3936991f1bb4af7044828199#egg=django_bootstrap_form-dev
+django-extensions==0.7.1
+djangorestframework==2.3.7
+gunicorn==0.13.4
+psutil==0.4.1
+python-gnupg==0.3.4
+-e git://github.com/ahupp/python-magic.git@a75cf0a4a7790eb106155c947af9612f15693b6e#egg=python_magic-dev
+requests==0.8.1
+wsgiref==0.1.2
+zope.interface==4.0.5

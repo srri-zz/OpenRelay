@@ -1,8 +1,8 @@
 from django.conf.urls.defaults import patterns, url
 
-from djangorestframework.views import ListModelView
+#from djangorestframework.views import ListModelView
 
-from server_talk.views import (OpenRelayAPI, Announce, Heartbeat, 
+from server_talk.views import (OpenRelayAPI, Announce, Heartbeat,
     InventoryHash, ResourceFileRoot, ResourceFileObject, VersionObject,
     VersionRoot, ResourceDownload, ResourceServe, SiblingsHash, SiblingList)
 

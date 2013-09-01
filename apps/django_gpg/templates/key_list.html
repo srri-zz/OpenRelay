@@ -17,7 +17,7 @@
                 <tr>
                     <td>{{ object.key_id }}</td>
                     <td>{{ object.user_ids }}</td>
-                    <td><a href="{% url key_delete object.fingerprint object.type %}">{% trans 'Delete' %}</a></td>
+                    <!-- {# <td><a href="{% url 'key_delete' object.fingerprint object.type %}">{% trans 'Delete' %}</a></td> #} -->
                 </tr>
             {% empty %}
                 <tr>
