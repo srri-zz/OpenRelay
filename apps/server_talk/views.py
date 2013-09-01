@@ -1,6 +1,7 @@
 """The root view for OpenRelay API"""
 import logging
 import hashlib
+import psutil
 
 from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponseRedirect, HttpResponse, Http404
@@ -10,31 +11,17 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.utils.simplejson import loads
 
-import psutil
-
-
-#from djangorestframework.mixins import InstanceMixin, ReadModelMixin
-#from djangorestframework.views import View, ModelView
-from rest_framework.views import APIView as View
+#Latest djangorestframework stuff
+from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
-#from djangorestframework.permissions import PerUserThrottling
-
 
 from openrelay_resources.models import Resource, Version
-from openrelay_resources.literals import TIMESTAMP_SEPARATOR
-from core.runtime import gpg
-from django_gpg.exceptions import KeyDoesNotExist
-
-from server_talk.models import LocalNode, Sibling, NetworkResourceVersion
-from server_talk.forms import JoinForm
-from server_talk.api import RemoteCall, decrypt_request_data, prepare_package
-from server_talk.conf.settings import PORT, IPADDRESS, KEY_PASSPHRASE, DEFAULT_REQUESTS_PER_MINUTE
-from server_talk.exceptions import AnnounceClientError, NodeDataPackageError
+from serializers import ResourceSerializer
 
 logger = logging.getLogger(__name__)
 HASH_FUNCTION = lambda x: hashlib.sha256(x).hexdigest()
-
 
 def _get_object_or_404(model, *args, **kwargs):
     '''
@@ -46,18 +33,13 @@ def _get_object_or_404(model, *args, **kwargs):
     except model.DoesNotExist:
         raise Http404('No %s matches the given query.' % model._meta.object_name)
 
-
-# API views
-class OpenRelayAPI(View):
-    """
+class OpenRelayAPI(APIView):
+     """
     This is the REST API for OpenRelay (https://github.com/Captainkrtek/OpenRelay).
     """
-    # Throttling
-    #permissions = (PerUserThrottling,)
-    throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
 
     def get(self, request):
-        return [
+        return Response([
             {'name': 'Resources', 'url': reverse('resource_file-root')},
             {'name': 'Versions', 'url': reverse('version-root')},
             {'name': 'Siblings', 'url': reverse('sibling-root')},
@@ -65,14 +47,9 @@ class OpenRelayAPI(View):
             {'name': 'Heartbeat', 'url': reverse('service-heartbeat')},
             {'name': 'Inventory hash', 'url': reverse('service-inventory_hash')},
             {'name': 'Siblings hash', 'url': reverse('service-siblings_hash')},
-        ]
+        ])
 
-
-class ResourceFileRoot(View):
-
-    # Throttling
-    #permissions = (PerUserThrottling,)
-    throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
+class ResourceFileRoot(APIView):
 
     def post(self, request):
         return [
@@ -84,127 +61,7 @@ class ResourceFileRoot(View):
         ]
 
 
-class ResourceFileObject(View):
-
-    # Throttling
-    #permissions = (PerUserThrottling,)
-    throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
-
-    def post(self, request, uuid):
-        resource = get_object_or_404(Resource, uuid=uuid)
-        return {
-            'uuid': resource.uuid,
-            'name': resource.name,
-            'label': resource.label,
-            'description': resource.description,
-            'metadata': resource.metadata,
-            'versions': [
-                {
-                    'timestamp': version.timestamp,
-                    'url': reverse('version', args=[version.full_uuid]),
-                }
-                for version in resource.version_set.all()
-            ],
-            'download': reverse('version-download', args=[resource.uuid]),
-            'serve': reverse('version-serve', args=[resource.uuid]),
-            'latest_version': resource.latest_version().full_uuid,
-        }
-
-
-class VersionRoot(View):
-
-    # Throttling
-    #permissions = (PerUserThrottling,)
-    throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
-
-    def post(self, request):
-        return prepare_package(
-            {
-                'version-list': [
-                    {
-                        'uuid': version.full_uuid,
-                        'url': reverse('version', args=[version.full_uuid]),
-                        'name': version.name,
-                        'label': version.label,
-                        'description': version.description,
-                        'metadata': version.metadata,
-                        'signature_properties': version.signature_properties,
-                    }
-                    for version in Version.objects.all()
-                ]
-            }
-        )
-
-
-class VersionObject(View):
-
-    # Throttling
-    #permissions = (PerUserThrottling,)
-    throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
-
-    def post(self, request, uuid):
-        version = Resource.objects.get(uuid=uuid)
-        return {
-            'uuid': version.full_uuid,
-            'name': version.name,
-            'label': version.label,
-            'description': version.description,
-            'metadata': version.metadata,
-            'exists': version.exists,
-            'is_valid': version.is_valid,
-            'signature_status': version.signature_status,
-            'mimetype': version.mimetype[0],
-            'encoding': version.mimetype[1],
-            'username': version.username,
-            'signature_id': version.signature_id,
-            'raw_timestamp': version.raw_timestamp,
-            'timestamp': version.timestamp,
-            'fingerprint': version.fingerprint,
-            'key_id': version.key_id,
-            'download': reverse('version-download', args=[version.full_uuid]),
-            'serve': reverse('version-serve', args=[version.full_uuid]),
-            'signature_properties': version.signature_properties,
-            'size': version.size,
-        }
-
-
-class ResourceDownload(View):
-
-    # Throttling
-    #permissions = (PerUserThrottling,)
-    throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
-
-    def post(self, request, uuid):
-        #logger.info('received resource download call from node: %s @ %s' % (node_uuid, request.META['REMOTE_ADDR']))
-        try:
-            resource = Resource.objects.get(uuid=uuid)
-        except Resource.DoesNotExist:
-            raise Http404('No %s matches the given query.' % Resource._meta.object_name)
-
-        return HttpResponse(resource.download())
-
-
-class ResourceServe(View):
-
-    # Throttling
-    #permissions = (PerUserThrottling,)
-    throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
-
-    def post(self, request, uuid):
-        #logger.info('received resource serve call from node: %s @ %s' % (node_uuid, request.META['REMOTE_ADDR']))
-        try:
-            resource = Resource.objects.get(uuid=uuid)
-        except Resource.DoesNotExist:
-            raise Http404('No %s matches the given query.' % Resource._meta.object_name)
-
-        return HttpResponse(resource.content, mimetype=u';charset='.join(resource.mimetype))
-
-
-class Announce(View):
-
-    # Throttling
-    #permissions = (PerUserThrottling,)
-    throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
+class Announce(APIView):
 
     def post(self, request):
         logger.info('received announce call from: %s' % request.META['REMOTE_ADDR'])
@@ -237,12 +94,7 @@ class Announce(View):
                 except KeyDoesNotExist:
                     return Response(status.INTERNAL_SERVER_ERROR)
 
-
-class Heartbeat(View):
-
-    # Throttling
-    #permissions = (PerUserThrottling,)
-    throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
+class Heartbeat(APIView):
 
     def post(self, request):
         signed_data = request.POST.get('signed_data')
@@ -257,12 +109,126 @@ class Heartbeat(View):
         logger.info('received heartbeat call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
         return prepare_package({'cpuload': str(psutil.cpu_percent())})
 
+class InventoryHash(APIView):
 
-class SiblingsHash(View):
+    def post(self, request):
+        signed_data = request.POST.get('signed_data')
+        try:
+            fingerprint, result = decrypt_request_data(signed_data)
+        except NodeDataPackageError:
+            logger.error('got NodeDataPackageError')
+            return Response(status.BAD_REQUEST)
+        else:
+            uuid = fingerprint
 
-    # Throttling
-    #permissions = (PerUserThrottling,)
-    throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
+        logger.info('received inventory hash call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
+        return prepare_package(
+            {
+                'inventory_hash': HASH_FUNCTION(
+                    u''.join([version.full_uuid for version in Version.objects.all().order_by('timestamp')])
+                )
+            }
+        )
+
+
+class ResourceFileObject(APIView):
+
+    def post(self, request, uuid):
+        resource = get_object_or_404(Resource, uuid=uuid)
+        return {
+            'uuid': resource.uuid,
+            'name': resource.name,
+            'label': resource.label,
+            'description': resource.description,
+            'metadata': resource.metadata,
+            'versions': [
+                {
+                    'timestamp': version.timestamp,
+                    'url': reverse('version', args=[version.full_uuid]),
+                }
+                for version in resource.version_set.all()
+            ],
+            'download': reverse('version-download', args=[resource.uuid]),
+            'serve': reverse('version-serve', args=[resource.uuid]),
+            'latest_version': resource.latest_version().full_uuid,
+        }
+
+
+
+class VersionRoot(APIView):
+
+    def post(self, request):
+        return prepare_package(
+            {
+                'version-list': [
+                    {
+                        'uuid': version.full_uuid,
+                        'url': reverse('version', args=[version.full_uuid]),
+                        'name': version.name,
+                        'label': version.label,
+                        'description': version.description,
+                        'metadata': version.metadata,
+                        'signature_properties': version.signature_properties,
+                    }
+                    for version in Version.objects.all()
+                ]
+            }
+        )
+
+
+class VersionObject(APIView):
+
+    def post(self, request, uuid):
+        version = Resource.objects.get(uuid=uuid)
+        return Response({
+            'uuid': version.full_uuid,
+            'name': version.name,
+            'label': version.label,
+            'description': version.description,
+            'metadata': version.metadata,
+            'exists': version.exists,
+            'is_valid': version.is_valid,
+            'signature_status': version.signature_status,
+            'mimetype': version.mimetype[0],
+            'encoding': version.mimetype[1],
+            'username': version.username,
+            'signature_id': version.signature_id,
+            'raw_timestamp': version.raw_timestamp,
+            'timestamp': version.timestamp,
+            'fingerprint': version.fingerprint,
+            'key_id': version.key_id,
+            'download': reverse('version-download', args=[version.full_uuid]),
+            'serve': reverse('version-serve', args=[version.full_uuid]),
+            'signature_properties': version.signature_properties,
+            'size': version.size,
+        })
+
+
+class ResourceDownload(APIView):
+
+    def post(self, request, uuid):
+        #logger.info('received resource download call from node: %s @ %s' % (node_uuid, request.META['REMOTE_ADDR']))
+        try:
+            resource = Resource.objects.get(uuid=uuid)
+        except Resource.DoesNotExist:
+            raise Http404('No %s matches the given query.' % Resource._meta.object_name)
+
+        return HttpResponse(resource.download())
+
+
+class ResourceServe(APIView):
+
+    def post(self, request, uuid):
+        #logger.info('received resource serve call from node: %s @ %s' % (node_uuid, request.META['REMOTE_ADDR']))
+        try:
+            resource = Resource.objects.get(uuid=uuid)
+        except Resource.DoesNotExist:
+            raise Http404('No %s matches the given query.' % Resource._meta.object_name)
+
+        return HttpResponse(resource.content, mimetype=u';charset='.join(resource.mimetype))
+
+
+class SiblingsHash(APIView):
 
     def post(self, request):
         signed_data = request.POST.get('signed_data')
@@ -287,12 +253,7 @@ class SiblingsHash(View):
             }
         )
 
-
-class SiblingList(View):
-
-    # Throttling
-    #permissions = (PerUserThrottling,)
-    throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
+class SiblingList(APIView):
 
     def post(self, request):
         signed_data = request.POST.get('signed_data')
@@ -323,32 +284,6 @@ class SiblingList(View):
                     }
                     for sibling in Sibling.objects.all()
                 ]
-            }
-        )
-
-
-class InventoryHash(View):
-
-    # Throttling
-    #permissions = (PerUserThrottling,)
-    throttle  = ''.join([str(DEFAULT_REQUESTS_PER_MINUTE), '/min'])
-
-    def post(self, request):
-        signed_data = request.POST.get('signed_data')
-        try:
-            fingerprint, result = decrypt_request_data(signed_data)
-        except NodeDataPackageError:
-            logger.error('got NodeDataPackageError')
-            return Response(status.BAD_REQUEST)
-        else:
-            uuid = fingerprint
-
-        logger.info('received inventory hash call from node: %s @ %s' % (uuid, request.META['REMOTE_ADDR']))
-        return prepare_package(
-            {
-                'inventory_hash': HASH_FUNCTION(
-                    u''.join([version.full_uuid for version in Version.objects.all().order_by('timestamp')])
-                )
             }
         )
 
@@ -419,7 +354,6 @@ def resource_list(request, fingerprint=None):
         'title': title,
     }, context_instance=RequestContext(request))
 
-
 def resource_publishers(request):
     publishers = {}
     network_resources = [NetworkResourceVersion.objects.get(uuid=resource['uuid']) for resource in NetworkResourceVersion.objects.values('uuid').distinct().order_by()]
@@ -437,3 +371,4 @@ def resource_publishers(request):
         'publishers': publishers,
         'title': _(u'Resources by publisher'),
     }, context_instance=RequestContext(request))
+
