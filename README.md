@@ -9,9 +9,6 @@ License
 -------
 OpenRelay is licensed under the GNU GPL v3 (See LICENSE file)
 
-Learn More
-----------
-http://peer.to/peer
 
 Installation
 ------------
